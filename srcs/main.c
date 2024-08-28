@@ -1,5 +1,5 @@
 #include <stdio.h>
 
 int	main() {
-	printf("Hello word mother fuckers");
+	printf("Hello world mother fuckers");
 }
