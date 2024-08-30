@@ -108,18 +108,25 @@ int	write_data_into_file(int sock, struct host_data *host_data, char *path)
 	FILE	*fp;
 	int		received;
 	char	response[BUFFER_SIZE];
+	char	*file_path;
 
-	fp = fopen(strcat(path, host_data->filename), "wb");
+	file_path = malloc(strlen(path) + strlen(host_data->filename) + 1);
+	strcpy(file_path, path);
+	strcat(file_path, host_data->filename);
+	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
+		free(file_path);
 		perror("Error trying to open file");
 		return 1;
 	}
 	while ((received = recv(sock, response, BUFFER_SIZE, 0)) > 0)
 		fwrite(response, 1, received, fp);
 	if (received < 0) {
+		free(file_path);
 		perror("Error receiving data");
 		return 1;
 	}
+	free(file_path);
 	fclose(fp);
 	return 0;
 }
