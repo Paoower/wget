@@ -1,18 +1,24 @@
 NAME=wget
 
-SRC_DIR=./srcs/
-INC_DIR=./includes/
+INCLUDES_DIR=./includes/
+SRCS_DIR=./srcs/
+TOOLS_DIR=$(SRCS_DIR)tools/
 
-SRC=main.c
-SRCS=$(addprefix ${SRC_DIR}, ${SRC})
-OBJS=${SRCS:.c=.o}
+SRCS_FILE_NAMES=main.c download_file.c
+TOOLS_FILE_NAMES=regex.c string.c
+
+SRC_FILES=$(addprefix ${SRCS_DIR}, ${SRCS_FILE_NAMES})
+TOOLS_FILES=$(addprefix ${TOOLS_DIR}, ${TOOLS_FILE_NAMES})
+
+FILES=$(SRC_FILES) $(TOOLS_FILES)
+OBJS=${FILES:.c=.o}
 
 CC=gcc
 FLAGS=-Wall -Wextra -Werror
 RM=rm -f
 
 .c.o:
-	${CC} ${FLAGS} -I${INC_DIR} -c $< -o ${<:.c=.o}
+	${CC} ${FLAGS} -I${INCLUDES_DIR} -c $< -o $@
 
 ${NAME}: ${OBJS}
 	${CC} ${FLAGS} -o ${NAME} ${OBJS}

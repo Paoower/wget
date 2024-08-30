@@ -1,13 +1,24 @@
-#include "main.h"
+#include "srcs.h"
+#include "tools.h"
 #include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 
-struct host_data	*get_hostname_and_filepath(char *url) {
+struct host_data	*get_hostdata(char *url)
+{
 	struct host_data	server_data;
+	char				*strs;
+	int					start;
+	int					end;
 
-	// format
+	if (!does_match_with_pattern(url, URL_REGEX)) {
+		fprintf(stderr, "Error : not an url (%s)\n", url);
+		return NULL;
+	}
+	server_data.hostname = "pbs.twimg.com";
+	server_data.filename = "EMtmPFLWkAA8CIS.jpg";
+	server_data.filepath = "/media/EMtmPFLWkAA8CIS.jpg";
 	return &server_data;
 }
 
@@ -17,7 +28,7 @@ struct sockaddr	*get_server_socket_address(char *hostname)
 	struct sockaddr_in	server;
 
 	host = gethostbyname(hostname);
-	if (host == NULL) {
+	if (!host) {
 		fprintf(stderr, "Error : Host not found (%s)\n", hostname);
 		return NULL;
 	}
@@ -37,14 +48,14 @@ int	connect_to_server(char *hostname)
 	// config as a stream socket with connection through IPv4
 	if (sock == -1) {
 		perror("Error during socket creation");
-		return NULL;
+		return -1;
 	}
 	server = get_server_socket_address(hostname);
-	if (server == NULL)
-		return NULL;
+	if (!server)
+		return -1;
 	if (connect(sock, server, sizeof(server)) < 0) {
 		perror("Error during socket connection");
-		return NULL;
+		return -1;
 	}
 	return sock;
 }
@@ -65,13 +76,13 @@ int	send_request(int sock, struct host_data *host_data)
 	return 0;
 }
 
-int	write_data_into_file(int sock, struct host_data *host_data)
+int	write_data_into_file(int sock, struct host_data *host_data, char *path)
 {
 	FILE	*fp;
 	int		received;
 	char	response[BUFFER_SIZE];
 
-	fp = fopen(host_data->filename, "wb");
+	fp = fopen(strcat(path, host_data->filename), "wb");
 	if (fp == NULL) {
 		perror("Error trying to open file");
 		return 1;
@@ -86,18 +97,20 @@ int	write_data_into_file(int sock, struct host_data *host_data)
 	return 0;
 }
 
-int	download_file(char *url)
+int	download_file(char *url, char *filepath)
 {
 	int					sock;
 	struct host_data	*host_data;
 
-	host_data = get_hostname_and_filepath(url);
+	host_data = get_hostdata(url);
+	if (!host_data)
+		return 1;
 	sock = connect_to_server(host_data->hostname);
-	if (!sock)
+	if (sock == -1)
 		return 1;
 	if (send_request(sock, host_data))
 		return 1;
-	if (write_data_into_file(sock, host_data))
+	if (write_data_into_file(sock, host_data, filepath))
 		return 1;
 	close(sock);
 	return 0;
