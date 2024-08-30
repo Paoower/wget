@@ -1,21 +1,26 @@
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 // catch from src,
 // the string between the first match of start and the first match of end
+// need to be freed after use.
 char	*get_str_between(char *src, char *start, char *end)
 {
 	char	*dest;
 	int		dest_len;
+	char	*start_pos;
+	char	*end_pos;
 
 	if (!src || !start || !end)
 		return NULL;
-	start = strstr(src, start);
-	if (!start)
-		start = 0;
-	end = strstr(src, end);
-	if (!end)
-		end = strlen(src) - 1;
-	dest_len = end - start;
+	start_pos = strstr(src, start);
+	if (!start_pos)
+		start_pos = src;
+	end_pos = strstr(src, end);
+	if (!end_pos)
+		end_pos = src + strlen(src) - 1;
+	dest_len = end_pos - start_pos;
 	dest = (char *)malloc(dest_len + 1);
 	if (!dest) {
 		perror("Memory allocation failed");

@@ -8,31 +8,37 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+void	free_hostdata(struct host_data *host_data)
+{
+	free(host_data->hostname);
+	free(host_data->filename);
+	free(host_data->filepath);
+	free(host_data);
+}
+
 struct host_data	*get_hostdata(char *url)
 {
-	struct host_data	*server_data;
+	struct host_data	*host_data;
 
 	if (!does_match_with_pattern(url, URL_REGEX)) {
 		fprintf(stderr, "Error : not an url (%s)\n", url);
 		return NULL;
 	}
-	server_data = malloc(sizeof(struct host_data));
-	if (!server_data) {
+	host_data = malloc(sizeof(struct host_data));
+	if (!host_data) {
 		perror("Memory allocation failed");
 		return NULL;
 	}
-	server_data->hostname = strdup("pbs.twimg.com");
-	server_data->filename = strdup("EMtmPFLWkAA8CIS.jpg");
-	server_data->filepath = strdup("/media/EMtmPFLWkAA8CIS.jpg");
-	if (!server_data->hostname ||
-			!server_data->filename || !server_data->hostname) {
-		free(server_data->hostname);
-		free(server_data->filename);
-		free(server_data->filepath);
-		free(server_data);
+	// temporary test
+	host_data->hostname = strdup("pbs.twimg.com");
+	host_data->filename = strdup("EMtmPFLWkAA8CIS.jpg");
+	host_data->filepath = strdup("/media/EMtmPFLWkAA8CIS.jpg");
+	if (!host_data->hostname ||
+			!host_data->filename || !host_data->hostname) {
+		free_hostdata(host_data);
 		return NULL;
 	}
-	return server_data;
+	return host_data;
 }
 
 struct sockaddr	*get_server_socket_address(char *hostname)
@@ -69,12 +75,15 @@ int	connect_to_server(char *hostname)
 		return -1;
 	}
 	server = get_server_socket_address(hostname);
-	if (!server)
-		return -1;
-	if (connect(sock, server, sizeof(server)) < 0) {
-		perror("Error during socket connection");
+	if (!server) {
 		return -1;
 	}
+	if (connect(sock, server, sizeof(struct sockaddr_in)) < 0) {
+		perror("Error during socket connection");
+		free(server);
+		return -1;
+	}
+	free(server);
 	return sock;
 }
 
@@ -124,12 +133,14 @@ int	download_file(char *url, char *filepath)
 	if (!host_data)
 		return 1;
 	sock = connect_to_server(host_data->hostname);
-	if (sock == -1)
+	if (sock == -1 ||
+			send_request(sock, host_data) ||
+			write_data_into_file(sock, host_data, filepath)) {
+		free_hostdata(host_data);
+		close(sock);
 		return 1;
-	if (send_request(sock, host_data))
-		return 1;
-	if (write_data_into_file(sock, host_data, filepath))
-		return 1;
+	}
+	free_hostdata(host_data);
 	close(sock);
 	return 0;
 }
