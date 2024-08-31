@@ -8,39 +8,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-void	free_hostdata(struct host_data *host_data)
-{
-	free(host_data->hostname);
-	free(host_data->filename);
-	free(host_data->filepath);
-	free(host_data);
-}
-
-struct host_data	*get_hostdata(char *url)
-{
-	struct host_data	*host_data;
-
-	if (!does_match_with_pattern(url, URL_REGEX)) {
-		fprintf(stderr, "Error : not an url (%s)\n", url);
-		return NULL;
-	}
-	host_data = malloc(sizeof(struct host_data));
-	if (!host_data) {
-		perror("Memory allocation failed");
-		return NULL;
-	}
-	// temporary test
-	host_data->hostname = strdup("pbs.twimg.com");
-	host_data->filename = strdup("EMtmPFLWkAA8CIS.jpg");
-	host_data->filepath = strdup("/media/EMtmPFLWkAA8CIS.jpg");
-	if (!host_data->hostname ||
-			!host_data->filename || !host_data->hostname) {
-		free_hostdata(host_data);
-		return NULL;
-	}
-	return host_data;
-}
-
 struct sockaddr	*get_server_socket_address(char *hostname)
 {
 	struct hostent		*host;
@@ -103,29 +70,57 @@ int	send_request(int sock, struct host_data *host_data)
 	return 0;
 }
 
+// return the remaining data len after the http header
+// or -1 if any error is triggered
+int	skip_htpp_header(int sock, char *response, int *received)
+{
+	char	*header_end;
+	int		remaining_data_len;
+
+	while ((*received = recv(sock, response, BUFFER_SIZE, 0)) > 0) {
+		header_end = strstr(response, "\r\n\r\n");
+		if (header_end) {
+			remaining_data_len = *received - (header_end + 4 - response);
+			return remaining_data_len;
+		}
+	}
+	if (*received < 0) {
+		perror("Error receiving data");
+		return -1;
+	}
+	fprintf(stderr, "No http header found");
+	return -1;
+}
+
 int	write_data_into_file(int sock, struct host_data *host_data, char *path)
 {
 	FILE	*fp;
 	int		received;
 	char	response[BUFFER_SIZE];
 	char	*file_path;
+	int		remaining_data_len;
 
-	file_path = malloc(strlen(path) + strlen(host_data->filename) + 1);
-	strcpy(file_path, path);
-	strcat(file_path, host_data->filename);
+	file_path = concat(path, host_data->filename);
 	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
-		free(file_path);
 		perror("Error trying to open file");
-		return 1;
+		goto error_exit;
 	}
+	remaining_data_len = skip_htpp_header(sock, response, &received);
+	if (remaining_data_len > 0)
+		fwrite(response +
+				received - remaining_data_len, 1, remaining_data_len, fp);
+	else if (remaining_data_len < 0)
+		goto error_exit;
 	while ((received = recv(sock, response, BUFFER_SIZE, 0)) > 0)
 		fwrite(response, 1, received, fp);
 	if (received < 0) {
-		free(file_path);
 		perror("Error receiving data");
-		return 1;
+		goto error_exit;
 	}
+	error_exit:
+		free(file_path);
+		return 1;
 	free(file_path);
 	fclose(fp);
 	return 0;

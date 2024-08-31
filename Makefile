@@ -4,7 +4,7 @@ INCLUDES_DIR=./includes/
 SRCS_DIR=./srcs/
 TOOLS_DIR=$(SRCS_DIR)tools/
 
-SRCS_FILE_NAMES=main.c download_file.c
+SRCS_FILE_NAMES=main.c download_file.c get_hostdata.c
 TOOLS_FILE_NAMES=regex.c string.c
 
 SRC_FILES=$(addprefix ${SRCS_DIR}, ${SRCS_FILE_NAMES})

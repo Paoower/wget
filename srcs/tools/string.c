@@ -30,3 +30,14 @@ char	*get_str_between(char *src, char *start, char *end)
 	dest[dest_len] = '\0';
 	return dest;
 }
+
+// need to be freed at the end
+char	*concat(char *s1, char *s2)
+{
+	char	*result;
+
+	result = malloc(strlen(s1) + strlen(s2) + 1);
+	strcpy(result, s1);
+	strcat(result, s2);
+	return result;
+}

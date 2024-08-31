@@ -11,6 +11,8 @@ struct	host_data {
 	char	*filename;
 };
 
-int	download_file(char *url, char *filepath);
+int					download_file(char *url, char *filepath);
+struct host_data	*get_hostdata(char *url);
+void				free_hostdata(struct host_data *host_data);
 
 #endif
