@@ -1,6 +1,7 @@
+#include "srcs.h"
 #include <stdio.h>
 
 int	main()
 {
-	printf("Hello world mother fuckers");
+	download_file("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg", DATA_PATH);
 }
