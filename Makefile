@@ -12,8 +12,7 @@ $(info $(OBJ_FILES))
 CC=gcc
 FLAGS=-Wall -Wextra -Werror -I$(INCLUDE_DIR)
 
-$(BUILD_DIR):
-	mkdir -p build
+all: $(TARGET)
 
 $(TARGET): $(OBJ_FILES)
 	$(CC) $(OBJ_FILES) -o $@
