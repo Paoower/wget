@@ -8,7 +8,7 @@ SRC_FILES := $(shell find $(SRC_DIR) -name '*.c')
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
 CC=gcc
-FLAGS=-Wall -Wextra -Werror -I$(INCLUDE_DIR)
+WARN_FLAGS=-Wall -Wextra -Werror
 RM=rm -rf
 
 all: $(TARGET)
@@ -18,17 +18,19 @@ $(TARGET): $(OBJ_FILES)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(FLAGS) -c $< -o $@
+	$(CC) $(WARN_FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
-all: ${TARGET}
+all: $(TARGET)
+
+test: WARN_FLAGS=
+test: $(TARGET)
 
 clean:
-	${RM} ${BUILD_DIR}
+	$(RM) $(BUILD_DIR)
 
 fclean: clean
-	${RM} $(TARGET)
+	$(RM) $(TARGET)
 
 re: fclean all
-
 
 .PHONY: all clean fclean re

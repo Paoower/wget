@@ -12,7 +12,7 @@ void	free_hostdata(struct host_data *host_data)
 	free(host_data);
 }
 
-struct host_data	*get_hostdata(char *url)
+struct host_data	*get_hostdata(char *url, char *file_name)
 {
 	struct host_data	*host_data;
 
@@ -25,10 +25,13 @@ struct host_data	*get_hostdata(char *url)
 		perror("Memory allocation failed");
 		return NULL;
 	}
+	if (file_name)
+		host_data->filename = file_name;
+	else
+		host_data->filename = strdup("interestellar-cry.mp4");
 	// NEED CODE TO FILL HOSTNAME, FILENAME AND FILEPATH
 	// temporary test
 	host_data->hostname = strdup("images-ext-1.discordapp.net");
-	host_data->filename = strdup("interestellar-cry.mp4");
 	host_data->filepath = strdup("/external/0Z9r33Q7sYmy6pq97wKmO0BkzYm9S-9DbN72Ycu4mt4/https/media.tenor.com/xueKI4wn14YAAAPo/interestellar-cry.mp4");
 	if (!host_data->hostname ||
 			!host_data->filename || !host_data->hostname) {

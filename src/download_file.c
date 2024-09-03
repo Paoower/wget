@@ -89,52 +89,61 @@ int	skip_htpp_header(int sock, char *response, int *received)
 	return -1;
 }
 
-int	write_data_into_file(int sock, struct host_data *host_data, char *path)
+int	write_data_into_file(int sock, FILE *fp)
 {
-	FILE	*fp;
 	int		received;
 	char	response[BUFFER_SIZE];
-	char	*file_path;
 	int		remaining_data_len;
 
-	file_path = concat(path, host_data->filename);
-	fp = fopen(file_path, "wb");
-	if (fp == NULL) {
-		perror("Error trying to open file");
-		goto error_exit;
-	}
 	remaining_data_len = skip_htpp_header(sock, response, &received);
 	if (remaining_data_len > 0)
 		fwrite(response +
 				received - remaining_data_len, 1, remaining_data_len, fp);
 	else if (remaining_data_len < 0)
-		goto error_exit;
+		return 1;
 	while ((received = recv(sock, response, BUFFER_SIZE, 0)) > 0)
 		fwrite(response, 1, received, fp);
 	if (received < 0) {
 		perror("Error receiving data");
-		goto error_exit;
-	}
-	error_exit:
-		free(file_path);
 		return 1;
-	free(file_path);
-	fclose(fp);
+	}
 	return 0;
 }
 
-int	download_file(char *url, char *filepath)
+int	get_file(int sock, struct host_data *host_data, char *path)
+{
+	FILE	*fp;
+	char	*file_path;
+
+	file_path = concat(path, host_data->filename);
+	fp = fopen(file_path, "wb");
+	if (fp == NULL) {
+		perror("Error trying to open file");
+		free(file_path);
+		return 1;
+	}
+	if (write_data_into_file(sock, fp)) {
+		fclose(fp);
+		free(file_path);
+		return 1;
+	}
+	fclose(fp);
+	free(file_path);
+	return 0;
+}
+
+int	download_file(char *url, char *storage_dir_path, char *file_name)
 {
 	int					sock;
 	struct host_data	*host_data;
 
-	host_data = get_hostdata(url);
+	host_data = get_hostdata(url, file_name);
 	if (!host_data)
 		return 1;
 	sock = connect_to_server(host_data->hostname);
 	if (sock == -1 ||
 			send_request(sock, host_data) ||
-			write_data_into_file(sock, host_data, filepath)) {
+			get_file(sock, host_data, storage_dir_path)) {
 		free_hostdata(host_data);
 		close(sock);
 		return 1;
