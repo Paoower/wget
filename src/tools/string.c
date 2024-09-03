@@ -1,10 +1,8 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "tools.h"
 
-// catch from src,
-// the string between the first match of start and the first match of end
-// need to be freed after use.
+// Catch from src,
+// The string between the first match of start and the first match of end
+// Need to be freed after use.
 char	*get_str_between(char *src, char *start, char *end)
 {
 	char	*dest;

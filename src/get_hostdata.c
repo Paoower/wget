@@ -1,8 +1,6 @@
 #include "srcs.h"
 #include "tools.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+
 
 void	free_hostdata(struct host_data *host_data)
 {

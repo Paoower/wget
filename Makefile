@@ -1,36 +1,29 @@
-NAME=wget
+TARGET=wget
 
-INCLUDES_DIR=./includes/
-SRCS_DIR=./srcs/
-TOOLS_DIR=$(SRCS_DIR)tools/
+BUILD_DIR=build
+INCLUDE_DIR=include
+SRC_DIR=src
 
-SRCS_FILE_NAMES=main.c download_file.c get_hostdata.c
-TOOLS_FILE_NAMES=regex.c string.c
+SRC_FILES := $(shell find $(SRC_DIR) -name '*.c')
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
-SRC_FILES=$(addprefix ${SRCS_DIR}, ${SRCS_FILE_NAMES})
-TOOLS_FILES=$(addprefix ${TOOLS_DIR}, ${TOOLS_FILE_NAMES})
-
-FILES=$(SRC_FILES) $(TOOLS_FILES)
-OBJS=${FILES:.c=.o}
+$(info $(OBJ_FILES))
 
 CC=gcc
-FLAGS=-Wall -Wextra -Werror
-RM=rm -f
+FLAGS=-Wall -Wextra -Werror -I$(INCLUDE_DIR)
 
-.c.o:
-	${CC} ${FLAGS} -I${INCLUDES_DIR} -c $< -o $@
+$(BUILD_DIR):
+	mkdir -p build
 
-${NAME}: ${OBJS}
-	${CC} ${FLAGS} -o ${NAME} ${OBJS}
+$(TARGET): $(OBJ_FILES)
+	$(CC) $(OBJ_FILES) -o $@
 
-all: ${NAME}
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
-	${RM} ${OBJS}
+	rm -rf ${BUILD_DIR} $(TARGET)
 
-fclean: clean
-	${RM} ${NAME}
-
-re: fclean all
 
 .PHONY: all clean fclean re

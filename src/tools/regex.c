@@ -1,5 +1,4 @@
-#include <regex.h>
-#include <stdio.h>
+#include "tools.h"
 
 int	does_match_with_pattern(const char *str, char *pattern)
 {

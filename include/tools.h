@@ -1,3 +1,8 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <regex.h>
+
 #ifndef TOOLS_H
 # define TOOLS_H
 
