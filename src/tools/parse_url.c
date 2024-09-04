@@ -4,10 +4,14 @@
 int get_hostname()
 {
     char *s = strstr(params.url, "://");
-    
-    if (s) {
+
+    if (s)
+    {
         s += 3;
+        printf("%s\n", s);
     }
+
+    return 0;
 }
 
 int parse_url()
