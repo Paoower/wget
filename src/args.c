@@ -1,6 +1,7 @@
 #include "args.h"
 #include "tools.h"
 
+// Setting up the extern variable in the header file
 struct parameters_t params = {
 	.background = 0,
 	.output_file = NULL,
@@ -13,6 +14,7 @@ struct parameters_t params = {
 	.convert_links = 0,
 };
 
+// Store the options
 struct option long_options[] = {
 	{"help", no_argument, 0, 'h'},
 	{"background", no_argument, 0, 'B'},
@@ -48,16 +50,12 @@ void display_arg(char option, char *value)
 
 int handle_args(int argc, char *argv[])
 {
-	// if (argc == 1)
-	// {
-	// 	printf("wget: Missing URL\n");
-	// 	return 0;
-	// }
-
+	// Option string
 	char *optstring = "hBO:P:l:i:mR:X:C";
 	int option_index = 0;
 
 	int opt;
+	// Loop that goes through each option and checks different cases
 	while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1)
 	{
 		switch (opt)
