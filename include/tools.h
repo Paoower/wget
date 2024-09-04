@@ -6,8 +6,16 @@
 #ifndef TOOLS_H
 # define TOOLS_H
 
+# define URL_REGEX "^((http|https)://)?(www\\.)?[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}(\\:[0-9]{1,5})?(/.*)?$"
+
+// regex.c
 int		does_match_with_pattern(const char *str, char *pattern);
+
+// string.c
 char	*get_str_between(char *src, char *start, char *end);
 char	*concat(char *s1, char *s2);
+
+// parse_url.c
+int     parse_url();
 
 #endif
