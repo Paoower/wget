@@ -4,9 +4,13 @@
 #include <string.h>
 #include <stdio.h>
 
-// Catch from src,
-// The string between the first match of start and the first match of end
-// Need to be freed after use.
+/**
+ * Catch from src the string between the first match of start
+ * and the first match of end
+ * @return
+ * Pointer to a copy of the string between start and end of src.
+ * The caller is responsible for freeing this memory.
+ */
 char	*get_str_between(char *src, char *start, char *end)
 {
 	char	*dest;

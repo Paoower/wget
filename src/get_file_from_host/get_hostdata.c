@@ -34,7 +34,7 @@ struct host_data	*get_hostdata(char *url)
 	host_data->hostname = strdup("images-ext-1.discordapp.net");
 	host_data->filepath = strdup("/external/0Z9r33Q7sYmy6pq97wKmO0BkzYm9S-9DbN72Ycu4mt4/https/media.tenor.com/xueKI4wn14YAAAPo/interestellar-cry.mp4");
 	if (!host_data->hostname ||
-			!host_data->filename || !host_data->hostname) {
+							!host_data->filename || !host_data->hostname) {
 		free_hostdata(host_data);
 		return NULL;
 	}
