@@ -172,6 +172,12 @@ int get_file(int sock,
 	return 0;
 }
 
+/**
+ * @brief download a file pointed by an url
+ * @param storage_dir_path Optionnal directory path where to store the file
+ * @param file_name Optionnal parameter to override the file name
+ * @return Returns 1 if an error occurs.
+ */
 int download_file(char *url, char *storage_dir_path, char *file_name)
 {
 	int					sock;

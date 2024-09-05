@@ -28,12 +28,6 @@ struct parameters_t
 
 extern struct parameters_t params;
 
-/**
- * @brief download a file pointed by an url
- * @param storage_dir_path Optionnal directory path where to store the file
- * @param file_name Optionnal parameter to override the file name
- * @return Returns 1 if an error occurs.
- */
 int					download_file(char *url, char *storage_dir_path, char *file_name);
 struct host_data	*get_hostdata(char *url);
 void				free_hostdata(struct host_data *host_data);
