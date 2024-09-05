@@ -13,9 +13,9 @@ int		does_match_with_pattern(const char *str, char *pattern);
 
 // string.c
 char	*get_str_between(char *src, char *start, char *end);
-char	*concat(char *s1, char *s2);
+char	*concat(const char *s, ...);
 
 // parse_url.c
-int     parse_url();
+int		parse_url();
 
 #endif

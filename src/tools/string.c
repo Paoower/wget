@@ -1,4 +1,5 @@
 #include "tools.h"
+#include <stdarg.h>
 
 // Catch from src,
 // The string between the first match of start and the first match of end
@@ -30,12 +31,19 @@ char	*get_str_between(char *src, char *start, char *end)
 }
 
 // need to be freed at the end
-char	*concat(char *s1, char *s2)
+char	*concat(const char *s, ...)
 {
-	char	*result;
+	va_list		args;
+	char		*result;
+	const char	*next;
 
-	result = malloc(strlen(s1) + strlen(s2) + 1);
-	strcpy(result, s1);
-	strcat(result, s2);
+	va_start(args, s);
+	result = malloc(strlen(s) + 1);
+	strcpy(result, s);
+	while ((next = va_arg(args, const char *)) != NULL) {
+		result = realloc(result, strlen(result) + strlen(next));
+		strcat(result, next);
+	}
+	va_end(args);
 	return result;
 }
