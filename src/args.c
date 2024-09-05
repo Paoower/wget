@@ -1,5 +1,9 @@
-#include "args.h"
+#include "src.h"
 #include "tools.h"
+#include "settings.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
 
 // Setting up the extern variable in the header file
 struct parameters_t params = {
@@ -150,7 +154,7 @@ int handle_args(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	parse_url();
+	parse_url(params.url);
 
 	return 0;
 }

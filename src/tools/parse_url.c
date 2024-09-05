@@ -1,23 +1,24 @@
 #include "tools.h"
-#include "args.h"
+#include <string.h>
+#include <stdio.h>
 
-int get_hostname()
+int get_hostname(const char *url)
 {
-    char *s = strstr(params.url, "://");
+	char *s = strstr(url, "://");
 
-    if (s)
-    {
-        s += 3;
-        printf("%s\n", s);
-    }
+	if (s)
+	{
+		s += 3;
+		printf("%s\n", s);
+	}
 
-    return 0;
+	return 0;
 }
 
-int parse_url()
+int parse_url(const char *url)
 {
-    get_hostname();
-    return 0;
+	get_hostname(url);
+	return 0;
 }
 
 // https://images-ext-1.discordapp.net/.../.../.../.../.../interestellar-cry.mp4
