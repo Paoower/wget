@@ -29,11 +29,11 @@ struct parameters_t
 extern struct parameters_t params;
 
 int					download_file(int sock,
-							char *dir_path, char *file_name, int *frequency);
+							char *dir_path, char *file_name, int *speed_limit);
 struct host_data	*get_hostdata(char *url);
 void				free_hostdata(struct host_data *host_data);
 int					get_file_from_host(char *url, char *storage_dir_path,
-											char *file_name, int *frequency);
+											char *file_name, int *speed_limit);
 
 // Arguments handling
 

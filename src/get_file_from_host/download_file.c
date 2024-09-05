@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 /**
  * @brief
@@ -61,13 +62,13 @@ int skip_htpp_header(int sock, char *response, int *received)
 	return -1;
 }
 
-int write_data_into_file(int sock, FILE *fp, int *frequency)
+int write_data_into_file(int sock, FILE *fp, int *speed_limit)
 {
 	int		received;
 	char	response[REQUEST_BUFFER_SIZE];
 	int		remaining_data_len;
 
-	(void)frequency;
+	(void)speed_limit;
 	remaining_data_len = skip_htpp_header(sock, response, &received);
 	if (remaining_data_len > 0)
 		fwrite(response +
@@ -83,7 +84,7 @@ int write_data_into_file(int sock, FILE *fp, int *frequency)
 	return 0;
 }
 
-int download_file(int sock, char *dir_path, char *file_name, int *frequency)
+int download_file(int sock, char *dir_path, char *file_name, int *speed_limit)
 {
 	FILE	*fp;
 	char	*file_path;
@@ -95,7 +96,7 @@ int download_file(int sock, char *dir_path, char *file_name, int *frequency)
 		free(file_path);
 		return 1;
 	}
-	if (write_data_into_file(sock, fp, frequency)) {
+	if (write_data_into_file(sock, fp, speed_limit)) {
 		fclose(fp);
 		free(file_path);
 		return 1;
