@@ -61,12 +61,13 @@ int skip_htpp_header(int sock, char *response, int *received)
 	return -1;
 }
 
-int write_data_into_file(int sock, FILE *fp)
+int write_data_into_file(int sock, FILE *fp, int *frequency)
 {
 	int		received;
 	char	response[REQUEST_BUFFER_SIZE];
 	int		remaining_data_len;
 
+	(void)frequency;
 	remaining_data_len = skip_htpp_header(sock, response, &received);
 	if (remaining_data_len > 0)
 		fwrite(response +
@@ -82,7 +83,7 @@ int write_data_into_file(int sock, FILE *fp)
 	return 0;
 }
 
-int download_file(int sock, char *dir_path, char *file_name)
+int download_file(int sock, char *dir_path, char *file_name, int *frequency)
 {
 	FILE	*fp;
 	char	*file_path;
@@ -94,7 +95,7 @@ int download_file(int sock, char *dir_path, char *file_name)
 		free(file_path);
 		return 1;
 	}
-	if (write_data_into_file(sock, fp)) {
+	if (write_data_into_file(sock, fp, frequency)) {
 		fclose(fp);
 		free(file_path);
 		return 1;

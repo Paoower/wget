@@ -76,7 +76,8 @@ int send_request(int sock, struct host_data *host_data)
  * @param file_name Optionnal parameter to override the file name
  * @return Returns 1 if an error occurs.
  */
-int get_file_from_host(char *url, char *storage_dir_path, char *file_name)
+int get_file_from_host(char *url,
+						char *storage_dir_path, char *file_name, int *frequency)
 {
 	int					sock;
 	struct host_data	*host_data;
@@ -88,7 +89,7 @@ int get_file_from_host(char *url, char *storage_dir_path, char *file_name)
 		file_name = host_data->filename;
 	sock = connect_to_server(host_data->hostname);
 	if (sock == -1 || send_request(sock, host_data) ||
-						download_file(sock, storage_dir_path, file_name)) {
+				download_file(sock, storage_dir_path, file_name, frequency)) {
 		free_hostdata(host_data);
 		close(sock);
 		return 1;
