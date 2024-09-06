@@ -77,8 +77,8 @@ int send_request(int sock, struct host_data *host_data)
  * @param speed_limit Optionnal speed limit in Ko/s
  * @return Returns 1 if an error occurs.
  */
-int get_file_from_host(char *url,
-					char *storage_dir_path, char *file_name, int *speed_limit)
+int get_file_from_host(char *url, char *storage_dir_path,
+							char *file_name, unsigned long int *bytes_per_sec)
 {
 	int					sock;
 	struct host_data	*host_data;
@@ -90,7 +90,7 @@ int get_file_from_host(char *url,
 		file_name = host_data->filename;
 	sock = connect_to_server(host_data->hostname);
 	if (sock == -1 || send_request(sock, host_data) ||
-				download_file(sock, storage_dir_path, file_name, speed_limit)) {
+			download_file(sock, storage_dir_path, file_name, bytes_per_sec)) {
 		free_hostdata(host_data);
 		close(sock);
 		return 1;

@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <sys/stat.h>
-#include <sys/time.h>
+#include <time.h>
+#include <limits.h>
 
 /**
  * @brief
@@ -62,29 +63,72 @@ int skip_htpp_header(int sock, char *response, int *received)
 	return -1;
 }
 
-int write_data_into_file(int sock, FILE *fp, int *speed_limit)
+struct timespec get_elapsed_time(struct timespec start_time)
 {
-	int		received;
-	char	response[REQUEST_BUFFER_SIZE];
-	int		remaining_data_len;
+	struct timespec	current_time;
+	struct timespec	elapsed_time;
 
-	(void)speed_limit;
+	clock_gettime(CLOCK_MONOTONIC, &current_time);
+	if ((current_time.tv_nsec - start_time.tv_nsec) < 0) {
+		elapsed_time.tv_sec = current_time.tv_sec - start_time.tv_sec - 1;
+		elapsed_time.tv_nsec = current_time.tv_nsec
+										+ 1000000000 - start_time.tv_nsec;
+	} else {
+		elapsed_time.tv_sec = current_time.tv_sec - start_time.tv_sec;
+		elapsed_time.tv_nsec = current_time.tv_nsec - start_time.tv_nsec;
+	}
+	return elapsed_time;
+}
+
+void	limit_speed(struct timespec start_time,
+							unsigned long int bytes_per_sec,
+									unsigned long int total_bytes_downloaded)
+{
+	// calculer le temps passé depuis le début du téléchargement
+	// avec le nombre de bytes deja téléchargés,
+	// déduire le temps en trop pris par le programme
+	// calculer enfin le temps nécessaire a ajouter pour la pause
+	(void)start_time;
+	(void)bytes_per_sec;
+	(void)total_bytes_downloaded;
+}
+
+int write_data_into_file(int sock, FILE *fp, unsigned long int *bytes_per_sec)
+{
+	int					received;
+	char				response[REQUEST_BUFFER_SIZE];
+	int					remaining_data_len;
+	struct timespec		start_time;
+	struct timespec		elapsed_time;
+	unsigned long int	total_bytes_downloaded;
+
+
+	clock_gettime(CLOCK_MONOTONIC, &start_time);
+	total_bytes_downloaded = 0;
 	remaining_data_len = skip_htpp_header(sock, response, &received);
 	if (remaining_data_len > 0)
 		fwrite(response +
 					received - remaining_data_len, 1, remaining_data_len, fp);
 	else if (remaining_data_len < 0)
 		return 1;
-	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0)
+	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
+		total_bytes_downloaded += received;
 		fwrite(response, 1, received, fp);
+		if (bytes_per_sec)
+			limit_speed(start_time, *bytes_per_sec, total_bytes_downloaded);
+	}
 	if (received < 0) {
 		perror("Error receiving data");
 		return 1;
 	}
+	elapsed_time = get_elapsed_time(start_time);
+	printf("elapsed time: %ld.%lu s\n", elapsed_time.tv_sec, elapsed_time.tv_nsec);
+	printf("bytes downloaded: %lu\n", total_bytes_downloaded);
 	return 0;
 }
 
-int download_file(int sock, char *dir_path, char *file_name, int *speed_limit)
+int download_file(int sock, char *dir_path,
+						char *file_name, unsigned long int *bytes_per_sec)
 {
 	FILE	*fp;
 	char	*file_path;
@@ -96,7 +140,7 @@ int download_file(int sock, char *dir_path, char *file_name, int *speed_limit)
 		free(file_path);
 		return 1;
 	}
-	if (write_data_into_file(sock, fp, speed_limit)) {
+	if (write_data_into_file(sock, fp, bytes_per_sec)) {
 		fclose(fp);
 		free(file_path);
 		return 1;
