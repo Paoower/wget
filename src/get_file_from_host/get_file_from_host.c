@@ -72,13 +72,14 @@ int send_request(int sock, struct host_data *host_data)
 
 /**
  * @brief download a file pointed by an url
+ * @param url Url of the file to download
  * @param storage_dir_path Optionnal directory path where to store the file
  * @param file_name Optionnal parameter to override the file name
- * @param speed_limit Optionnal speed limit in Ko/s
+ * @param bytes_per_sec Optionnal speed limit in bytes/s
  * @return Returns 1 if an error occurs.
  */
 int get_file_from_host(char *url, char *storage_dir_path,
-							char *file_name, long unsigned int *bytes_per_sec)
+							char *file_name, long unsigned *bytes_per_sec)
 {
 	int					sock;
 	struct host_data	*host_data;

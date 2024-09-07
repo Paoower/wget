@@ -70,8 +70,8 @@ int skip_htpp_header(int sock, char *response, int *received)
 }
 
 void	limit_speed(struct timespec start_time,
-							long unsigned int bytes_per_sec,
-									long unsigned int total_bytes_downloaded)
+							long unsigned bytes_per_sec,
+									long unsigned total_bytes_downloaded)
 {
 	struct timespec	elapsed_time;
 	long double		expected_download_time;
@@ -95,14 +95,14 @@ void	limit_speed(struct timespec start_time,
 		nanosleep(&pause_time, NULL);
 }
 
-int write_data_into_file(int sock, FILE *fp, long unsigned int *bytes_per_sec)
+int write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec)
 {
-	int					received;
-	char				response[REQUEST_BUFFER_SIZE];
-	int					remaining_data_len;
-	struct timespec		start_download_time;
-	struct timespec		elapsed_time;
-	long unsigned int	total_bytes_downloaded;
+	int				received;
+	char			response[REQUEST_BUFFER_SIZE];
+	int				remaining_data_len;
+	struct timespec	start_download_time;
+	struct timespec	elapsed_time;
+	long unsigned	total_bytes_downloaded;
 
 
 	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
@@ -130,7 +130,7 @@ int write_data_into_file(int sock, FILE *fp, long unsigned int *bytes_per_sec)
 }
 
 int download_file(int sock, char *dir_path,
-							char *file_name, long unsigned int *bytes_per_sec)
+							char *file_name, long unsigned *bytes_per_sec)
 {
 	FILE	*fp;
 	char	*file_path;
