@@ -1,5 +1,5 @@
 #include "settings.h"
-#include "src.h"
+#include "get_file_from_host.h"
 #include "tools.h"
 #include <unistd.h>
 #include <stdio.h>
@@ -78,7 +78,7 @@ int send_request(int sock, struct host_data *host_data)
  * @return Returns 1 if an error occurs.
  */
 int get_file_from_host(char *url, char *storage_dir_path,
-							char *file_name, unsigned long int *bytes_per_sec)
+							char *file_name, long unsigned int *bytes_per_sec)
 {
 	int					sock;
 	struct host_data	*host_data;

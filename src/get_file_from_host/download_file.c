@@ -1,5 +1,6 @@
-#include "src.h"
+#include "get_file_from_host.h"
 #include "tools.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -68,47 +69,45 @@ int skip_htpp_header(int sock, char *response, int *received)
 	return -1;
 }
 
-struct timespec get_elapsed_time(struct timespec start_time)
+void	limit_speed(struct timespec start_time,
+							long unsigned int bytes_per_sec,
+									long unsigned int total_bytes_downloaded)
 {
 	struct timespec	current_time;
 	struct timespec	elapsed_time;
+	long double		expected_download_time;
+	struct timespec	expected_download_time_s;
+	struct timespec	pause_time;
 
+	// elapsed time from the start of the download
 	clock_gettime(CLOCK_MONOTONIC, &current_time);
-	if ((current_time.tv_nsec - start_time.tv_nsec) < 0) {
-		elapsed_time.tv_sec = current_time.tv_sec - start_time.tv_sec - 1;
-		elapsed_time.tv_nsec = current_time.tv_nsec
-										+ 1000000000 - start_time.tv_nsec;
-	} else {
-		elapsed_time.tv_sec = current_time.tv_sec - start_time.tv_sec;
-		elapsed_time.tv_nsec = current_time.tv_nsec - start_time.tv_nsec;
-	}
-	return elapsed_time;
+	elapsed_time = time_diff(start_time, current_time);
+
+	// time that the prgm should take to download the current
+	// total_bytes_downloaded + 1 at a certain rate bytes_per_sec
+	expected_download_time = (long double)(total_bytes_downloaded +
+						REQUEST_BUFFER_SIZE) / (long double)bytes_per_sec;
+	expected_download_time_s.tv_sec = (time_t)expected_download_time;
+	expected_download_time_s.tv_nsec = (long)((expected_download_time
+						- (long double)expected_download_time_s.tv_sec) * 1e9);
+
+	pause_time = time_diff(elapsed_time, expected_download_time_s);
+	if (pause_time.tv_sec >= 0)
+		nanosleep(&pause_time, NULL);
 }
 
-void	limit_speed(struct timespec start_time,
-							unsigned long int bytes_per_sec,
-									unsigned long int total_bytes_downloaded)
-{
-	// calculer le temps passé depuis le début du téléchargement
-	// avec le nombre de bytes deja téléchargés,
-	// déduire le temps en trop pris par le programme
-	// calculer enfin le temps nécessaire a ajouter pour la pause
-	(void)start_time;
-	(void)bytes_per_sec;
-	(void)total_bytes_downloaded;
-}
-
-int write_data_into_file(int sock, FILE *fp, unsigned long int *bytes_per_sec)
+int write_data_into_file(int sock, FILE *fp, long unsigned int *bytes_per_sec)
 {
 	int					received;
 	char				response[REQUEST_BUFFER_SIZE];
 	int					remaining_data_len;
-	struct timespec		start_time;
+	struct timespec		start_download_time;
+	struct timespec		current_time;
 	struct timespec		elapsed_time;
-	unsigned long int	total_bytes_downloaded;
+	long unsigned int	total_bytes_downloaded;
 
 
-	clock_gettime(CLOCK_MONOTONIC, &start_time);
+	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
 	total_bytes_downloaded = 0;
 	remaining_data_len = skip_htpp_header(sock, response, &received);
 	if (remaining_data_len > 0)
@@ -119,21 +118,22 @@ int write_data_into_file(int sock, FILE *fp, unsigned long int *bytes_per_sec)
 	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		total_bytes_downloaded += received;
 		fwrite(response, 1, received, fp);
-		if (bytes_per_sec)
-			limit_speed(start_time, *bytes_per_sec, total_bytes_downloaded);
+		if (bytes_per_sec && received > 0)
+			limit_speed(start_download_time,
+									*bytes_per_sec, total_bytes_downloaded);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
 		return 1;
 	}
-	elapsed_time = get_elapsed_time(start_time);
-	printf("elapsed time: %ld.%lu s\n", elapsed_time.tv_sec, elapsed_time.tv_nsec);
-	printf("bytes downloaded: %lu\n", total_bytes_downloaded);
+	clock_gettime(CLOCK_MONOTONIC, &current_time);
+	elapsed_time = time_diff(start_download_time, current_time);
+	print_final_download_infos(elapsed_time, total_bytes_downloaded);
 	return 0;
 }
 
 int download_file(int sock, char *dir_path,
-						char *file_name, unsigned long int *bytes_per_sec)
+						char *file_name, long unsigned int *bytes_per_sec)
 {
 	FILE	*fp;
 	char	*file_path;

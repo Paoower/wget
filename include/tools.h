@@ -17,4 +17,9 @@ char	*str_concat(const char *s, ...);
 
 int		parse_url();
 
+
+// timespec.c
+
+struct timespec time_diff(struct timespec time1, struct timespec time2);
+
 #endif
