@@ -49,10 +49,11 @@ int skip_htpp_header(int sock, char *response, int *received)
 	int		remaining_data_len;
 	char	response_merged[REQUEST_BUFFER_SIZE * 2];
 
+	memset(response_merged, 0, sizeof(response_merged));
 	while ((*received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		memmove(response_merged,
 				response_merged + REQUEST_BUFFER_SIZE, REQUEST_BUFFER_SIZE);
-		strncat(response_merged, response, *received);
+		strncpy(response_merged + REQUEST_BUFFER_SIZE, response, *received);
 		header_end = strstr(response_merged, "\r\n\r\n");
 		if (header_end) {
 			remaining_data_len = REQUEST_BUFFER_SIZE + *received
