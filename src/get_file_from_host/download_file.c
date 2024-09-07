@@ -73,21 +73,20 @@ void	limit_speed(struct timespec start_time,
 							long unsigned int bytes_per_sec,
 									long unsigned int total_bytes_downloaded)
 {
-	struct timespec	current_time;
 	struct timespec	elapsed_time;
 	long double		expected_download_time;
 	struct timespec	expected_download_time_s;
 	struct timespec	pause_time;
 
 	// elapsed time from the start of the download
-	clock_gettime(CLOCK_MONOTONIC, &current_time);
-	elapsed_time = time_diff(start_time, current_time);
+	elapsed_time = get_elapsed_time(start_time);
 
 	// time that the prgm should take to download the current
-	// total_bytes_downloaded + 1 at a certain rate bytes_per_sec
+	// total_bytes_downloaded + next buffer size
+	// at a certain rate (bytes_per_sec)
 	expected_download_time = (long double)(total_bytes_downloaded +
 						REQUEST_BUFFER_SIZE) / (long double)bytes_per_sec;
-	expected_download_time_s.tv_sec = (time_t)expected_download_time;
+	expected_download_time_s.tv_sec = (long)expected_download_time;
 	expected_download_time_s.tv_nsec = (long)((expected_download_time
 						- (long double)expected_download_time_s.tv_sec) * 1e9);
 
@@ -102,7 +101,6 @@ int write_data_into_file(int sock, FILE *fp, long unsigned int *bytes_per_sec)
 	char				response[REQUEST_BUFFER_SIZE];
 	int					remaining_data_len;
 	struct timespec		start_download_time;
-	struct timespec		current_time;
 	struct timespec		elapsed_time;
 	long unsigned int	total_bytes_downloaded;
 
@@ -118,7 +116,7 @@ int write_data_into_file(int sock, FILE *fp, long unsigned int *bytes_per_sec)
 	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		total_bytes_downloaded += received;
 		fwrite(response, 1, received, fp);
-		if (bytes_per_sec && received > 0)
+		if (bytes_per_sec && received == REQUEST_BUFFER_SIZE)
 			limit_speed(start_download_time,
 									*bytes_per_sec, total_bytes_downloaded);
 	}
@@ -126,14 +124,13 @@ int write_data_into_file(int sock, FILE *fp, long unsigned int *bytes_per_sec)
 		perror("Error receiving data");
 		return 1;
 	}
-	clock_gettime(CLOCK_MONOTONIC, &current_time);
-	elapsed_time = time_diff(start_download_time, current_time);
+	elapsed_time = get_elapsed_time(start_download_time);
 	print_final_download_infos(elapsed_time, total_bytes_downloaded);
 	return 0;
 }
 
 int download_file(int sock, char *dir_path,
-						char *file_name, long unsigned int *bytes_per_sec)
+							char *file_name, long unsigned int *bytes_per_sec)
 {
 	FILE	*fp;
 	char	*file_path;

@@ -1,6 +1,6 @@
 #include <time.h>
 
-struct timespec time_diff(struct timespec time1, struct timespec time2)
+struct timespec	time_diff(struct timespec time1, struct timespec time2)
 {
 	struct timespec	time_diff;
 
@@ -12,4 +12,12 @@ struct timespec time_diff(struct timespec time1, struct timespec time2)
 		time_diff.tv_nsec = time2.tv_nsec - time1.tv_nsec;
 	}
 	return time_diff;
+}
+
+struct timespec	get_elapsed_time(struct timespec start_time)
+{
+	struct timespec	current_time;
+
+	clock_gettime(CLOCK_MONOTONIC, &current_time);
+	return time_diff(start_time, current_time);
 }
