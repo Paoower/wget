@@ -3,7 +3,7 @@
 
 # include <time.h>
 
-# define REQUEST_BUFFER_SIZE 1000
+# define REQUEST_BUFFER_SIZE 1024
 
 struct	host_data {
 	char	*hostname;
