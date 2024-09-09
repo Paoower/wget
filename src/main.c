@@ -18,6 +18,12 @@ int main(int argc, char *argv[])
 	};
 
 	handle_args(&parameters, argc, argv);
+
+	if (parameters.background)
+	{
+		background(parameters);
+		return 0;
+	}
 	get_file_from_host("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
 					   parameters.file_path, parameters.output_file, (long unsigned int *)&parameters.rate_limit);
 }
