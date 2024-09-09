@@ -1,5 +1,5 @@
 #ifndef SRCS_H
-# define SRCS_H
+#define SRCS_H
 
 struct parameters_t
 {
@@ -18,10 +18,8 @@ struct parameters_t
 	int convert_links;
 };
 
-extern struct parameters_t params;
-
-int handle_args(int argc, char *argv[]);
-int	get_file_from_host(char *url, char *storage_dir_path,
-							char *file_name, long unsigned int *bytes_per_sec);
+int handle_args(struct parameters_t *parameters, int argc, char *argv[]);
+int get_file_from_host(char *url, char *storage_dir_path,
+					   char *file_name, long unsigned int *bytes_per_sec);
 
 #endif
