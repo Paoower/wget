@@ -1,4 +1,5 @@
 .vscode
-wget
 **/*.o
 data
+wget
+wget-log

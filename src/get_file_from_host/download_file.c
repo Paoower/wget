@@ -130,7 +130,7 @@ int write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec)
 	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		total_bytes_downloaded += received;
 		fwrite(response, 1, received, fp);
-		if (bytes_per_sec && received == REQUEST_BUFFER_SIZE)
+		if (*bytes_per_sec != 0 && received == REQUEST_BUFFER_SIZE)
 			limit_speed(start_download_time,
 									*bytes_per_sec, total_bytes_downloaded);
 	}

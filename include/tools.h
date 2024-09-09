@@ -10,6 +10,7 @@ int				does_match_with_pattern(const char *str, char *pattern);
 
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
+void			copy_string(char **dest, char *src);
 // string.c
 
 int				parse_url();
