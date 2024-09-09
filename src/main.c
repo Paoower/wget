@@ -28,6 +28,6 @@ int main(int argc, char *argv[])
 	}
 	get_file_from_host("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
 								parameters.file_path, parameters.output_file,
-								(long unsigned int *)&parameters.rate_limit);
+								(long unsigned *)&parameters.rate_limit);
 	print_current_date("finished at ");
 }

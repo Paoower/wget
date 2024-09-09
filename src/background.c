@@ -31,7 +31,7 @@ int background(struct parameters_t parameters)
 
         // Execute the function
         get_file_from_host("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
-                           parameters.file_path, parameters.output_file, (long unsigned int *)&parameters.rate_limit);
+                           parameters.file_path, parameters.output_file, (long unsigned *)&parameters.rate_limit);
         exit(EXIT_SUCCESS);
     }
     else
