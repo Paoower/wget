@@ -7,7 +7,8 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-int background(struct parameters_t parameters)
+int background(char *url, struct parameters_t params,
+                                void (*f)(char *url, struct parameters_t params))
 {
     // Creating the fork process
     pid_t pid = fork();
@@ -30,8 +31,7 @@ int background(struct parameters_t parameters)
         close(fd);
 
         // Execute the function
-        get_file_from_host("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
-                           parameters.file_path, parameters.output_file, (long unsigned *)&parameters.rate_limit);
+        f(url, params);
         exit(EXIT_SUCCESS);
     }
     else

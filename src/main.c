@@ -3,7 +3,15 @@
 #include "get_file_from_host.h"
 #include <stddef.h>
 
-int main(int argc, char *argv[])
+void	wget(char *url, struct parameters_t params)
+{
+	print_current_date("start at ");
+	get_file_from_host(url, params.file_path, params.output_file,
+									(long unsigned *)&params.rate_limit);
+	print_current_date("finished at ");
+}
+
+int	main(int argc, char *argv[])
 {
 	struct parameters_t parameters = {
 		.background = 0,
@@ -18,16 +26,12 @@ int main(int argc, char *argv[])
 		.url = "",
 	};
 
-	print_current_date("start at ");
 	handle_args(&parameters, argc, argv);
-
 	if (parameters.background)
 	{
-		background(parameters);
+		background("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg", parameters, wget);
 		return 0;
+	} else {
+		wget("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg", parameters);
 	}
-	get_file_from_host("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
-								parameters.file_path, parameters.output_file,
-								(long unsigned *)&parameters.rate_limit);
-	print_current_date("finished at ");
 }
