@@ -27,11 +27,11 @@ int	main(int argc, char *argv[])
 	};
 
 	handle_args(&parameters, argc, argv);
-	if (parameters.background)
-	{
-		background("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg", parameters, wget);
-		return 0;
+	if (parameters.background) {
+		background("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
+															parameters, wget);
 	} else {
 		wget("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg", parameters);
 	}
+	return 0;
 }
