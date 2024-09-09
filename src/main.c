@@ -1,15 +1,6 @@
 #include "settings.h"
 #include "src.h"
-#include "get_file_from_host.h"
 #include <stddef.h>
-
-void	wget(char *url, struct parameters_t params)
-{
-	print_current_date("start at ");
-	get_file_from_host(url, params.file_path, params.output_file,
-									(long unsigned *)&params.rate_limit);
-	print_current_date("finished at ");
-}
 
 int	main(int argc, char *argv[])
 {
@@ -28,10 +19,9 @@ int	main(int argc, char *argv[])
 
 	handle_args(&parameters, argc, argv);
 	if (parameters.background) {
-		background("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg",
-															parameters, wget);
+		wget_in_background(parameters);
 	} else {
-		wget("https://pbs.twimg.com/media/EMtmPFLWkAA8CIS.jpg", parameters);
+		wget(parameters);
 	}
 	return 0;
 }
