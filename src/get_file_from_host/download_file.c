@@ -66,7 +66,7 @@ int skip_htpp_header(int sock, char *response, int *received)
 		perror("Error receiving data");
 		return -1;
 	}
-	fprintf(stderr, "No http header found");
+	fprintf(stderr, "Data or http response not found");
 	return -1;
 }
 
