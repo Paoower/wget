@@ -39,36 +39,6 @@ char	*get_file_path(const char *file_name, const char *dir_path) {
 	return file_path;
 }
 
-int	is_http_response_ok(char *response)
-{
-	char	*first_line;
-	char	*first_line_word;
-	int		i;
-	char	*code;
-	char	*status;
-
-	first_line = strtok(response, "\n");
-	first_line_word = strtok(first_line, " ");
-	i = 0;
-	while (first_line_word != NULL) {
-		switch (i) {
-		case 1:
-			code = first_line_word;
-			break;
-		case 2:
-			status = first_line_word;
-			break;
-		}
-		first_line_word = strtok(NULL, " ");
-		i++;
-	}
-	(void)code;
-	if (strcmp(status, "OK"))
-		return 1;
-	else
-		return 0;
-}
-
 /**
  * @return
  * Remaining data length after the http header
@@ -80,6 +50,7 @@ int	skip_htpp_header(int sock, char *response, int *received)
 	int		remaining_data_len;
 	char	response_merged[REQUEST_BUFFER_SIZE * 2];
 	int		http_check;
+	char	*response_status;
 
 	http_check = 0;
 	memset(response_merged, 0, sizeof(response_merged));
@@ -87,9 +58,14 @@ int	skip_htpp_header(int sock, char *response, int *received)
 		memmove(response_merged,
 				response_merged + REQUEST_BUFFER_SIZE, REQUEST_BUFFER_SIZE);
 		strncpy(response_merged + REQUEST_BUFFER_SIZE, response, *received);
-		if (!http_check && !is_http_response_ok(response)) {
-			fprintf(stderr, "Http response not OK");
-			return 1;
+		// edit to store in a single * char  all the http response
+		// and send it to a function to get every information that we need
+		if (!http_check) {
+			response_status = get_http_response_info(response, "HTTP/1.1", " ");
+			if (response_status) {
+				printf("status %s\n", response_status);
+				free(response_status);
+			}
 		} else
 			http_check = 1;
 		header_end = strstr(response_merged, "\r\n\r\n");

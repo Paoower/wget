@@ -58,6 +58,7 @@ int send_request(int sock, struct host_data *host_data)
 {
 	char	request[REQUEST_BUFFER_SIZE];
 
+	printf("sending request, awaiting response ... ");
 	snprintf(request, REQUEST_BUFFER_SIZE, // make sure that the size is limited
 			 "GET %s HTTP/1.1\r\n"
 			 "Host: %s\r\n"

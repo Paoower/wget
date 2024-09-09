@@ -1,6 +1,10 @@
 #ifndef TOOLS_H
 # define TOOLS_H
 
+char			*get_http_response_info(const char *http_response,
+										const char *key, const char *spliter);
+// http_request.c
+
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
