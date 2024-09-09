@@ -39,22 +39,59 @@ char	*get_file_path(const char *file_name, const char *dir_path) {
 	return file_path;
 }
 
+int	is_http_response_ok(char *response)
+{
+	char	*first_line;
+	char	*first_line_word;
+	int		i;
+	char	*code;
+	char	*status;
+
+	first_line = strtok(response, "\n");
+	first_line_word = strtok(first_line, " ");
+	i = 0;
+	while (first_line_word != NULL) {
+		switch (i) {
+		case 1:
+			code = first_line_word;
+			break;
+		case 2:
+			status = first_line_word;
+			break;
+		}
+		first_line_word = strtok(NULL, " ");
+		i++;
+	}
+	(void)code;
+	if (strcmp(status, "OK"))
+		return 1;
+	else
+		return 0;
+}
+
 /**
  * @return
  * Remaining data length after the http header
  * or -1 if any error is triggered.
  */
-int skip_htpp_header(int sock, char *response, int *received)
+int	skip_htpp_header(int sock, char *response, int *received)
 {
 	char	*header_end;
 	int		remaining_data_len;
 	char	response_merged[REQUEST_BUFFER_SIZE * 2];
+	int		http_check;
 
+	http_check = 0;
 	memset(response_merged, 0, sizeof(response_merged));
 	while ((*received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		memmove(response_merged,
 				response_merged + REQUEST_BUFFER_SIZE, REQUEST_BUFFER_SIZE);
 		strncpy(response_merged + REQUEST_BUFFER_SIZE, response, *received);
+		if (!http_check && !is_http_response_ok(response)) {
+			fprintf(stderr, "Http response not OK");
+			return 1;
+		} else
+			http_check = 1;
 		header_end = strstr(response_merged, "\r\n\r\n");
 		if (header_end) {
 			remaining_data_len = REQUEST_BUFFER_SIZE + *received
