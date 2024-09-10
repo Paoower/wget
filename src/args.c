@@ -8,7 +8,7 @@
 
 void	free_args(struct parameters_t *params) {
 	free(params->output_file);
-	free(params->file_path);
+	// free(params->file_path);
 	free(params->links_file);
 	free(params->reject_list);
 	free(params->exclude_list);
