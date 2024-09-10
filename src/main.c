@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "src.h"
+#include "get_file_from_host.h"
 #include <stddef.h>
 
 int	main(int argc, char *argv[])
