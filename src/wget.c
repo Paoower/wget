@@ -7,12 +7,14 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-void	wget(struct parameters_t params)
+int	wget(struct parameters_t params)
 {
 	print_current_date("start at ");
-	get_file_from_host(params.url, params.file_path, params.output_file,
-									(long unsigned *)&params.rate_limit);
+	if (get_file_from_host(params.url, params.file_path, params.output_file,
+									(long unsigned *)&params.rate_limit))
+		return 1;
 	print_current_date("finished at ");
+	return 0;
 }
 
 int wget_in_background(struct parameters_t params)

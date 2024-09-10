@@ -12,16 +12,14 @@ int	main(int argc, char *argv[])
 		.links_file = "",
 		.rate_limit = 0,
 		.mirror = 0,
-		.output_file = "file.mp4",
+		.output_file = NULL,
 		.reject_list = 0,
 		.url = "",
 	};
 
 	handle_args(&parameters, argc, argv);
-	if (parameters.background) {
-		wget_in_background(parameters);
-	} else {
-		wget(parameters);
-	}
-	return 0;
+	if (parameters.background)
+		return wget_in_background(parameters);
+	else
+		return wget(parameters);
 }
