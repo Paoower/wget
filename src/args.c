@@ -8,7 +8,7 @@
 
 void	free_args(struct parameters_t *params) {
 	free(params->output_file);
-	// free(params->file_path);
+	free(params->storage_path);
 	free(params->links_file);
 	free(params->reject_list);
 	free(params->exclude_list);
@@ -118,12 +118,12 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			break;
 
 		case 'O':
-			copy_string(&parameters->output_file, optarg ? optarg : "test.mp4");
+			copy_string(&parameters->output_file, optarg ? optarg : strdup("test.mp4"));
 			display_arg(opt, optarg);
 			break;
 
 		case 'P':
-			copy_string(&parameters->file_path, optarg ? optarg : "./data/");
+			copy_string(&parameters->storage_path, optarg ? optarg : strdup("./data/"));
 			display_arg(opt, optarg);
 			break;
 
@@ -136,7 +136,7 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			break;
 
 		case 'i':
-			copy_string(&parameters->links_file, optarg ? optarg : "");
+			copy_string(&parameters->links_file, optarg ? optarg : strdup(""));
 			display_arg(opt, optarg);
 			break;
 

@@ -10,7 +10,7 @@ struct parameters_t {
 	char	*url_filepath;
 	int		background;
 	char	*output_file;
-	char	*file_path;
+	char	*storage_path;
 	int		rate_limit;
 	char	*links_file;
 	int		mirror;

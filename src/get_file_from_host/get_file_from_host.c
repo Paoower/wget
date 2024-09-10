@@ -95,6 +95,7 @@ int get_file_from_host(char *url, char *storage_dir_path,
 	file_path = get_file_path(file_name, storage_dir_path);
 	if (sock == -1 || send_request(sock, host_data) ||
 			download_file(sock, file_path, bytes_per_sec)) {
+		free(file_path);
 		free_hostdata(host_data);
 		close(sock);
 		return 1;

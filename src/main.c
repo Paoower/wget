@@ -1,7 +1,7 @@
 #include "settings.h"
 #include "src.h"
 #include <stddef.h>
-#include <stdio.h>
+#include <string.h>
 
 int	main(int argc, char *argv[])
 {
@@ -9,7 +9,7 @@ int	main(int argc, char *argv[])
 		.background = 0,
 		.convert_links = 0,
 		.exclude_list = NULL,
-		.file_path = "./data/", // set to NULL if no test
+		.storage_path = strdup("./data/"),
 		.links_file = NULL,
 		.rate_limit = 0,
 		.mirror = 0,

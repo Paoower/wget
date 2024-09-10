@@ -30,7 +30,7 @@ int	wget_file_mode(struct parameters_t params)
 int	wget_normal_mode(struct parameters_t params)
 {
 	print_current_date("start at ");
-	if (get_file_from_host(params.url, params.file_path, params.output_file,
+	if (get_file_from_host(params.url, params.storage_path, params.output_file,
 									(long unsigned *)&params.rate_limit))
 		return 1;
 	print_current_date("finished at ");
