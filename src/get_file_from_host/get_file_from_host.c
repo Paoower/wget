@@ -84,6 +84,7 @@ int get_file_from_host(char *url, char *storage_dir_path,
 {
 	int					sock;
 	struct host_data	*host_data;
+	char				*file_path;
 
 	host_data = get_hostdata(url);
 	if (!host_data)
@@ -91,12 +92,15 @@ int get_file_from_host(char *url, char *storage_dir_path,
 	if (!file_name)
 		file_name = host_data->filename;
 	sock = connect_to_server(host_data->hostname);
+	file_path = get_file_path(file_name, storage_dir_path);
 	if (sock == -1 || send_request(sock, host_data) ||
-			download_file(sock, storage_dir_path, file_name, bytes_per_sec)) {
+			download_file(sock, file_path, bytes_per_sec)) {
 		free_hostdata(host_data);
 		close(sock);
 		return 1;
 	}
+	printf("Downloaded [%s]\n", file_path);
+	free(file_path);
 	free_hostdata(host_data);
 	close(sock);
 	return 0;

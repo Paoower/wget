@@ -1,6 +1,8 @@
 #ifndef TOOLS_H
 # define TOOLS_H
 
+char			*get_file_path(const char *file_name, const char *dir_path);
+
 char			*get_http_response_info(const char *http_response,
 										const char *key, const char *spliter);
 // http_request.c

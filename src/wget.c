@@ -21,7 +21,13 @@ void	print_current_date(char *text_before)
 	}
 }
 
-int	wget(struct parameters_t params)
+int	wget_file_mode(struct parameters_t params)
+{
+	(void)params;
+	return 0;
+}
+
+int	wget_normal_mode(struct parameters_t params)
 {
 	print_current_date("start at ");
 	if (get_file_from_host(params.url, params.file_path, params.output_file,
@@ -29,6 +35,17 @@ int	wget(struct parameters_t params)
 		return 1;
 	print_current_date("finished at ");
 	return 0;
+}
+
+int	wget(struct parameters_t params)
+{
+	int	normal_mode;
+
+	normal_mode = 1;
+	if (normal_mode)
+		return wget_normal_mode(params);
+	else
+		return wget_file_mode(params);
 }
 
 int wget_in_background(struct parameters_t params)
@@ -49,7 +66,8 @@ int wget_in_background(struct parameters_t params)
 		dup2(fd, STDERR_FILENO);
 		close(fd);
 
-		wget(params);
+		if (wget(params))
+			return 1;
 		exit(EXIT_SUCCESS);
 	}
 	else {
