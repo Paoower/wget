@@ -3,21 +3,20 @@
 
 # include <time.h>
 
-struct parameters_t
-{
-	char *url;
-	char *url_filename;
-	char *url_hostname;
-	char *url_filepath;
-	int background;
-	char *output_file;
-	char *file_path;
-	int rate_limit;
-	char *links_file;
-	int mirror;
-	char *reject_list;
-	char *exclude_list;
-	int convert_links;
+struct parameters_t {
+	char	*url;
+	char	*url_filename;
+	char	*url_hostname;
+	char	*url_filepath;
+	int		background;
+	char	*output_file;
+	char	*file_path;
+	int		rate_limit;
+	char	*links_file;
+	int		mirror;
+	char	*reject_list;
+	char	*exclude_list;
+	int		convert_links;
 };
 
 int		handle_args(struct parameters_t *parameters, int argc, char *argv[]);

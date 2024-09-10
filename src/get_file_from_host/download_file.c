@@ -3,14 +3,11 @@
 #include "src.h"
 #include "get_file_from_host.h"
 #include "tools.h"
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <netdb.h>
 #include <sys/stat.h>
-#include <time.h>
-#include <limits.h>
 
 /**
  * @brief
@@ -42,50 +39,6 @@ char	*get_file_path(const char *file_name, const char *dir_path) {
 	return file_path;
 }
 
-/**
- * @return
- * Remaining data length after the http header
- * or -1 if any error is triggered.
- */
-int	skip_htpp_header(int sock, char *response, int *received)
-{
-	char	*header_end;
-	int		remaining_data_len;
-	char	response_merged[REQUEST_BUFFER_SIZE * 2];
-	int		http_check;
-	char	*response_status;
-
-	http_check = 0;
-	memset(response_merged, 0, sizeof(response_merged));
-	while ((*received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
-		memmove(response_merged,
-				response_merged + REQUEST_BUFFER_SIZE, REQUEST_BUFFER_SIZE);
-		strncpy(response_merged + REQUEST_BUFFER_SIZE, response, *received);
-		// edit to store in a single * char  all the http response
-		// and send it to a function to get every information that we need
-		if (!http_check) {
-			response_status = get_http_response_info(response, "HTTP/1.1", " ");
-			if (response_status) {
-				printf("status %s\n", response_status);
-				free(response_status);
-			}
-		} else
-			http_check = 1;
-		header_end = strstr(response_merged, "\r\n\r\n");
-		if (header_end) {
-			remaining_data_len = REQUEST_BUFFER_SIZE + *received
-										- (header_end + 4 - response_merged);
-			return remaining_data_len;
-		}
-	}
-	if (*received < 0) {
-		perror("Error receiving data");
-		return -1;
-	}
-	fprintf(stderr, "Data or http response not found");
-	return -1;
-}
-
 void	limit_speed(struct timespec start_time,
 							long unsigned bytes_per_sec,
 									long unsigned total_bytes_downloaded)
@@ -112,24 +65,18 @@ void	limit_speed(struct timespec start_time,
 		nanosleep(&pause_time, NULL);
 }
 
-int write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec)
+int	write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec,
+						struct timespec start_download_time, char *response,
+										int received, int remaining_data_len)
 {
-	int				received;
-	char			response[REQUEST_BUFFER_SIZE];
-	int				remaining_data_len;
-	struct timespec	start_download_time;
-	struct timespec	elapsed_time;
 	long unsigned	total_bytes_downloaded;
 
-
-	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
 	total_bytes_downloaded = 0;
-	remaining_data_len = skip_htpp_header(sock, response, &received);
-	if (remaining_data_len > 0)
+	if (remaining_data_len > 0) {
+		total_bytes_downloaded += remaining_data_len;
 		fwrite(response +
 					received - remaining_data_len, 1, remaining_data_len, fp);
-	else if (remaining_data_len < 0)
-		return 1;
+	}
 	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		total_bytes_downloaded += received;
 		fwrite(response, 1, received, fp);
@@ -141,13 +88,31 @@ int write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec)
 		perror("Error receiving data");
 		return 1;
 	}
-	elapsed_time = get_elapsed_time(start_download_time);
-	print_final_download_infos(elapsed_time, total_bytes_downloaded);
+	return 0;
+}
+
+int download_file_without_header(int sock, FILE *fp, long unsigned *bytes_per_sec)
+{
+	int					received;
+	char				response[REQUEST_BUFFER_SIZE];
+	int					remaining_data_len;
+	struct header_data	*header_data;
+	struct timespec		start_download_time;
+
+	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
+	header_data = skip_htpp_header(sock, response,
+												&received, &remaining_data_len);
+	if (header_data == NULL)
+		return 1;
+	if (write_data_into_file(sock, fp, bytes_per_sec,
+				start_download_time, response, received, remaining_data_len))
+		return 1;
+	free_header_data(header_data);
 	return 0;
 }
 
 int download_file(int sock, char *dir_path,
-							char *file_name, long unsigned *bytes_per_sec)
+								char *file_name, long unsigned *bytes_per_sec)
 {
 	FILE	*fp;
 	char	*file_path;
@@ -159,7 +124,7 @@ int download_file(int sock, char *dir_path,
 		free(file_path);
 		return 1;
 	}
-	if (write_data_into_file(sock, fp, bytes_per_sec)) {
+	if (download_file_without_header(sock, fp, bytes_per_sec)) {
 		fclose(fp);
 		free(file_path);
 		return 1;
