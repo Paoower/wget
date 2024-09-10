@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "src.h"
 #include "get_file_from_host.h"
 #include "tools.h"

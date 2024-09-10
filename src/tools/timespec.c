@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <time.h>
 
 struct timespec	time_diff(struct timespec time1, struct timespec time2)
