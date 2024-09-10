@@ -1,8 +1,5 @@
 #include "tools.h"
-#include <time.h>
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 /**
  * @brief

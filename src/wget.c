@@ -1,6 +1,4 @@
 #include "src.h"
-#include "tools.h"
-#include "settings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

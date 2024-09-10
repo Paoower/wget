@@ -1,12 +1,9 @@
-#include "settings.h"
 #include "get_file_from_host.h"
 #include "tools.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 
 struct sockaddr	*get_server_socket_address(char *hostname)

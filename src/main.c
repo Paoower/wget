@@ -1,7 +1,4 @@
-#include "settings.h"
 #include "src.h"
-#include <stddef.h>
-#include <string.h>
 
 int	main(int argc, char *argv[])
 {

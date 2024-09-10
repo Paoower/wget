@@ -1,6 +1,4 @@
 #include "get_file_from_host.h"
-#include "tools.h"
-#include "settings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +17,7 @@ struct host_data *get_hostdata(char *url)
 {
     struct host_data *host_data;
     char *protocol_end, *hostname_end, *filepath_start;
-    
+
     host_data = malloc(sizeof(struct host_data));
     if (!host_data) {
         perror("Memory allocation failed");
@@ -43,7 +41,7 @@ struct host_data *get_hostdata(char *url)
     } else {
         // Extract hostname
         host_data->hostname = strndup(protocol_end, hostname_end - protocol_end);
-        
+
         // Extract filepath
         filepath_start = hostname_end;
         host_data->filepath = strdup(filepath_start);

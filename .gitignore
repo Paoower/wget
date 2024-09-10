@@ -3,3 +3,7 @@
 data
 wget
 wget-log
+*.mp4
+*.jpg
+*.png
+*.gif

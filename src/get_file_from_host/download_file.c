@@ -4,8 +4,6 @@
 #include "get_file_from_host.h"
 #include "tools.h"
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <netdb.h>
 
 void	limit_speed(struct timespec start_time,
