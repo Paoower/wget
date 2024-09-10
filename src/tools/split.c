@@ -1,5 +1,17 @@
 #include <stdlib.h>
 
+void	free_char_tab(char **strs)
+{
+	int	i;
+
+	i = 0;
+	while (strs[i]) {
+		free(strs[i]);
+		i++;
+	}
+	free(strs);
+}
+
 int	is_charset(const char *str, const char *charset)
 {
 	int	i;
@@ -40,6 +52,9 @@ char	**allocate_memory(const char *str, const char *charset, int nb_words)
 	int		word_size;
 
 	strs = malloc(sizeof(char *) * (nb_words + 1));
+	if (!strs)
+		return NULL;
+	strs[nb_words] = NULL;
 	y = 0;
 	i = 0;
 	while (str[i]) {
@@ -49,12 +64,16 @@ char	**allocate_memory(const char *str, const char *charset, int nb_words)
 				word_size++;
 				i++;
 			}
-			strs[y++] = malloc(sizeof (char) * (word_size + 1));
+			strs[y] = malloc(sizeof (char) * (word_size + 1));
+			if (!strs[y]) {
+				free_char_tab(strs);
+				return NULL;
+			}
+			y++;
 		}
 		while (str[i] && is_charset(str + i, charset))
 			i++;
 	}
-	strs[y] = NULL;
 	return (strs);
 }
 
@@ -66,6 +85,8 @@ char	**split(const char *str, const char *charset)
 	int		c;
 
 	strs = allocate_memory(str, charset, nb_splited(str, charset));
+	if (!strs)
+		return NULL;
 	y = 0;
 	i = 0;
 	while (str[i]) {

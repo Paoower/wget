@@ -8,6 +8,7 @@
 void	free_header_data(struct header_data *header_data)
 {
 	free(header_data->status);
+	free(header_data->content_size);
 	free(header_data);
 }
 
@@ -32,13 +33,20 @@ struct header_data	*skip_htpp_header(int sock,
 {
 	char				*header_end;
 	char				*response_merged;
+	char				*new_response_merged;
 	int					i;
 	struct header_data	*header_data;
 
 	response_merged = NULL;
 	i = 1;
 	while ((*received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
-		response_merged = realloc(response_merged, REQUEST_BUFFER_SIZE * i);
+		new_response_merged = realloc(response_merged, REQUEST_BUFFER_SIZE * i);
+		if (!new_response_merged) {
+			perror("Memory reallocation failed");
+			free(response_merged);
+			return NULL;
+		}
+		response_merged = new_response_merged;
 		memset(response_merged + REQUEST_BUFFER_SIZE * (i - 1),
 													0, REQUEST_BUFFER_SIZE);
 		strncat(response_merged, response, *received);

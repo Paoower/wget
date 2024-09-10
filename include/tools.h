@@ -23,5 +23,6 @@ struct timespec	get_elapsed_time(struct timespec start_time);
 // timespec.c
 
 char			**split(const char *str, const char *charset);
+void			free_char_tab(char **strs);
 
 #endif

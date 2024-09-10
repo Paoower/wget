@@ -60,7 +60,8 @@ int	write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec,
 	return 0;
 }
 
-int download_file_without_header(int sock, FILE *fp, long unsigned *bytes_per_sec)
+int download_file_without_header(int sock, FILE *fp,
+												long unsigned *bytes_per_sec)
 {
 	int					received;
 	char				response[REQUEST_BUFFER_SIZE];
@@ -71,13 +72,15 @@ int download_file_without_header(int sock, FILE *fp, long unsigned *bytes_per_se
 	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
 	header_data = skip_htpp_header(sock, response,
 												&received, &remaining_data_len);
-	if (header_data == NULL)
+	if (!header_data)
 		return 1;
 	printf("status %s\n", header_data->status);
 	printf("content size: %s\n", header_data->content_size);
-	if (write_data_into_file(sock, fp, bytes_per_sec,
-				start_download_time, response, received, remaining_data_len))
+	if (write_data_into_file(sock, fp, bytes_per_sec, start_download_time,
+										response, received, remaining_data_len)) {
+		free_header_data(header_data);
 		return 1;
+	}
 	free_header_data(header_data);
 	return 0;
 }

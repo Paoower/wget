@@ -24,16 +24,19 @@ char	*get_http_response_info(const char *http_response,
 		spliter = ": ";
 	lines = split(http_response, "\r\n");
 	i = 0;
-	while (lines[i] != NULL) {
+	while (lines[i]) {
 		tokens = split(lines[i], spliter);
-		if (tokens[0] != NULL && strcmp(tokens[0], key) == 0) {
-			result = strdup(lines[i] + strlen(tokens[0]) + strlen(spliter));
-			free(tokens);
-			return result;
+		if (tokens) {
+			if (tokens[0] && strcmp(tokens[0], key) == 0) {
+				result = strdup(lines[i] + strlen(tokens[0]) + strlen(spliter));
+				free_char_tab(tokens);
+				free_char_tab(lines);
+				return result;
+			}
+			free_char_tab(tokens);
 		}
-		free(tokens);
 		i++;
 	}
-	free(lines);
+	free_char_tab(lines);
 	return NULL;
 }
