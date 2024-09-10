@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+#include <limits.h>
 
 void	free_args(struct parameters_t *params) {
 	free(params->output_file);
@@ -38,21 +39,28 @@ void display_arg(char option, char *value)
  * @param rate_limit Rate limit as a string
  * @return Integer value of the rate limit
  */
-int get_bytes_per_sec(char *rate_limit)
+unsigned long get_bytes_per_sec(char *rate_limit)
 {
 	// Search for M or K character
-	char *found = strchr(rate_limit, 'k');
-	char *newstr;
-	int rate;
+	char			*found = strchr(rate_limit, 'k');
+	char			*newstr;
+	char			*check_ptr;
+	unsigned long	rate;
 
 	if (found)
 	{
 		newstr = malloc((found - rate_limit) + 1);
 		strncpy(newstr, rate_limit, found - rate_limit);
 		newstr[found - rate_limit] = '\0';
-		rate = atoi(newstr) * 1000;
+		rate = strtoul(newstr, &check_ptr, 10);
+		if (check_ptr == newstr || rate <= 0 || rate * 1000 > ULONG_MAX) {
+			free(newstr);
+			return 0;
+		}
+		free(newstr);
+		rate *= 1000; // convert kilobyte to byte
 	}
-	printf("rate %d\n", rate);
+	printf("rate %ld\n", rate);
 	return rate;
 }
 

@@ -23,7 +23,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 all: $(TARGET)
 
 test: WARN_FLAGS=
-test: $(TARGET)
+test: fclean all
 
 clean:
 	$(RM) $(BUILD_DIR)

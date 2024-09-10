@@ -9,7 +9,7 @@ int	main(int argc, char *argv[])
 		.background = 0,
 		.convert_links = 0,
 		.exclude_list = NULL,
-		.storage_path = strdup("./data/"),
+		.storage_path = NULL,
 		.links_file = NULL,
 		.rate_limit = 0,
 		.mirror = 0,

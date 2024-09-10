@@ -16,7 +16,7 @@ struct header_data {
 };
 
 int					download_file(int sock,
-								char *file_path, long unsigned *bytes_per_sec);
+								char *file_path, unsigned long bytes_per_sec);
 struct host_data	*get_hostdata(char *url);
 void				free_hostdata(struct host_data *host_data);
 

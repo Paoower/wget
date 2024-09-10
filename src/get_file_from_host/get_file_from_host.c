@@ -77,10 +77,11 @@ int send_request(int sock, struct host_data *host_data)
  * @param storage_dir_path Optionnal directory path where to store the file
  * @param file_name Optionnal parameter to override the file name
  * @param bytes_per_sec Optionnal speed limit in bytes/s
- * @return Returns 1 if an error occurs.
+ * @return A pointer to the file path.
+ * The caller is responsible for freeing this memory.
  */
-int get_file_from_host(char *url, char *storage_dir_path,
-							char *file_name, long unsigned *bytes_per_sec)
+char	*get_file_from_host(char *url, char *storage_dir_path,
+								char *file_name, unsigned long bytes_per_sec)
 {
 	int					sock;
 	struct host_data	*host_data;
@@ -88,21 +89,19 @@ int get_file_from_host(char *url, char *storage_dir_path,
 
 	host_data = get_hostdata(url);
 	if (!host_data)
-		return 1;
+		return NULL;
 	if (!file_name)
 		file_name = host_data->filename;
 	sock = connect_to_server(host_data->hostname);
 	file_path = get_file_path(file_name, storage_dir_path);
 	if (sock == -1 || send_request(sock, host_data) ||
-			download_file(sock, file_path, bytes_per_sec)) {
+								download_file(sock, file_path, bytes_per_sec)) {
 		free(file_path);
 		free_hostdata(host_data);
 		close(sock);
-		return 1;
+		return NULL;
 	}
-	printf("Downloaded [%s]\n", file_path);
-	free(file_path);
 	free_hostdata(host_data);
 	close(sock);
-	return 0;
+	return file_path;
 }

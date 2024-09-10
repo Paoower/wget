@@ -29,10 +29,15 @@ int	wget_file_mode(struct parameters_t params)
 
 int	wget_normal_mode(struct parameters_t params)
 {
+	char	*file_path;
+
 	print_current_date("start at ");
-	if (get_file_from_host(params.url, params.storage_path, params.output_file,
-									(long unsigned *)&params.rate_limit))
+	file_path = get_file_from_host(params.url, params.storage_path,
+										params.output_file, params.rate_limit);
+	if (!file_path)
 		return 1;
+	printf("Downloaded [%s]\n", file_path);
+	free(file_path);
 	print_current_date("finished at ");
 	return 0;
 }

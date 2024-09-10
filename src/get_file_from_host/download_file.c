@@ -9,8 +9,8 @@
 #include <netdb.h>
 
 void	limit_speed(struct timespec start_time,
-							long unsigned bytes_per_sec,
-									long unsigned total_bytes_downloaded)
+							unsigned long bytes_per_sec,
+									unsigned long total_bytes_downloaded)
 {
 	struct timespec	elapsed_time;
 	long double		expected_download_time;
@@ -34,11 +34,11 @@ void	limit_speed(struct timespec start_time,
 		nanosleep(&pause_time, NULL);
 }
 
-int	write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec,
+int	write_data_into_file(int sock, FILE *fp, unsigned long bytes_per_sec,
 						struct timespec start_download_time, char *response,
 										int received, int remaining_data_len)
 {
-	long unsigned	total_bytes_downloaded;
+	unsigned long	total_bytes_downloaded;
 
 	total_bytes_downloaded = 0;
 	if (remaining_data_len > 0) {
@@ -49,9 +49,9 @@ int	write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec,
 	while ((received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
 		total_bytes_downloaded += received;
 		fwrite(response, 1, received, fp);
-		if (*bytes_per_sec != 0 && received == REQUEST_BUFFER_SIZE)
+		if (bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
 			limit_speed(start_download_time,
-									*bytes_per_sec, total_bytes_downloaded);
+									bytes_per_sec, total_bytes_downloaded);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
@@ -61,7 +61,7 @@ int	write_data_into_file(int sock, FILE *fp, long unsigned *bytes_per_sec,
 }
 
 int download_file_without_header(int sock, FILE *fp,
-												long unsigned *bytes_per_sec)
+												unsigned long bytes_per_sec)
 {
 	int					received;
 	char				response[REQUEST_BUFFER_SIZE];
@@ -85,7 +85,7 @@ int download_file_without_header(int sock, FILE *fp,
 	return 0;
 }
 
-int download_file(int sock, char *file_path, long unsigned *bytes_per_sec)
+int download_file(int sock, char *file_path, unsigned long bytes_per_sec)
 {
 	FILE	*fp;
 
