@@ -12,6 +12,7 @@ struct	host_data {
 struct header_data {
 	int		remaining_data_length;
 	char	*status;
+	char	*content_size;
 };
 
 int					download_file(int sock, char *dir_path,

@@ -17,6 +17,8 @@ struct header_data	*fill_http_data(char *http_header)
 
 	header_data = malloc(sizeof(struct header_data));
 	header_data->status = get_http_response_info(http_header, "HTTP/1.1", " ");
+	header_data->content_size = get_http_response_info(http_header,
+													"Content-Length", NULL);
 	return header_data;
 }
 

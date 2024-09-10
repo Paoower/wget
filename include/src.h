@@ -27,9 +27,4 @@ int		wget(struct parameters_t params);
 int		wget_in_background(struct parameters_t params);
 // wget
 
-void	print_final_download_infos(struct timespec elapsed_time,
-									long unsigned int total_bytes_downloaded);
-void	print_current_date(char *text_before);
-// print
-
 #endif

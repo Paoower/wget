@@ -104,6 +104,8 @@ int download_file_without_header(int sock, FILE *fp, long unsigned *bytes_per_se
 												&received, &remaining_data_len);
 	if (header_data == NULL)
 		return 1;
+	printf("status %s\n", header_data->status);
+	printf("content size: %s\n", header_data->content_size);
 	if (write_data_into_file(sock, fp, bytes_per_sec,
 				start_download_time, response, received, remaining_data_len))
 		return 1;
