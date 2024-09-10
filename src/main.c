@@ -1,11 +1,10 @@
 #include "settings.h"
 #include "src.h"
-#include "get_file_from_host.h"
 #include <stddef.h>
 
 int	main(int argc, char *argv[])
 {
-	struct parameters_t parameters = {
+	struct parameters_t	parameters = {
 		.background = 0,
 		.convert_links = 0,
 		.exclude_list = "",
