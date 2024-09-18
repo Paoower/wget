@@ -32,7 +32,7 @@ SSL	*create_ssl_connection(SSL_CTX **ctx, int sock_fd)
 
 	SSL_library_init();
 	SSL_load_error_strings(); // give precise error descriptions
-	OpenSSL_add_ssl_algorithms();
+	OpenSSL_add_ssl_algorithms(); // init crypto lib used by ssl
 	*ctx = SSL_CTX_new(SSLv23_client_method());
 	if (!*ctx) {
 		ERR_print_errors_fp(stderr);
@@ -54,7 +54,7 @@ SSL	*create_ssl_connection(SSL_CTX **ctx, int sock_fd)
 	return ssl;
 }
 
-struct sockaddr	*get_server_socket_address(char *hostname)
+struct sockaddr	*get_server_socket_address(char *hostname, int is_secured)
 {
 	struct hostent		*host;
 	struct sockaddr_in	*server;
@@ -72,11 +72,12 @@ struct sockaddr	*get_server_socket_address(char *hostname)
 	server->sin_addr = *(struct in_addr *)host->h_addr_list[0];
 	// use the host first IP address
 	server->sin_family = AF_INET; // define type of IP (IPv4)
-	server->sin_port = htons(443); // default port for HTTPS
+	server->sin_port = is_secured ? htons(443) : htons(80);
+	// default port for HTTPS AND HTTP
 	return (struct sockaddr *)server;
 }
 
-int connect_to_server(char *hostname)
+int connect_to_server(char *hostname, int is_secured)
 {
 	int				sock;
 	struct sockaddr	*server;
@@ -87,7 +88,7 @@ int connect_to_server(char *hostname)
 		perror("Error during socket creation");
 		return -1;
 	}
-	server = get_server_socket_address(hostname);
+	server = get_server_socket_address(hostname, is_secured);
 	if (!server)
 		return -1;
 	if (connect(sock, server, sizeof(struct sockaddr_in)) < 0) {
@@ -99,17 +100,17 @@ int connect_to_server(char *hostname)
 	return sock;
 }
 
-int send_request(SSL *ssl, struct host_data *host_data)
+int send_request(int sock_fd, SSL *ssl, struct host_data *host_data)
 {
 	char	request[REQUEST_BUFFER_SIZE];
 
 	printf("sending request, awaiting response ... ");
 	snprintf(request, REQUEST_BUFFER_SIZE, // make sure that the size is limited
-			 "GET %s HTTP/1.1\r\n"
-			 "Host: %s\r\n"
-			 "Connection: close\r\n\r\n", // default format for http request
-			 host_data->filepath, host_data->hostname);
-	if (SSL_write(ssl, request, strlen(request)) < 0) {
+			"GET %s HTTP/1.1\r\n"
+			"Host: %s\r\n"
+			"Connection: close\r\n\r\n", // default format for http request
+			host_data->filepath, host_data->hostname);
+	if (send_http_request(sock_fd, ssl, request, strlen(request)) < 0) {
 		perror("Error at sending request");
 		return 1;
 	}
@@ -134,16 +135,24 @@ char	*get_file_from_host(char *url, char *storage_dir_path,
 	SSL_CTX				*ctx;
 	SSL					*ssl;
 
+	ssl = NULL;
+	ctx = NULL;
 	host_data = get_hostdata(url);
 	if (!host_data)
 		return NULL;
 	if (!file_name)
 		file_name = host_data->filename;
-	sock_fd = connect_to_server(host_data->hostname);
-	ssl = create_ssl_connection(&ctx, sock_fd);
+	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
+	if (host_data->is_secured) {
+		ssl = create_ssl_connection(&ctx, sock_fd);
+		if (!ssl) {
+			cleanup(NULL, NULL, NULL, host_data, sock_fd);
+			return NULL;
+		}
+	}
 	file_path = get_file_path(file_name, storage_dir_path);
-	if (sock_fd == -1 || ssl == NULL || send_request(ssl, host_data) ||
-								download_file(ssl, file_path, bytes_per_sec)) {
+	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data) ||
+						download_file(sock_fd, ssl, file_path, bytes_per_sec)) {
 		cleanup(ssl, ctx, file_path, host_data, sock_fd);
 		return NULL;
 	}

@@ -62,6 +62,6 @@ struct host_data *get_hostdata(char *url)
         free_hostdata(host_data);
         return NULL;
     }
-
+    host_data->is_secured = 0;
     return host_data;
 }

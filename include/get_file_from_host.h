@@ -8,6 +8,7 @@ struct	host_data {
 	char	*hostname;
 	char	*filepath;
 	char	*filename;
+	int		is_secured;
 };
 
 struct header_data {
@@ -16,12 +17,12 @@ struct header_data {
 	char	*content_size;
 };
 
-int					download_file(SSL *ssl,
+int					download_file(int sock_fd, SSL *ssl,
 								char *file_path, unsigned long bytes_per_sec);
 struct host_data	*get_hostdata(char *url);
 void				free_hostdata(struct host_data *host_data);
 
-struct header_data	*skip_htpp_header(SSL *ssl,
+struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 						char *response, int *received, int *remaining_data_len);
 void				free_header_data(struct header_data *header_data);
 #endif

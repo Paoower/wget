@@ -1,8 +1,14 @@
 #ifndef TOOLS_H
 # define TOOLS_H
 
+# include <openssl/ssl.h>
+
 char			*get_file_path(const char *file_name, const char *dir_path);
 
+int				send_http_request(int sock_fd, SSL *ssl,
+												char *buffer, int buffer_size);
+int				read_http_data(int sock_fd, SSL *ssl,
+												char *buffer, int buffer_size);
 char			*get_http_response_info(const char *http_response,
 										const char *key, const char *spliter);
 // http_request.c

@@ -1,5 +1,23 @@
 #include "tools.h"
 #include <string.h>
+#include <sys/socket.h>
+
+
+int	send_http_request(int sock_fd, SSL *ssl, char *buffer, int buffer_size)
+{
+	if (ssl)
+		return SSL_write(ssl, buffer, buffer_size);
+	else
+		return send(sock_fd, buffer, buffer_size, 0);
+}
+
+int	read_http_data(int sock_fd, SSL *ssl, char *buffer, int buffer_size)
+{
+	if (ssl)
+		return SSL_read(ssl, buffer, buffer_size);
+	else
+		return recv(sock_fd, buffer, buffer_size, 0);
+}
 
 /**
  * @brief
