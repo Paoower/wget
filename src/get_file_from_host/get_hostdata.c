@@ -24,11 +24,16 @@ struct host_data *get_hostdata(char *url)
         return NULL;
     }
 
-    // Skip protocol if present
-    protocol_end = strstr(url, "://");
-    if (protocol_end) {
-        protocol_end += 3;
+    // Check if the URL is secured (HTTPS)
+    if (strncmp(url, "https://", 8) == 0) {
+        host_data->is_secured = 1;
+        protocol_end = url + 8;
+    } else if (strncmp(url, "http://", 7) == 0) {
+        host_data->is_secured = 0;
+        protocol_end = url + 7;
     } else {
+        // Default to HTTP if no protocol is specified
+        host_data->is_secured = 0;
         protocol_end = url;
     }
 
@@ -62,6 +67,6 @@ struct host_data *get_hostdata(char *url)
         free_hostdata(host_data);
         return NULL;
     }
-    host_data->is_secured = 1;
+
     return host_data;
 }
