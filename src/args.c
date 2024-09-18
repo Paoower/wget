@@ -7,7 +7,8 @@
 #include <string.h>
 #include <limits.h>
 
-void	free_args(struct parameters_t *params) {
+void free_args(struct parameters_t *params)
+{
 	free(params->output_file);
 	free(params->storage_path);
 	free(params->links_file);
@@ -18,23 +19,6 @@ void	free_args(struct parameters_t *params) {
 }
 
 /**
- * Display an option
- * @param option The option's name
- * @param value The option's value
- */
-void display_arg(char option, char *value)
-{
-	if (value)
-	{
-		printf("Used option -%c with value %s\n", option, value);
-	}
-	else
-	{
-		printf("Used option -%c\n", option);
-	}
-}
-
-/**
  * Converts a rate limit expressed as a string into a number
  * @param rate_limit Rate limit as a string
  * @return Integer value of the rate limit
@@ -42,10 +26,10 @@ void display_arg(char option, char *value)
 unsigned long get_bytes_per_sec(char *rate_limit)
 {
 	// Search for M or K character
-	char			*found = strchr(rate_limit, 'k');
-	char			*newstr;
-	char			*check_ptr;
-	unsigned long	rate;
+	char *found = strchr(rate_limit, 'k');
+	char *newstr;
+	char *check_ptr;
+	unsigned long rate;
 
 	if (found)
 	{
@@ -53,7 +37,8 @@ unsigned long get_bytes_per_sec(char *rate_limit)
 		strncpy(newstr, rate_limit, found - rate_limit);
 		newstr[found - rate_limit] = '\0';
 		rate = strtoul(newstr, &check_ptr, 10);
-		if (check_ptr == newstr || rate <= 0 || rate * 1000 > ULONG_MAX) {
+		if (check_ptr == newstr || rate <= 0 || rate * 1000 > ULONG_MAX)
+		{
 			free(newstr);
 			return 0;
 		}
@@ -122,17 +107,14 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 
 		case 'B':
 			parameters->background = 1;
-			display_arg(opt, NULL);
 			break;
 
 		case 'O':
 			copy_string(&parameters->output_file, optarg ? optarg : strdup("test.mp4"));
-			display_arg(opt, optarg);
 			break;
 
 		case 'P':
 			copy_string(&parameters->storage_path, optarg ? optarg : strdup("./data/"));
-			display_arg(opt, optarg);
 			break;
 
 		case 'l':
@@ -140,12 +122,10 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			{
 				parameters->rate_limit = get_bytes_per_sec(optarg);
 			}
-			display_arg(opt, optarg);
 			break;
 
 		case 'i':
 			copy_string(&parameters->links_file, optarg ? optarg : strdup(""));
-			display_arg(opt, optarg);
 			break;
 
 		case 'm':
@@ -157,7 +137,6 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			{
 				parameters->mirror = 0;
 			}
-			display_arg(opt, optarg);
 			break;
 
 		case 'R':
@@ -165,7 +144,6 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			{
 				copy_string(&parameters->reject_list, optarg);
 			}
-			display_arg(opt, optarg);
 			break;
 
 		case 'X':
@@ -173,7 +151,6 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			{
 				copy_string(&parameters->exclude_list, optarg);
 			}
-			display_arg(opt, optarg);
 			break;
 
 		case 'C':
@@ -181,7 +158,6 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			{
 				parameters->convert_links = 1;
 			}
-			display_arg(opt, NULL);
 			break;
 
 		case ':':

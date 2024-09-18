@@ -31,4 +31,6 @@ struct timespec	get_elapsed_time(struct timespec start_time);
 char			**split(const char *str, const char *charset);
 void			free_char_tab(char **strs);
 
+float			bytes_to_megabytes(int bytes);
+
 #endif
