@@ -1,4 +1,5 @@
 #include "get_file_from_host.h"
+#include "tools.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,26 @@ void free_hostdata(struct host_data *host_data)
     free(host_data->filename);
     free(host_data->filepath);
     free(host_data);
+}
+
+char	*get_host_file_path(const char *storage_dir_path,
+					char *file_name, struct host_data *host_data, int is_mirror)
+{
+	char	*new_storage_dir_path;
+	char	*file_path;
+
+	if (!file_name)
+		file_name = host_data->filename;
+	if (is_mirror) {
+		new_storage_dir_path = str_concat(host_data->hostname,
+												"/", storage_dir_path, NULL);
+		if (new_storage_dir_path) {
+			file_path = get_file_path(file_name, new_storage_dir_path);
+			free(new_storage_dir_path);
+			return file_path;
+		}
+	}
+	return get_file_path(file_name, storage_dir_path);
 }
 
 struct host_data *get_hostdata(char *url)

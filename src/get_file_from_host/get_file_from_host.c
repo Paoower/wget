@@ -126,8 +126,8 @@ int send_request(int sock_fd, SSL *ssl, struct host_data *host_data)
  * @return A pointer to the file path.
  * The caller is responsible for freeing this memory.
  */
-char	*get_file_from_host(char *url, char *storage_dir_path,
-								char *file_name, unsigned long bytes_per_sec)
+char	*get_file_from_host(char *url, const char *storage_dir_path,
+					char *file_name, unsigned long bytes_per_sec, int is_mirror)
 {
 	int					sock_fd;
 	struct host_data	*host_data;
@@ -140,8 +140,6 @@ char	*get_file_from_host(char *url, char *storage_dir_path,
 	host_data = get_hostdata(url);
 	if (!host_data)
 		return NULL;
-	if (!file_name)
-		file_name = host_data->filename;
 	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
 	if (host_data->is_secured) {
 		ssl = create_ssl_connection(&ctx, sock_fd);
@@ -150,7 +148,8 @@ char	*get_file_from_host(char *url, char *storage_dir_path,
 			return NULL;
 		}
 	}
-	file_path = get_file_path(file_name, storage_dir_path);
+	file_path = get_host_file_path(storage_dir_path,
+											file_name, host_data, is_mirror);
 	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data) ||
 						download_file(sock_fd, ssl, file_path, bytes_per_sec)) {
 		cleanup(ssl, ctx, file_path, host_data, sock_fd);

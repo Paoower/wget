@@ -31,7 +31,7 @@ int	wget_normal_mode(struct parameters_t params)
 
 	print_current_date("start at ");
 	file_path = get_file_from_host(params.url, params.storage_path,
-										params.output_file, params.rate_limit);
+						params.output_file, params.rate_limit, params.mirror);
 	if (!file_path)
 		return 1;
 	printf("Downloaded [%s]\n", file_path);
