@@ -33,7 +33,7 @@ SSL	*create_ssl_connection(SSL_CTX **ctx, int sock_fd)
 	SSL_library_init();
 	SSL_load_error_strings(); // give precise error descriptions
 	OpenSSL_add_ssl_algorithms(); // init crypto lib used by ssl
-	*ctx = SSL_CTX_new(SSLv23_client_method());
+	*ctx = SSL_CTX_new(TLS_client_method());
 	if (!*ctx) {
 		ERR_print_errors_fp(stderr);
 		return NULL;

@@ -26,6 +26,25 @@ struct header_data	*fill_http_data(char *http_header)
 	return header_data;
 }
 
+char	*concat_header(char *response, char *response_merged,
+												int received, int header_size)
+{
+	char				*new_response_merged;
+	char				*response_merged_end;
+
+	new_response_merged = realloc(response_merged, header_size + 1);
+	if (!new_response_merged) {
+		perror("Memory reallocation failed");
+		free(response_merged);
+		return NULL;
+	}
+	response_merged = new_response_merged;
+	response_merged_end = response_merged + header_size;
+	memset(response_merged_end - received, 0, received + 1);
+	memcpy(response_merged_end - received, response, received);
+	return response_merged;
+}
+
 /**
  * @return
  * Remaining data length after the http header contained in response
@@ -36,10 +55,10 @@ struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 {
 	char				*header_end;
 	char				*response_merged;
-	char				*new_response_merged;
 	struct header_data	*header_data;
 	int					header_size;
 	char				*header_finish_pattern;
+
 
 	response_merged = NULL;
 	header_size = 0;
@@ -47,18 +66,12 @@ struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 	while ((*received = read_http_data(sock_fd, ssl,
 										response, REQUEST_BUFFER_SIZE)) > 0) {
 		header_size += *received;
-		new_response_merged = realloc(response_merged, header_size);
-		if (!new_response_merged) {
-			perror("Memory reallocation failed");
-			free(response_merged);
+		response_merged = concat_header(response,
+										response_merged, *received, header_size);
+		if (!response_merged)
 			return NULL;
-		}
-		response_merged = new_response_merged;
-		memset(response_merged + header_size - *received, 0, *received);
-		strncat(response_merged, response, *received);
 		header_end = strstr(response_merged, header_finish_pattern);
 		if (header_end) {
-			// printf("\nHEADER:\n%s\n\n", response_merged);
 			*remaining_data_len = response_merged + header_size
 								- (header_end + strlen(header_finish_pattern));
 			header_data = fill_http_data(response_merged);
