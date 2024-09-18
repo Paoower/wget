@@ -9,12 +9,13 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
 CC=gcc
 WARN_FLAGS=-Wall -Wextra -Werror
+SSL_FLAGS=-lssl -lcrypto
 RM=rm -rf
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $@
+	$(CC) $(OBJ_FILES) -o $@ $(SSL_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)

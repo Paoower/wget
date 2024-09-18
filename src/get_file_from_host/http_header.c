@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+# include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <arpa/inet.h>
 
 void	free_header_data(struct header_data *header_data)
 {
@@ -28,7 +31,7 @@ struct header_data	*fill_http_data(char *http_header)
  * Remaining data length after the http header contained in response
  * or -1 if any error is triggered.
  */
-struct header_data	*skip_htpp_header(int sock,
+struct header_data	*skip_htpp_header(SSL *ssl,
 						char *response, int *received, int *remaining_data_len)
 {
 	char				*header_end;
@@ -41,7 +44,7 @@ struct header_data	*skip_htpp_header(int sock,
 	response_merged = NULL;
 	header_size = 0;
 	header_finish_pattern = "\r\n\r\n";
-	while ((*received = recv(sock, response, REQUEST_BUFFER_SIZE, 0)) > 0) {
+	while ((*received = SSL_read(ssl, response, REQUEST_BUFFER_SIZE)) > 0) {
 		header_size += *received;
 		new_response_merged = realloc(response_merged, header_size);
 		if (!new_response_merged) {
@@ -54,6 +57,7 @@ struct header_data	*skip_htpp_header(int sock,
 		strncat(response_merged, response, *received);
 		header_end = strstr(response_merged, header_finish_pattern);
 		if (header_end) {
+			printf("\nHEADER:\n%s\n\n", response_merged);
 			*remaining_data_len = response_merged + header_size
 								- (header_end + strlen(header_finish_pattern));
 			header_data = fill_http_data(response_merged);

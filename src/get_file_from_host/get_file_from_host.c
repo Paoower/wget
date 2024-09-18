@@ -5,6 +5,54 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+#include <openssl/err.h>
+#include <arpa/inet.h>
+
+void	cleanup(SSL *ssl, SSL_CTX *ctx, char *file_path,
+										struct host_data *host_data, int sock_fd)
+{
+	if (ssl) {
+		SSL_shutdown(ssl);
+		SSL_free(ssl);
+	}
+	if (ctx)
+		SSL_CTX_free(ctx);
+	EVP_cleanup();
+	if (file_path)
+		free(file_path);
+	if (host_data)
+		free_hostdata(host_data);
+	if (sock_fd != -1)
+		close(sock_fd);
+}
+
+SSL	*create_ssl_connection(SSL_CTX **ctx, int sock_fd)
+{
+	SSL	*ssl;
+
+	SSL_library_init();
+	SSL_load_error_strings(); // give precise error descriptions
+	OpenSSL_add_ssl_algorithms();
+	*ctx = SSL_CTX_new(SSLv23_client_method());
+	if (!*ctx) {
+		ERR_print_errors_fp(stderr);
+		return NULL;
+	}
+	ssl = SSL_new(*ctx);
+	if (!ssl) {
+		ERR_print_errors_fp(stderr);
+		SSL_CTX_free(*ctx);
+		return NULL;
+	}
+	SSL_set_fd(ssl, sock_fd);
+	if (SSL_connect(ssl) <= 0) {
+		ERR_print_errors_fp(stderr);
+		SSL_free(ssl);
+		SSL_CTX_free(*ctx);
+		return NULL;
+	}
+	return ssl;
+}
 
 struct sockaddr	*get_server_socket_address(char *hostname)
 {
@@ -24,7 +72,7 @@ struct sockaddr	*get_server_socket_address(char *hostname)
 	server->sin_addr = *(struct in_addr *)host->h_addr_list[0];
 	// use the host first IP address
 	server->sin_family = AF_INET; // define type of IP (IPv4)
-	server->sin_port = htons(80); // default port for HTTP
+	server->sin_port = htons(443); // default port for HTTPS
 	return (struct sockaddr *)server;
 }
 
@@ -51,7 +99,7 @@ int connect_to_server(char *hostname)
 	return sock;
 }
 
-int send_request(int sock, struct host_data *host_data)
+int send_request(SSL *ssl, struct host_data *host_data)
 {
 	char	request[REQUEST_BUFFER_SIZE];
 
@@ -61,7 +109,7 @@ int send_request(int sock, struct host_data *host_data)
 			 "Host: %s\r\n"
 			 "Connection: close\r\n\r\n", // default format for http request
 			 host_data->filepath, host_data->hostname);
-	if (send(sock, request, strlen(request), 0) < 0) {
+	if (SSL_write(ssl, request, strlen(request)) < 0) {
 		perror("Error at sending request");
 		return 1;
 	}
@@ -80,25 +128,25 @@ int send_request(int sock, struct host_data *host_data)
 char	*get_file_from_host(char *url, char *storage_dir_path,
 								char *file_name, unsigned long bytes_per_sec)
 {
-	int					sock;
+	int					sock_fd;
 	struct host_data	*host_data;
 	char				*file_path;
+	SSL_CTX				*ctx;
+	SSL					*ssl;
 
 	host_data = get_hostdata(url);
 	if (!host_data)
 		return NULL;
 	if (!file_name)
 		file_name = host_data->filename;
-	sock = connect_to_server(host_data->hostname);
+	sock_fd = connect_to_server(host_data->hostname);
+	ssl = create_ssl_connection(&ctx, sock_fd);
 	file_path = get_file_path(file_name, storage_dir_path);
-	if (sock == -1 || send_request(sock, host_data) ||
-								download_file(sock, file_path, bytes_per_sec)) {
-		free(file_path);
-		free_hostdata(host_data);
-		close(sock);
+	if (sock_fd == -1 || ssl == NULL || send_request(ssl, host_data) ||
+								download_file(ssl, file_path, bytes_per_sec)) {
+		cleanup(ssl, ctx, file_path, host_data, sock_fd);
 		return NULL;
 	}
-	free_hostdata(host_data);
-	close(sock);
+	cleanup(ssl, ctx, NULL, host_data, sock_fd);
 	return file_path;
 }
