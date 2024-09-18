@@ -1,8 +1,11 @@
 #include "src.h"
+#include "progress_bar.h"
+#include <unistd.h>
+#include <stdio.h>
 
-int	main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-	struct parameters_t	parameters = {
+	struct parameters_t parameters = {
 		.background = 0,
 		.convert_links = 0,
 		.exclude_list = NULL,
@@ -16,13 +19,16 @@ int	main(int argc, char *argv[])
 	};
 
 	handle_args(&parameters, argc, argv);
-	if (parameters.background) {
-		if (wget_in_background(parameters)) {
+	if (parameters.background)
+	{
+		if (wget_in_background(parameters))
+		{
 			free_args(&parameters);
 			return 1;
 		}
 	}
-	else if (wget(parameters)) {
+	else if (wget(parameters))
+	{
 		free_args(&parameters);
 		return 1;
 	}

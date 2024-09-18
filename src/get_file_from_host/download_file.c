@@ -3,7 +3,9 @@
 #include "src.h"
 #include "get_file_from_host.h"
 #include "tools.h"
+#include "progress_bar.h"
 #include <stdio.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <openssl/err.h>
 #include <arpa/inet.h>
@@ -36,7 +38,7 @@ void	limit_speed(struct timespec start_time,
 
 int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 			unsigned long bytes_per_sec, struct timespec start_download_time,
-						char *response, int received, int remaining_data_len)
+						char *response, int received, int remaining_data_len, char *content_size)
 {
 	unsigned long	total_bytes_downloaded;
 
@@ -53,6 +55,8 @@ int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 		if (bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
 			limit_speed(start_download_time,
 									bytes_per_sec, total_bytes_downloaded);
+		update_bar(total_bytes_downloaded, content_size);
+		usleep(100000);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
@@ -78,7 +82,7 @@ int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
 	printf("status %s\n", header_data->status);
 	printf("content size: %s\n", header_data->content_size);
 	if (write_data_into_file(sock_fd, ssl, fp, bytes_per_sec,
-				start_download_time, response, received, remaining_data_len)) {
+				start_download_time, response, received, remaining_data_len, header_data->content_size)) {
 		free_header_data(header_data);
 		return 1;
 	}
