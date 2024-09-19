@@ -19,13 +19,7 @@ void	print_current_date(char *text_before)
 	}
 }
 
-int	wget_file_mode(struct parameters_t params)
-{
-	(void)params;
-	return 0;
-}
-
-int	wget_normal_mode(struct parameters_t params)
+int	wget_classic(struct parameters_t params)
 {
 	char	*file_path;
 
@@ -45,10 +39,12 @@ int	wget(struct parameters_t params)
 	int	normal_mode;
 
 	normal_mode = 1;
-	if (normal_mode)
-		return wget_normal_mode(params);
+	if (params.links_file)
+		return wget_from_file(params);
+	else if (params.mirror)
+		return wget_mirror(params);
 	else
-		return wget_file_mode(params);
+		return wget_classic(params);
 }
 
 int wget_in_background(struct parameters_t params)
