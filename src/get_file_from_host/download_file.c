@@ -3,12 +3,35 @@
 #include "src.h"
 #include "get_file_from_host.h"
 #include "tools.h"
-#include "progress_bar.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <openssl/err.h>
 #include <arpa/inet.h>
+
+void update_bar(unsigned long total_bytes_downloaded, char *content_size)
+{
+	int		content_size_f;
+	int		bar_width;
+	float	percentage;
+	int		position;
+
+	content_size_f = atof(content_size);
+	bar_width = 50;
+	percentage = ((float)total_bytes_downloaded / content_size_f) * 100;
+	position = bar_width * percentage / 100;
+	printf("[");
+	for (int i = 0; i < bar_width; ++i) {
+		if (i < position)
+			printf("=");
+		else if (i == position)
+			printf(">");
+		else
+			printf(" ");
+	}
+	printf("] %.2f%%\r", percentage);
+	fflush(stdout);
+}
 
 void	limit_speed(struct timespec start_time,
 							unsigned long bytes_per_sec,

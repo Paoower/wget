@@ -36,9 +36,6 @@ int	wget_classic(struct parameters_t params)
 
 int	wget(struct parameters_t params)
 {
-	int	normal_mode;
-
-	normal_mode = 1;
 	if (params.links_file)
 		return wget_from_file(params);
 	else if (params.mirror)
