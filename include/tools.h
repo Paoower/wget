@@ -24,9 +24,10 @@ void			copy_string(char **dest, char *src);
 int				parse_url();
 // parse_url.c
 
+void			print_current_date(char *text_before);
 struct timespec	time_diff(struct timespec time1, struct timespec time2);
 struct timespec	get_elapsed_time(struct timespec start_time);
-// timespec.c
+// time.c
 
 char			**split(const char *str, const char *charset);
 void			free_char_tab(char **strs);
