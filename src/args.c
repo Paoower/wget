@@ -45,7 +45,6 @@ unsigned long get_bytes_per_sec(char *rate_limit)
 		free(newstr);
 		rate *= 1000; // convert kilobyte to byte
 	}
-	printf("rate %ld\n", rate);
 	return rate;
 }
 

@@ -37,8 +37,10 @@ void	limit_speed(struct timespec start_time,
 }
 
 int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
-			unsigned long bytes_per_sec, struct timespec start_download_time,
-						char *response, int received, int remaining_data_len, char *content_size)
+						unsigned long bytes_per_sec,
+						struct timespec start_download_time,
+						char *response, int received,
+						int remaining_data_len, char *content_size)
 {
 	unsigned long	total_bytes_downloaded;
 
@@ -56,7 +58,6 @@ int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 			limit_speed(start_download_time,
 									bytes_per_sec, total_bytes_downloaded);
 		update_bar(total_bytes_downloaded, content_size);
-		usleep(100000);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
@@ -66,7 +67,7 @@ int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 }
 
 int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
-													unsigned long bytes_per_sec, char* total_file_path)
+							unsigned long bytes_per_sec, char* total_file_path)
 {
 	int					received;
 	char				response[REQUEST_BUFFER_SIZE];
@@ -80,10 +81,12 @@ int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
 	if (!header_data)
 		return 1;
 	printf("status %s\n", header_data->status);
-	printf("content size: %s [~%.2fMB]\n", header_data->content_size, bytes_to_megabytes(atoi(header_data->content_size)));
-	printf("saving file as: %s\n", total_file_path);
+	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
+						bytes_to_megabytes(atoi(header_data->content_size)));
+	printf("saving file to: %s\n", total_file_path);
 	if (write_data_into_file(sock_fd, ssl, fp, bytes_per_sec,
-				start_download_time, response, received, remaining_data_len, header_data->content_size)) {
+							start_download_time, response, received,
+							remaining_data_len, header_data->content_size)) {
 		free_header_data(header_data);
 		return 1;
 	}
@@ -91,7 +94,18 @@ int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
 	return 0;
 }
 
-int download_file(int sock_fd, SSL *ssl, char *file_path, unsigned long bytes_per_sec)
+/**
+ * @brief
+ * Open or create a file, read data from sock_fd or ssl and write it into file
+ * @param sock_fd socket fd used by the http connection
+ * @param ssl optionnal ssl pointer used by the http connection
+ * @param file_path path of the file to download
+ * @param bytes_per_sec the download speed limit in byte per secondes
+ * @return
+ * 1 if an error occurs, else returns 0
+ */
+int download_file(int sock_fd, SSL *ssl, char *file_path,
+												unsigned long bytes_per_sec)
 {
 	FILE	*fp;
 
@@ -100,7 +114,8 @@ int download_file(int sock_fd, SSL *ssl, char *file_path, unsigned long bytes_pe
 		perror("Error trying to open file");
 		return 1;
 	}
-	if (download_file_without_header(sock_fd, ssl, fp, bytes_per_sec, file_path)) {
+	if (download_file_without_header(sock_fd, ssl,
+									fp, bytes_per_sec, file_path)) {
 		fclose(fp);
 		return 1;
 	}

@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 
 void	cleanup(SSL *ssl, SSL_CTX *ctx, char *file_path,
-										struct host_data *host_data, int sock_fd)
+									struct host_data *host_data, int sock_fd)
 {
 	if (ssl) {
 		SSL_shutdown(ssl);
@@ -150,7 +150,6 @@ char	*get_file_from_host(char *url, const char *storage_dir_path,
 	}
 	file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
-	
 	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data) ||
 						download_file(sock_fd, ssl, file_path, bytes_per_sec)) {
 		cleanup(ssl, ctx, file_path, host_data, sock_fd);
