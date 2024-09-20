@@ -11,7 +11,7 @@ int	wget_classic(struct parameters_t params)
 	char	*file_path;
 
 	print_current_date("start at ");
-	file_path = get_file_from_host(params.url, params.storage_path,
+	file_path = download_file_from_url(params.url, params.storage_path,
 						params.output_file, params.rate_limit, params.mirror);
 	if (!file_path)
 		return 1;

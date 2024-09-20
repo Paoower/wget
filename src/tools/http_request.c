@@ -19,6 +19,13 @@ int	read_http_data(int sock_fd, SSL *ssl, char *buffer, int buffer_size)
 		return recv(sock_fd, buffer, buffer_size, 0);
 }
 
+int	is_redirect_status(const char *status) {
+	if (!status)
+		return 0;
+	return (strcmp(status, "301 Moved Permanently") == 0 ||
+								strcmp(status, "302 Moved Temporarily") == 0);
+}
+
 /**
  * @brief
  * get any content of a line in the http response

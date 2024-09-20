@@ -1,4 +1,4 @@
-#include "get_file_from_host.h"
+#include "download_file_from_url.h"
 #include "tools.h"
 #include <unistd.h>
 #include <stdio.h>
@@ -8,8 +8,8 @@
 #include <openssl/err.h>
 #include <arpa/inet.h>
 
-void	cleanup(SSL *ssl, SSL_CTX *ctx, char *file_path,
-									struct host_data *host_data, int sock_fd)
+void	cleanup(SSL *ssl, SSL_CTX *ctx, struct host_data *host_data,
+									int sock_fd, struct file_data *file_data)
 {
 	if (ssl) {
 		SSL_shutdown(ssl);
@@ -18,8 +18,11 @@ void	cleanup(SSL *ssl, SSL_CTX *ctx, char *file_path,
 	if (ctx)
 		SSL_CTX_free(ctx);
 	EVP_cleanup();
-	if (file_path)
-		free(file_path);
+	if (file_data) {
+		free(file_data->file_path);
+		free_header_data(file_data->header_data);
+		free(file_data);
+	}
 	if (host_data)
 		free_hostdata(host_data);
 	if (sock_fd != -1)
@@ -117,24 +120,15 @@ int send_request(int sock_fd, SSL *ssl, struct host_data *host_data)
 	return 0;
 }
 
-/**
- * @brief download a file pointed by an url
- * @param url Url of the file to download
- * @param storage_dir_path Optionnal directory path where to store the file
- * @param file_name Optionnal parameter to override the file name
- * @param bytes_per_sec Optionnal speed limit in bytes/s
- * @return A pointer to the file path.
- * The caller is responsible for freeing this memory.
- */
-char	*get_file_from_host(char *url, const char *storage_dir_path,
-					char *file_name, unsigned long bytes_per_sec, int is_mirror)
+struct file_data	*download_file_from_url_core(char *url,
+								const char *storage_dir_path, char *file_name,
+								unsigned long bytes_per_sec, int is_mirror)
 {
 	int					sock_fd;
 	struct host_data	*host_data;
-	char				*file_path;
 	SSL_CTX				*ctx;
 	SSL					*ssl;
-	struct header_data	*header_data;
+	struct file_data	*file_data;
 
 	ssl = NULL;
 	ctx = NULL;
@@ -145,27 +139,52 @@ char	*get_file_from_host(char *url, const char *storage_dir_path,
 	if (host_data->is_secured) {
 		ssl = create_ssl_connection(&ctx, sock_fd);
 		if (!ssl) {
-			cleanup(NULL, NULL, NULL, host_data, sock_fd);
+			cleanup(NULL, NULL, host_data, sock_fd, NULL);
 			return NULL;
 		}
 	}
-	file_path = get_host_file_path(storage_dir_path,
-											file_name, host_data, is_mirror);
-	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data)) {
-		cleanup(ssl, ctx, file_path, host_data, sock_fd);
+	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data) ||
+							!(file_data = malloc(sizeof(struct file_data)))) {
+		cleanup(ssl, ctx, host_data, sock_fd, NULL);
 		return NULL;
 	}
-	header_data = download_file(sock_fd, ssl, file_path, bytes_per_sec);
-	if (strcmp(header_data->status, "301 Moved Permanently") == 0 ||
-					strcmp(header_data->status, "302 Moved Temporarily") == 0) {
-		cleanup(ssl, ctx, file_path, host_data, sock_fd);
-		file_path = get_file_from_host(header_data->redirect_url,
+	file_data->file_path = get_host_file_path(storage_dir_path,
+											file_name, host_data, is_mirror);
+	file_data->header_data = download_file(sock_fd, ssl,
+										file_data->file_path, bytes_per_sec);
+	cleanup(ssl, ctx, host_data, sock_fd, NULL);
+	return file_data;
+}
+
+/**
+ * @brief download a file pointed by an url
+ * @param url Url of the file to download
+ * @param storage_dir_path Optionnal directory path where to store the file
+ * @param file_name Optionnal parameter to override the file name
+ * @param bytes_per_sec Optionnal speed limit in bytes/s
+ * @return A pointer to the file path.
+ * The caller is responsible for freeing this memory.
+ */
+char	*download_file_from_url(char *url, const char *storage_dir_path,
+					char *file_name, unsigned long bytes_per_sec, int is_mirror)
+{
+	struct file_data	*file_data;
+	struct file_data	*new_file_data;
+	char				*file_path;
+
+	file_data = download_file_from_url_core(url, storage_dir_path,
+										file_name, bytes_per_sec, is_mirror);
+	while (file_data && file_data->header_data &&
+						is_redirect_status(file_data->header_data->status)) {
+		printf("\nRedirect to \"%s\"\n", file_data->header_data->redirect_url);
+		new_file_data = download_file_from_url_core(
+						file_data->header_data->redirect_url,
 						storage_dir_path, file_name, bytes_per_sec, is_mirror);
-		free_header_data(header_data); // this sucks,
-		// memory is erased only when the final link is found
-		return file_path;
+		cleanup(NULL, NULL, NULL, -1, file_data);
+		file_data = new_file_data;
 	}
-	free_header_data(header_data);
-	cleanup(ssl, ctx, NULL, host_data, sock_fd);
+	file_path = file_data->file_path;
+	free_header_data(file_data->header_data);
+	free(file_data);
 	return file_path;
 }

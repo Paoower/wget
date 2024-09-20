@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 
 #include "src.h"
-#include "get_file_from_host.h"
+#include "download_file_from_url.h"
 #include "tools.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -103,9 +103,6 @@ struct header_data *download_file_without_header(int sock_fd, SSL *ssl, FILE *fp
 									response, &received, &remaining_data_len);
 	if (!header_data)
 		return NULL;
-	if (strcmp(header_data->status, "301 Moved Permanently") == 0 ||
-					strcmp(header_data->status, "302 Moved Temporarily") == 0)
-		return header_data;
 	printf("status %s\n", header_data->status);
 	if (strcmp(header_data->status, "200 OK") != 0)
 		return header_data;
@@ -134,6 +131,8 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 	FILE				*fp;
 	struct header_data	*header_data;
 
+	if (!file_path)
+		return NULL;
 	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
 		perror("Error trying to open file");
