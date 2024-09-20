@@ -89,7 +89,7 @@ int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 	return 0;
 }
 
-int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
+struct header_data *download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
 							unsigned long bytes_per_sec, char* total_file_path)
 {
 	int					received;
@@ -102,19 +102,20 @@ int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
 	header_data = skip_htpp_header(sock_fd, ssl,
 									response, &received, &remaining_data_len);
 	if (!header_data)
-		return 1;
+		return NULL;
+	if (strcmp(header_data->status, "301 Moved Permanently") == 0 ||
+					strcmp(header_data->status, "302 Moved Temporarily") == 0)
+		return header_data;
 	printf("status %s\n", header_data->status);
+	if (strcmp(header_data->status, "200 OK") != 0)
+		return header_data;
 	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
 						bytes_to_megabytes(atoi(header_data->content_size)));
 	printf("saving file to: %s\n", total_file_path);
-	if (write_data_into_file(sock_fd, ssl, fp, bytes_per_sec,
+	write_data_into_file(sock_fd, ssl, fp, bytes_per_sec,
 							start_download_time, response, received,
-							remaining_data_len, header_data->content_size)) {
-		free_header_data(header_data);
-		return 1;
-	}
-	free_header_data(header_data);
-	return 0;
+							remaining_data_len, header_data->content_size);
+	return header_data;
 }
 
 /**
@@ -125,23 +126,21 @@ int download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
  * @param file_path path of the file to download
  * @param bytes_per_sec the download speed limit in byte per secondes
  * @return
- * 1 if an error occurs, else returns 0
+ * A pointer to the header_data, or NULL
  */
-int download_file(int sock_fd, SSL *ssl, char *file_path,
-												unsigned long bytes_per_sec)
+struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
+													unsigned long bytes_per_sec)
 {
-	FILE	*fp;
+	FILE				*fp;
+	struct header_data	*header_data;
 
 	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
 		perror("Error trying to open file");
-		return 1;
+		return NULL;
 	}
-	if (download_file_without_header(sock_fd, ssl,
-									fp, bytes_per_sec, file_path)) {
-		fclose(fp);
-		return 1;
-	}
+	header_data = download_file_without_header(sock_fd, ssl,
+									fp, bytes_per_sec, file_path);
 	fclose(fp);
-	return 0;
+	return header_data;
 }

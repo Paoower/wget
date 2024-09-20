@@ -12,6 +12,7 @@ void	free_header_data(struct header_data *header_data)
 {
 	free(header_data->status);
 	free(header_data->content_size);
+	free(header_data->redirect_url);
 	free(header_data);
 }
 
@@ -21,8 +22,10 @@ struct header_data	*fill_http_data(char *http_header)
 
 	header_data = malloc(sizeof(struct header_data));
 	header_data->status = get_http_response_info(http_header, "HTTP/1.1", " ");
-	header_data->content_size = get_http_response_info(http_header,
-													"Content-Length", NULL);
+	header_data->content_size = get_http_response_info(
+										http_header, "Content-Length", NULL);
+	header_data->redirect_url = get_http_response_info(
+										http_header, "Location", NULL);
 	return header_data;
 }
 

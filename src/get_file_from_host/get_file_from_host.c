@@ -134,6 +134,7 @@ char	*get_file_from_host(char *url, const char *storage_dir_path,
 	char				*file_path;
 	SSL_CTX				*ctx;
 	SSL					*ssl;
+	struct header_data	*header_data;
 
 	ssl = NULL;
 	ctx = NULL;
@@ -150,11 +151,21 @@ char	*get_file_from_host(char *url, const char *storage_dir_path,
 	}
 	file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
-	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data) ||
-						download_file(sock_fd, ssl, file_path, bytes_per_sec)) {
+	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data)) {
 		cleanup(ssl, ctx, file_path, host_data, sock_fd);
 		return NULL;
 	}
+	header_data = download_file(sock_fd, ssl, file_path, bytes_per_sec);
+	if (strcmp(header_data->status, "301 Moved Permanently") == 0 ||
+					strcmp(header_data->status, "302 Moved Temporarily") == 0) {
+		cleanup(ssl, ctx, file_path, host_data, sock_fd);
+		file_path = get_file_from_host(header_data->redirect_url,
+						storage_dir_path, file_name, bytes_per_sec, is_mirror);
+		free_header_data(header_data); // this sucks,
+		// memory is erased only when the final link is found
+		return file_path;
+	}
+	free_header_data(header_data);
 	cleanup(ssl, ctx, NULL, host_data, sock_fd);
 	return file_path;
 }
