@@ -1,12 +1,4 @@
 #include "src.h"
-#include <stdlib.h>
-#include <stdio.h>
-
-char	**get_urls_from_html(char	*file_path)
-{
-	(void)file_path;
-	return NULL;
-}
 
 int	wget_mirror(struct parameters_t params)
 {
@@ -17,7 +9,9 @@ int	wget_mirror(struct parameters_t params)
 		// for each url
 			// append file path from get_file_from_host()
 
-		// empty urls
+		// empty urls tab
 		// for each file path
 			// append urls from get_urls_from_html(file_path) to urls
+			// edit the file and convert links for offline viewing
+			// (--convert-links option)
 }
