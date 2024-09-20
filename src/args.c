@@ -128,14 +128,7 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			break;
 
 		case 'm':
-			if (optarg)
-			{
-				parameters->mirror = 1;
-			}
-			else
-			{
-				parameters->mirror = 0;
-			}
+			parameters->mirror = 1;
 			break;
 
 		case 'R':

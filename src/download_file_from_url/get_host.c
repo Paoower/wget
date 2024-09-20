@@ -23,8 +23,9 @@ char	*get_host_file_path(const char *storage_dir_path,
 	if (!file_name)
 		file_name = host_data->filename;
 	if (is_mirror) {
-		new_storage_dir_path = str_concat(host_data->hostname,
-												"/", storage_dir_path, NULL);
+		new_storage_dir_path = storage_dir_path ?
+				str_concat(storage_dir_path, "/", host_data->hostname, NULL) :
+				host_data->hostname;
 		if (new_storage_dir_path) {
 			file_path = get_file_path(file_name, new_storage_dir_path);
 			free(new_storage_dir_path);
