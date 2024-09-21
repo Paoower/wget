@@ -1,5 +1,4 @@
 #include "src.h"
-#include "progress_bar.h"
 #include <unistd.h>
 #include <stdio.h>
 

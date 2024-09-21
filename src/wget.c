@@ -1,36 +1,17 @@
 #include "src.h"
+#include "tools.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 
-void	print_current_date(char *text_before)
-{
-	time_t		current_time;
-	struct tm	*current_time_tm;
-	char		buffer[20];
-
-	current_time = time(NULL);
-	current_time_tm = localtime(&current_time);
-	if (current_time_tm != NULL) {
-		strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", current_time_tm);
-		printf("%s%s\n", text_before, buffer);
-	}
-}
-
-int	wget_file_mode(struct parameters_t params)
-{
-	(void)params;
-	return 0;
-}
-
-int	wget_normal_mode(struct parameters_t params)
+int	wget_classic(struct parameters_t params)
 {
 	char	*file_path;
 
 	print_current_date("start at ");
-	file_path = get_file_from_host(params.url, params.storage_path,
+	file_path = download_file_from_url(params.url, params.storage_path,
 						params.output_file, params.rate_limit, params.mirror);
 	if (!file_path)
 		return 1;
@@ -42,13 +23,12 @@ int	wget_normal_mode(struct parameters_t params)
 
 int	wget(struct parameters_t params)
 {
-	int	normal_mode;
-
-	normal_mode = 1;
-	if (normal_mode)
-		return wget_normal_mode(params);
+	if (params.links_file)
+		return wget_from_file(params);
+	else if (params.mirror)
+		return wget_mirror(params);
 	else
-		return wget_file_mode(params);
+		return wget_classic(params);
 }
 
 int wget_in_background(struct parameters_t params)

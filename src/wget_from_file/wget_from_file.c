@@ -1,5 +1,5 @@
-#include "settings.h"
 #include "src.h"
+#include "settings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -63,7 +63,7 @@ void *thread_function(void *line)
 	return NULL;
 }
 
-int download_from_link_file(struct parameters_t parameters)
+int wget_from_file(struct parameters_t parameters)
 {
 	const char *filename = parameters.links_file;
 	int line_count = 0;

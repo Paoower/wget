@@ -15,9 +15,15 @@ struct header_data {
 	int		remaining_data_length;
 	char	*status;
 	char	*content_size;
+	char	*redirect_url;
 };
 
-int					download_file(int sock_fd, SSL *ssl,
+struct file_data {
+	struct header_data	*header_data;
+	char				*file_path;
+};
+
+struct header_data	*download_file(int sock_fd, SSL *ssl,
 								char *file_path, unsigned long bytes_per_sec);
 char				*get_host_file_path(const char *storage_dir_path,
 								char *file_name, struct host_data *host_data,
