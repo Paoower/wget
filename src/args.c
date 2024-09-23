@@ -180,24 +180,25 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 	}
 
 	// Check if there is an URL
-	if (!argv[optind] && !parameters->links_file)
+	if(!parameters->links_file)
 	{
-		fprintf(stderr, "wget: URL missing.\n");
-		exit(EXIT_FAILURE);
-	}
+		if (optind >= argc && argv[optind] == NULL)
+		{
+			fprintf(stderr, "wget: URL missing.\n");
+			exit(EXIT_FAILURE);
+		}
 
-	// Check if the URL is valid
-	if (does_match_with_pattern(argv[optind], URL_REGEX))
-	{
-		copy_string(&parameters->url, argv[optind]);
+		// Check if the URL is valid
+		if (does_match_with_pattern(argv[optind], URL_REGEX))
+		{
+			copy_string(&parameters->url, argv[optind]);
+		}
+		else
+		{
+			fprintf(stderr, "wget: Invalid URL.\n");
+			exit(EXIT_FAILURE);
+		}
 	}
-	else
-	{
-		fprintf(stderr, "wget: Invalid URL.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// parse_url(parameters->url);
 
 	return 0;
 }
