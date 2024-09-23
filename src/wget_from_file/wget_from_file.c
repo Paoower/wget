@@ -46,12 +46,15 @@ char **read_lines_from_file(const char *filename, int *line_count) {
 	return lines;
 }
 
-void free_lines(char **lines, int line_count)
+void wget_from_file_cleanup(struct params_thread **params_threads,
+											char **lines, int line_count)
 {
 	for (int i = 0; i < line_count; i++) {
 		free(lines[i]);
+		free(params_threads[i]);
 	}
 	free(lines);
+	free(params_threads);
 }
 
 void apply_function_to_line(char *line, struct parameters_t params)
@@ -77,12 +80,12 @@ void *thread_function(void *arg)
 	params_thread = (struct params_thread *)arg;
 	printf("Wesh %s\n", params_thread->line);
 	apply_function_to_line(params_thread->line, params_thread->params);
-	free(params_thread->line);
 	return NULL;
 }
 
 int wget_from_file(struct parameters_t parameters)
 {
+	struct params_thread	**params_threads;
 	const char *filename = parameters.links_file;
 	int line_count = 0;
 
@@ -90,15 +93,15 @@ int wget_from_file(struct parameters_t parameters)
 	if (!lines) {
 		return 1;
 	}
-
+	params_threads = malloc(sizeof(struct params_thread) * line_count);
 	pthread_t *threads = malloc(line_count * sizeof(pthread_t));
 	for (int i = 0; i < line_count; i++) {
-		struct params_thread params_thread;
-		params_thread.line = lines[i];
-		params_thread.params = parameters;
-		printf("Print de test, c'est le thread numero %d \n", i);
-		printf("%s\n", params_thread.line);
-		int rc = pthread_create(&threads[i], NULL, thread_function, (void *)&params_thread);
+		params_threads[i] = malloc(sizeof(struct params_thread));
+		params_threads[i]->line = lines[i];
+		params_threads[i]->params = parameters;
+		printf("%s\n", params_threads[i]->line);
+		int rc = pthread_create(&threads[i], NULL,
+									thread_function, (void *)params_threads[i]);
 		if (rc) {
 			fprintf(stderr, "Erreur lors de la création du thread, code : %d\n", rc);
 			exit(EXIT_FAILURE);
@@ -107,9 +110,8 @@ int wget_from_file(struct parameters_t parameters)
 	for (int i = 0; i < line_count; i++) {
 		pthread_join(threads[i], NULL);
 	}
-	free_lines(lines, line_count);
+	wget_from_file_cleanup(params_threads, lines, line_count);
 	free(threads);
-
 	printf("Tous les traitements sont terminés.\n");
 	return 0;
 }
