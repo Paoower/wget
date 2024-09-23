@@ -132,10 +132,13 @@ struct file_data	*download_file_from_url_core(char *url,
 
 	ssl = NULL;
 	ctx = NULL;
-	host_data = get_hostdata(url);
-	if (!host_data)
+	if (!(host_data = get_hostdata(url)))
 		return NULL;
 	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
+	if (sock_fd == -1) {
+		cleanup(NULL, NULL, host_data, sock_fd, NULL);
+		return NULL;
+	}
 	if (host_data->is_secured) {
 		ssl = create_ssl_connection(&ctx, sock_fd);
 		if (!ssl) {
@@ -143,7 +146,7 @@ struct file_data	*download_file_from_url_core(char *url,
 			return NULL;
 		}
 	}
-	if (sock_fd == -1 || send_request(sock_fd, ssl, host_data) ||
+	if (send_request(sock_fd, ssl, host_data) ||
 							!(file_data = malloc(sizeof(struct file_data)))) {
 		cleanup(ssl, ctx, host_data, sock_fd, NULL);
 		return NULL;
