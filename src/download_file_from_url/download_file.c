@@ -9,13 +9,15 @@
 #include <openssl/err.h>
 #include <arpa/inet.h>
 
-void update_bar(unsigned long total_bytes_downloaded, char *content_size)
+void	update_bar(unsigned long total_bytes_downloaded, char *content_size)
 {
 	int		content_size_f;
 	int		bar_width;
 	float	percentage;
 	int		position;
 
+	if (!content_size)
+		return;
 	content_size_f = atof(content_size);
 	bar_width = 50;
 	percentage = ((float)total_bytes_downloaded / content_size_f) * 100;
@@ -59,9 +61,9 @@ void	limit_speed(struct timespec start_time,
 		nanosleep(&pause_time, NULL);
 }
 
-int	write_data_into_file(int sock_fd, SSL *ssl,
-					FILE *fp, unsigned long bytes_per_sec, char *response,
-					int received, int remaining_data_len, char *content_size)
+int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
+					unsigned long bytes_per_sec, char *response, int received,
+					int remaining_data_len, struct header_data *header_data)
 {
 	unsigned long	total_bytes_downloaded;
 	struct timespec	start_download_time;
@@ -80,13 +82,25 @@ int	write_data_into_file(int sock_fd, SSL *ssl,
 		if (bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
 			limit_speed(start_download_time,
 									bytes_per_sec, total_bytes_downloaded);
-		update_bar(total_bytes_downloaded, content_size);
+		update_bar(total_bytes_downloaded, header_data->content_size);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
 		return 1;
 	}
 	return 0;
+}
+
+void	print_download_infos(struct header_data *header_data, char *file_path)
+{
+	if (!header_data)
+		return;
+	if (header_data->content_size)
+		printf("content size: %s [~%.2fMB]\n", header_data->content_size,
+						bytes_to_megabytes(atoi(header_data->content_size)));
+	else
+		printf("content size: unspecified\n");
+	printf("saving file to: %s\n", file_path);
 }
 
 /**
@@ -112,7 +126,7 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 		return NULL;
 	header_data = skip_htpp_header(sock_fd, ssl,
 									response, &received, &remaining_data_len);
-	if (!header_data || !header_data->status || !header_data->content_size)
+	if (!header_data || !header_data->status)
 		goto err_exit;
 	printf("status %s\n", header_data->status);
 	if (is_redirect_status(header_data->status))
@@ -124,11 +138,9 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 		perror("Error trying to open file");
 		goto err_exit;
 	}
-	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
-						bytes_to_megabytes(atoi(header_data->content_size)));
-	printf("saving file to: %s\n", file_path);
+	print_download_infos(header_data, file_path);
 	write_data_into_file(sock_fd, ssl, fp, bytes_per_sec, response,
-					received, remaining_data_len, header_data->content_size);
+					received, remaining_data_len, header_data);
 	fclose(fp);
 	return header_data;
 err_exit:
