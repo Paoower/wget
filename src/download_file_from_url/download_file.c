@@ -59,14 +59,14 @@ void	limit_speed(struct timespec start_time,
 		nanosleep(&pause_time, NULL);
 }
 
-int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
-						unsigned long bytes_per_sec,
-						struct timespec start_download_time,
-						char *response, int received,
-						int remaining_data_len, char *content_size)
+int	write_data_into_file(int sock_fd, SSL *ssl,
+					FILE *fp, unsigned long bytes_per_sec, char *response,
+					int received, int remaining_data_len, char *content_size)
 {
 	unsigned long	total_bytes_downloaded;
+	struct timespec	start_download_time;
 
+	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
 	total_bytes_downloaded = 0;
 	if (remaining_data_len > 0) {
 		total_bytes_downloaded += remaining_data_len;
@@ -89,32 +89,6 @@ int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 	return 0;
 }
 
-struct header_data *download_file_without_header(int sock_fd, SSL *ssl, FILE *fp,
-							unsigned long bytes_per_sec, char* total_file_path)
-{
-	int					received;
-	char				response[REQUEST_BUFFER_SIZE];
-	int					remaining_data_len;
-	struct header_data	*header_data;
-	struct timespec		start_download_time;
-
-	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
-	header_data = skip_htpp_header(sock_fd, ssl,
-									response, &received, &remaining_data_len);
-	if (!header_data)
-		return NULL;
-	printf("status %s\n", header_data->status);
-	if (!is_ok_status(header_data->status))
-		return header_data;
-	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
-						bytes_to_megabytes(atoi(header_data->content_size)));
-	printf("saving file to: %s\n", total_file_path);
-	write_data_into_file(sock_fd, ssl, fp, bytes_per_sec,
-							start_download_time, response, received,
-							remaining_data_len, header_data->content_size);
-	return header_data;
-}
-
 /**
  * @brief
  * Open or create a file, read data from sock_fd or ssl and write it into file
@@ -130,16 +104,34 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 {
 	FILE				*fp;
 	struct header_data	*header_data;
+	char				response[REQUEST_BUFFER_SIZE];
+	int					received;
+	int					remaining_data_len;
 
 	if (!file_path)
 		return NULL;
+	header_data = skip_htpp_header(sock_fd, ssl,
+									response, &received, &remaining_data_len);
+	if (!header_data)
+		return NULL;
+	printf("status %s\n", header_data->status);
+	if (is_redirect_status(header_data->status))
+		return header_data;
+	if (!is_ok_status(header_data->status)) {
+		free_header_data(header_data);
+		return NULL;
+	}
 	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
 		perror("Error trying to open file");
+		free_header_data(header_data);
 		return NULL;
 	}
-	header_data = download_file_without_header(sock_fd, ssl,
-									fp, bytes_per_sec, file_path);
+	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
+						bytes_to_megabytes(atoi(header_data->content_size)));
+	printf("saving file to: %s\n", file_path);
+	write_data_into_file(sock_fd, ssl, fp, bytes_per_sec, response,
+					received, remaining_data_len, header_data->content_size);
 	fclose(fp);
 	return header_data;
 }

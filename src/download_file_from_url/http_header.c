@@ -34,8 +34,8 @@ struct header_data	*fill_http_data(char *http_header)
 char	*concat_header(char *response, char *response_merged,
 												int received, int header_size)
 {
-	char				*new_response_merged;
-	char				*response_merged_end;
+	char	*new_response_merged;
+	char	*response_merged_end;
 
 	new_response_merged = realloc(response_merged, header_size + 1);
 	if (!new_response_merged) {

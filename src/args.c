@@ -47,6 +47,19 @@ unsigned long get_bytes_per_sec(char *rate_limit)
 	}
 	return rate;
 }
+/**
+ * @brief Parses the option whether it contains "="
+ * @param optarg Option to parse
+ * @return Parsed option
+*/
+char* parse_equal(char* optarg) {
+	char *s = strstr(optarg, "=");
+
+	if (s)
+		return s + 1;
+	
+	return optarg;
+}
 
 /**
  * Sort options and arguments into the parameters struct
@@ -109,22 +122,22 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			break;
 
 		case 'O':
-			copy_string(&parameters->output_file, optarg ? optarg : strdup("test.mp4"));
+			copy_string(&parameters->output_file, optarg ? parse_equal(optarg) : strdup("test.mp4"));
 			break;
 
 		case 'P':
-			copy_string(&parameters->storage_path, optarg ? optarg : strdup("./data/"));
+			copy_string(&parameters->storage_path, optarg ? parse_equal(optarg) : strdup("./data/"));
 			break;
 
 		case 'l':
 			if (optarg)
 			{
-				parameters->rate_limit = get_bytes_per_sec(optarg);
+				parameters->rate_limit = get_bytes_per_sec(parse_equal(optarg));
 			}
 			break;
 
 		case 'i':
-			copy_string(&parameters->links_file, optarg ? optarg : strdup(""));
+			copy_string(&parameters->links_file, optarg ? parse_equal(optarg) : strdup(""));
 			break;
 
 		case 'm':
@@ -134,14 +147,14 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 		case 'R':
 			if (optarg && parameters->mirror)
 			{
-				copy_string(&parameters->reject_list, optarg);
+				copy_string(&parameters->reject_list, parse_equal(optarg));
 			}
 			break;
 
 		case 'X':
 			if (optarg && parameters->mirror)
 			{
-				copy_string(&parameters->exclude_list, optarg);
+				copy_string(&parameters->exclude_list, parse_equal(optarg));
 			}
 			break;
 
@@ -167,7 +180,7 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 	}
 
 	// Check if there is an URL
-	if (!argv[optind])
+	if (!argv[optind] && !parameters->links_file)
 	{
 		fprintf(stderr, "wget: URL missing.\n");
 		exit(EXIT_FAILURE);
