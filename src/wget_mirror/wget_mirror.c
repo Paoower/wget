@@ -3,6 +3,7 @@
 int	wget_mirror(char *url, struct parameters_t params)
 {
 	(void)url;
+	(void)params;
 	return 0;
 	// add url in urls
 	// while urls is not empty

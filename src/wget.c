@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-int	wget_classic(char *url, const char *storage_dir_path,
+int	wget_classic(char *url, char *storage_dir_path,
 								char *file_name, unsigned long bytes_per_sec)
 {
 	char	*file_path;
