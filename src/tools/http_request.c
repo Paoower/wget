@@ -18,8 +18,15 @@ int	read_http_data(int sock_fd, SSL *ssl, char *buffer, int buffer_size)
 	else
 		return recv(sock_fd, buffer, buffer_size, 0);
 }
+int	is_ok_status(const char *status)
+{
+	if (!status)
+		return 0;
+	return strcmp(status, "200 OK") == 0;
+}
 
-int	is_redirect_status(const char *status) {
+int	is_redirect_status(const char *status)
+{
 	if (!status)
 		return 0;
 	return (strcmp(status, "301 Moved Permanently") == 0 ||
