@@ -111,6 +111,7 @@ int send_request(int sock_fd, SSL *ssl, struct host_data *host_data)
 	snprintf(request, REQUEST_BUFFER_SIZE, // make sure that the size is limited
 			"GET %s HTTP/1.1\r\n"
 			"Host: %s\r\n"
+			"User-Agent: Wbaget/1.0\r\n"
 			"Connection: close\r\n\r\n", // default format for http request
 			host_data->filepath, host_data->hostname);
 	if (send_http_request(sock_fd, ssl, request, strlen(request)) < 0) {
