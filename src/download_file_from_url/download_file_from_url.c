@@ -120,6 +120,30 @@ int send_request(int sock_fd, SSL *ssl, struct host_data *host_data)
 	return 0;
 }
 
+struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
+								SSL_CTX *ctx, struct host_data *host_data,
+								const char *storage_dir_path, char *file_name,
+								unsigned long bytes_per_sec, int is_mirror)
+{
+	struct file_data	*file_data;
+
+	if (send_request(sock_fd, ssl, host_data)) {
+		cleanup(ssl, ctx, host_data, sock_fd, NULL);
+		return NULL;
+	}
+	file_data = malloc(sizeof(struct file_data));
+	if (!file_data) {
+		cleanup(ssl, ctx, host_data, sock_fd, NULL);
+		return NULL;
+	}
+	file_data->file_path = get_host_file_path(storage_dir_path,
+											file_name, host_data, is_mirror);
+	file_data->header_data = download_file(sock_fd, ssl,
+										file_data->file_path, bytes_per_sec);
+	cleanup(ssl, ctx, host_data, sock_fd, NULL);
+	return file_data;
+}
+
 struct file_data	*download_file_from_url_core(char *url,
 								const char *storage_dir_path, char *file_name,
 								unsigned long bytes_per_sec, int is_mirror)
@@ -128,7 +152,6 @@ struct file_data	*download_file_from_url_core(char *url,
 	struct host_data	*host_data;
 	SSL_CTX				*ctx;
 	SSL					*ssl;
-	struct file_data	*file_data;
 
 	ssl = NULL;
 	ctx = NULL;
@@ -146,17 +169,8 @@ struct file_data	*download_file_from_url_core(char *url,
 			return NULL;
 		}
 	}
-	if (send_request(sock_fd, ssl, host_data) ||
-							!(file_data = malloc(sizeof(struct file_data)))) {
-		cleanup(ssl, ctx, host_data, sock_fd, NULL);
-		return NULL;
-	}
-	file_data->file_path = get_host_file_path(storage_dir_path,
-											file_name, host_data, is_mirror);
-	file_data->header_data = download_file(sock_fd, ssl,
-										file_data->file_path, bytes_per_sec);
-	cleanup(ssl, ctx, host_data, sock_fd, NULL);
-	return file_data;
+	return request_and_download_file(sock_fd, ssl, ctx, host_data,
+						storage_dir_path, file_name, bytes_per_sec, is_mirror);
 }
 
 /**
