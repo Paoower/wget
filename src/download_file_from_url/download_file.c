@@ -112,20 +112,17 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 		return NULL;
 	header_data = skip_htpp_header(sock_fd, ssl,
 									response, &received, &remaining_data_len);
-	if (!header_data)
-		return NULL;
+	if (!header_data || !header_data->status || !header_data->content_size)
+		goto err_exit;
 	printf("status %s\n", header_data->status);
 	if (is_redirect_status(header_data->status))
 		return header_data;
-	if (!is_ok_status(header_data->status)) {
-		free_header_data(header_data);
-		return NULL;
-	}
+	if (!is_ok_status(header_data->status))
+		goto err_exit;
 	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
 		perror("Error trying to open file");
-		free_header_data(header_data);
-		return NULL;
+		goto err_exit;
 	}
 	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
 						bytes_to_megabytes(atoi(header_data->content_size)));
@@ -134,4 +131,7 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 					received, remaining_data_len, header_data->content_size);
 	fclose(fp);
 	return header_data;
+err_exit:
+	free_header_data(header_data);
+	return NULL;
 }
