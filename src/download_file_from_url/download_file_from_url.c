@@ -183,6 +183,10 @@ char	*download_file_from_url(char *url, const char *storage_dir_path,
 		cleanup(NULL, NULL, NULL, -1, file_data);
 		file_data = new_file_data;
 	}
+	if (!is_ok_status(file_data->header_data->status)) {
+		cleanup(NULL, NULL, NULL, -1, file_data);
+		return NULL;
+	}
 	file_path = file_data->file_path;
 	free_header_data(file_data->header_data);
 	free(file_data);

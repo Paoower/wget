@@ -104,7 +104,7 @@ struct header_data *download_file_without_header(int sock_fd, SSL *ssl, FILE *fp
 	if (!header_data)
 		return NULL;
 	printf("status %s\n", header_data->status);
-	if (strcmp(header_data->status, "200 OK") != 0)
+	if (!is_ok_status(header_data->status))
 		return header_data;
 	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
 						bytes_to_megabytes(atoi(header_data->content_size)));

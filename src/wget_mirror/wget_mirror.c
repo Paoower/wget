@@ -1,13 +1,14 @@
 #include "src.h"
 
-int	wget_mirror(struct parameters_t params)
+int	wget_mirror(char *url, struct parameters_t params)
 {
+	(void)url;
 	(void)params;
 	return 0;
-	// add params.url in urls
+	// add url in urls
 	// while urls is not empty
 		// for each url
-			// append file path from get_file_from_host()
+			// append file path from download_file_from_url()
 
 		// empty urls tab
 		// for each file path

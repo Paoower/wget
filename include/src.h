@@ -29,7 +29,7 @@ int		wget_in_background(struct parameters_t params);
 // wget
 
 int		wget_from_file(struct parameters_t params);
-int		wget_mirror(struct parameters_t params);
+int		wget_mirror(char *url, struct parameters_t params);
 // wget mode
 
 #endif
