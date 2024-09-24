@@ -9,13 +9,16 @@
 #include <openssl/err.h>
 #include <arpa/inet.h>
 
-void update_bar(unsigned long total_bytes_downloaded, char *content_size)
+void update_bar(unsigned long total_bytes_downloaded,
+											char *content_size, bool display)
 {
 	int		content_size_f;
 	int		bar_width;
 	float	percentage;
 	int		position;
 
+	if (!display)
+		return;
 	content_size_f = atof(content_size);
 	bar_width = 50;
 	percentage = ((float)total_bytes_downloaded / content_size_f) * 100;
@@ -34,7 +37,7 @@ void update_bar(unsigned long total_bytes_downloaded, char *content_size)
 }
 
 void	limit_speed(struct timespec start_time,
-							unsigned long bytes_per_sec,
+										unsigned long bytes_per_sec,
 										unsigned long total_bytes_downloaded)
 {
 	struct timespec	elapsed_time;
@@ -59,9 +62,9 @@ void	limit_speed(struct timespec start_time,
 		nanosleep(&pause_time, NULL);
 }
 
-int	write_data_into_file(int sock_fd, SSL *ssl,
-					FILE *fp, unsigned long bytes_per_sec, char *response,
-					int received, int remaining_data_len, char *content_size)
+int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
+					unsigned long bytes_per_sec, char *response, int received,
+					int remaining_data_len, char *content_size, bool display)
 {
 	unsigned long	total_bytes_downloaded;
 	struct timespec	start_download_time;
@@ -80,7 +83,7 @@ int	write_data_into_file(int sock_fd, SSL *ssl,
 		if (bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
 			limit_speed(start_download_time,
 									bytes_per_sec, total_bytes_downloaded);
-		update_bar(total_bytes_downloaded, content_size);
+		update_bar(total_bytes_downloaded, content_size, display);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
@@ -99,8 +102,8 @@ int	write_data_into_file(int sock_fd, SSL *ssl,
  * @return
  * A pointer to the header_data, or NULL
  */
-struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
-													unsigned long bytes_per_sec)
+struct header_data	*download_file(int sock_fd, SSL *ssl,
+					char *file_path, unsigned long bytes_per_sec, bool display)
 {
 	FILE				*fp;
 	struct header_data	*header_data;
@@ -114,7 +117,8 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 									response, &received, &remaining_data_len);
 	if (!header_data)
 		return NULL;
-	printf("status %s\n", header_data->status);
+	if (display)
+		printf("status %s\n", header_data->status);
 	if (is_redirect_status(header_data->status))
 		return header_data;
 	if (!is_ok_status(header_data->status)) {
@@ -127,11 +131,13 @@ struct header_data	*download_file(int sock_fd, SSL *ssl, char *file_path,
 		free_header_data(header_data);
 		return NULL;
 	}
-	printf("content size: %s [~%.2fMB]\n", header_data->content_size,
-						bytes_to_megabytes(atoi(header_data->content_size)));
-	printf("saving file to: %s\n", file_path);
+	if (display) {
+		printf("content size: %s [~%.2fMB]\n", header_data->content_size,
+							bytes_to_megabytes(atoi(header_data->content_size)));
+		printf("saving file to: %s\n", file_path);
+	}
 	write_data_into_file(sock_fd, ssl, fp, bytes_per_sec, response,
-					received, remaining_data_len, header_data->content_size);
+			received, remaining_data_len, header_data->content_size, display);
 	fclose(fp);
 	return header_data;
 }

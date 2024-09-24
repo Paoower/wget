@@ -2,6 +2,7 @@
 # define GET_FILE_FROM_HOST
 
 # include <openssl/ssl.h>
+# include <stdbool.h>
 # define REQUEST_BUFFER_SIZE 1024
 
 struct	host_data {
@@ -24,7 +25,7 @@ struct file_data {
 };
 
 struct header_data	*download_file(int sock_fd, SSL *ssl,
-								char *file_path, unsigned long bytes_per_sec);
+					char *file_path, unsigned long bytes_per_sec, bool display);
 char				*get_host_file_path(const char *storage_dir_path,
 								char *file_name, struct host_data *host_data,
 																int is_mirror);

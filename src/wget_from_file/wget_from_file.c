@@ -65,14 +65,11 @@ void apply_function_to_line(char *line, struct parameters_t params)
 	char	*file_path;
 
 	file_path = download_file_from_url(line, params.storage_path,
-						params.output_file, params.rate_limit, params.mirror);
+				params.output_file, params.rate_limit, params.mirror, false);
 	if (!file_path)
-		return ;
-
+		return;
 	printf("Downloaded [%s]\n", file_path);
 	free(file_path);
-	print_current_date("finished at ");
-
 	return ;
 }
 

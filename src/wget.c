@@ -13,7 +13,7 @@ int	wget_classic(char *url, char *storage_dir_path,
 
 	print_current_date("start at ");
 	file_path = download_file_from_url(url, storage_dir_path,
-												file_name, bytes_per_sec, 0);
+											file_name, bytes_per_sec, 0, true);
 	if (!file_path)
 		return 1;
 	printf("Downloaded [%s]\n", file_path);
