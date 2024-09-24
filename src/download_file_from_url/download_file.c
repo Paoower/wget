@@ -71,29 +71,41 @@ pedia\r\n <-- Données du chunk (taille 5 octets)
 la size est en hexa
 */
 
+void	write_data_into_file_update(FILE *fp, char *data, int size,
+		struct header_data *header_data, struct timespec start_download_time,
+		unsigned long bytes_per_sec, bool display,
+		unsigned long *total_bytes_downloaded)
+{
+	*total_bytes_downloaded += size;
+	fwrite(data, 1, size, fp);
+	if (bytes_per_sec > 0 && size == REQUEST_BUFFER_SIZE)
+		limit_speed(start_download_time,
+								bytes_per_sec, *total_bytes_downloaded);
+	update_bar(*total_bytes_downloaded, header_data->content_size, display);
+}
+
 int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
 		unsigned long bytes_per_sec, char *response, int received,
 		int remaining_data_len, struct header_data *header_data, bool display)
 {
 	unsigned long	total_bytes_downloaded;
 	struct timespec	start_download_time;
-	char			*data_after_header;
+	char			*data;
 
 	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
 	total_bytes_downloaded = 0;
 	if (remaining_data_len > 0) {
-		data_after_header = response + received - remaining_data_len;
-		total_bytes_downloaded += remaining_data_len;
-		fwrite(data_after_header, 1, remaining_data_len, fp);
+		data = response + received - remaining_data_len;
+		received = remaining_data_len;
+		goto already_recv;
 	}
 	while ((received = read_http_data(sock_fd, ssl,
 										response, REQUEST_BUFFER_SIZE)) > 0) {
-		total_bytes_downloaded += received;
-		fwrite(response, 1, received, fp);
-		if (bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
-			limit_speed(start_download_time,
-									bytes_per_sec, total_bytes_downloaded);
-		update_bar(total_bytes_downloaded, header_data->content_size, display);
+		data = response;
+	already_recv:
+		write_data_into_file_update(fp, data, received, header_data,
+											start_download_time, bytes_per_sec,
+											display, &total_bytes_downloaded);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
