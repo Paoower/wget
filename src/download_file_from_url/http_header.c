@@ -14,6 +14,7 @@ void	free_header_data(struct header_data *header_data)
 		free(header_data->status);
 		free(header_data->content_size);
 		free(header_data->redirect_url);
+		free(header_data->transfer_encoding);
 		free(header_data);
 	}
 }
@@ -28,6 +29,8 @@ struct header_data	*fill_http_data(char *http_header)
 										http_header, "content-length", NULL);
 	header_data->redirect_url = get_http_response_info(
 										http_header, "location", NULL);
+	header_data->transfer_encoding = get_http_response_info(
+										http_header, "transfer-encoding", NULL);
 	return header_data;
 }
 

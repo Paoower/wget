@@ -17,6 +17,7 @@ struct header_data {
 	char	*status;
 	char	*content_size;
 	char	*redirect_url;
+	char	*transfer_encoding;
 };
 
 struct file_data {
