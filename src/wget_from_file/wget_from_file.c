@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 struct params_thread {
 	struct parameters_t	params;
@@ -61,11 +63,12 @@ void apply_function_to_line(char *line, struct parameters_t params)
 {
 
 	char	*file_path;
-	printf("Traitement de la ligne: %s\n", line);
+
 	file_path = download_file_from_url(line, params.storage_path,
 						params.output_file, params.rate_limit, params.mirror);
 	if (!file_path)
 		return ;
+
 	printf("Downloaded [%s]\n", file_path);
 	free(file_path);
 	print_current_date("finished at ");
@@ -78,7 +81,6 @@ void *thread_function(void *arg)
 	struct params_thread	*params_thread;
 
 	params_thread = (struct params_thread *)arg;
-	printf("Wesh %s\n", params_thread->line);
 	apply_function_to_line(params_thread->line, params_thread->params);
 	return NULL;
 }
@@ -99,11 +101,10 @@ int wget_from_file(struct parameters_t parameters)
 		params_threads[i] = malloc(sizeof(struct params_thread));
 		params_threads[i]->line = lines[i];
 		params_threads[i]->params = parameters;
-		printf("%s\n", params_threads[i]->line);
 		int rc = pthread_create(&threads[i], NULL,
 									thread_function, (void *)params_threads[i]);
 		if (rc) {
-			fprintf(stderr, "Erreur lors de la création du thread, code : %d\n", rc);
+			fprintf(stderr, "Error during hte initialization of the thread, code : %d\n", rc);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -112,6 +113,6 @@ int wget_from_file(struct parameters_t parameters)
 	}
 	wget_from_file_cleanup(params_threads, lines, line_count);
 	free(threads);
-	printf("Tous les traitements sont terminés.\n");
+	printf("All Downloads completed.\n");
 	return 0;
 }
