@@ -16,7 +16,7 @@ struct params_thread {
 char **read_lines_from_file(const char *filename, int *line_count) {
 	FILE *file = fopen(filename, "r");
 	if (!file) {
-		fprintf(stderr, "Erreur: Impossible d'ouvrir le fichier %s\n", filename);
+		fprintf(stderr, "Error: can't open the file %s\n", filename);
 		return NULL;
 	}
 
@@ -29,14 +29,14 @@ char **read_lines_from_file(const char *filename, int *line_count) {
 
 		lines = realloc(lines, sizeof(char *) * (*line_count + 1));
 		if (!lines) {
-			fprintf(stderr, "Erreur: Problème d'allocation mémoire\n");
+			fprintf(stderr, "Error : problem while allocating memory\n");
 			fclose(file);
 			return NULL;
 		}
 
 		lines[*line_count] = strdup(buffer);
 		if (!lines[*line_count]) {
-			fprintf(stderr, "Erreur: Problème d'allocation mémoire pour la ligne\n");
+			fprintf(stderr, "Error : problem while allocating memory for the line\n");
 			fclose(file);
 			return NULL;
 		}
@@ -65,11 +65,13 @@ void apply_function_to_line(char *line, struct parameters_t params)
 	char	*file_path;
 
 	file_path = download_file_from_url(line, params.storage_path,
-				params.output_file, params.rate_limit, params.mirror, false);
+						params.output_file, params.rate_limit, params.mirror, 0);
 	if (!file_path)
-		return;
+		return ;
 	printf("Downloaded [%s]\n", file_path);
 	free(file_path);
+	print_current_date("finished at ");
+
 	return ;
 }
 
@@ -101,7 +103,7 @@ int wget_from_file(struct parameters_t parameters)
 		int rc = pthread_create(&threads[i], NULL,
 									thread_function, (void *)params_threads[i]);
 		if (rc) {
-			fprintf(stderr, "Error during hte initialization of the thread, code : %d\n", rc);
+			fprintf(stderr, "Error during the initialization of the thread, code : %d\n", rc);
 			exit(EXIT_FAILURE);
 		}
 	}
