@@ -12,12 +12,23 @@ struct	host_data {
 	int		is_secured;
 };
 
-struct header_data {
-	int		remaining_data_length;
+struct	header_data {
 	char	*status;
 	char	*content_size;
 	char	*redirect_url;
 	char	*transfer_encoding;
+};
+
+struct	dl_data {
+	int				sock_fd;
+	SSL				*ssl;
+	FILE			*fp;
+	unsigned long	bytes_per_sec;
+	struct timespec	start_download_time;
+	unsigned long	total_bytes_downloaded;
+	bool			is_in_chunk;
+	long			chunk_size;
+	long 			chunk_data_count;
 };
 
 struct file_data {

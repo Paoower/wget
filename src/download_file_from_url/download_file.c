@@ -9,6 +9,15 @@
 #include <openssl/err.h>
 #include <arpa/inet.h>
 
+void	fill_basic_dl_data(struct dl_data *dl_data, int sock_fd,
+								SSL *ssl, FILE *fp, unsigned long bytes_per_sec)
+{
+	dl_data->sock_fd = sock_fd;
+	dl_data->ssl = ssl;
+	dl_data->fp = fp;
+	dl_data->bytes_per_sec = bytes_per_sec;
+}
+
 void	limit_speed(struct timespec start_time,
 										unsigned long bytes_per_sec,
 										unsigned long total_bytes_downloaded)
@@ -72,62 +81,80 @@ pedia\r\n <-- Données du chunk (taille 5 octets)
 la size est en hexa
 */
 
-char	*get_chunked_data(int sock_fd, SSL *ssl, char *data, int *received)
+int	init_chunk(char **data, struct dl_data *dld)
 {
 	long	chunk_size;
 	char	*endptr;
-	char	*chunk;
 
-	chunk_size = strtol(data, &endptr, 16);
-	if (data == endptr)
-		return NULL; // conversion error
-	if (chunk_size == 0) {
-		*received = 0;
-		return data; // end of data
-	}
-	chunk = malloc(chunk_size);
-	if (!chunk)
-		return NULL;
-	memcpy(chunk, endptr + 2, *received); // ignore "\r\n" after the chunk size
-	*received = read_http_data(sock_fd, ssl, chunk, chunk_size - *received);
-	return chunk;
+	dld->is_in_chunk = true;
+	dld->chunk_data_count = 0;
+	chunk_size = strtol(*data, &endptr, 16);
+	if (*data == endptr)
+		return 0; // conversion error
+	*data = endptr;
+	return chunk_size;
 }
 
-int	write_data_into_file(int sock_fd, SSL *ssl, FILE *fp,
-		unsigned long bytes_per_sec, char *response, int received,
-		int remaining_data_len, struct header_data *header_data, bool display)
+void	write_data_into_file_core(char *data, int received,
+					struct dl_data *dld, struct header_data *hd, bool display)
 {
-	unsigned long	total_bytes_downloaded;
-	struct timespec	start_download_time;
-	char			*data;
-	bool			is_chunked;
+	dld->total_bytes_downloaded += received;
+	fwrite(data, 1, received, dld->fp);
+	if (dld->bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
+		limit_speed(dld->start_download_time,
+							dld->bytes_per_sec, dld->total_bytes_downloaded);
+	update_bar(dld->total_bytes_downloaded, hd->content_size, display);
+}
 
-	is_chunked = header_data->transfer_encoding &&
-						strcmp(header_data->transfer_encoding, "chunked") == 0;
-	clock_gettime(CLOCK_MONOTONIC, &start_download_time);
-	total_bytes_downloaded = 0;
+void write_data_chunked_into_file(char **data, int *received,
+					struct dl_data *dld, struct header_data *hd, bool display)
+{
+	int		first_part_len;
+	int		last_part_len;
+	char	*init_data;
+
+	init_data = *data;
+	if (!dld->is_in_chunk)
+		dld->chunk_size = init_chunk(data, dld);
+	dld->chunk_data_count += *received;
+	if (dld->chunk_data_count >= dld->chunk_size) {
+	// if buffer contains end of the chunk
+		dld->is_in_chunk = false;
+		if (dld->chunk_data_count > dld->chunk_size) {
+		// if buffer contains also the next chunk
+			first_part_len = dld->chunk_data_count - dld->chunk_size;
+			write_data_into_file_core(*data, first_part_len, dld, hd, display);
+			dld->chunk_size = init_chunk(data, dld);
+			last_part_len = init_data + *received - *data;
+			dld->chunk_data_count += first_part_len + last_part_len;
+			*received = last_part_len;
+		}
+	}
+}
+
+int	write_data_into_file(struct dl_data *dld, char *response, int received,
+		int remaining_data_len, struct header_data *hd, bool display)
+{
+	char	*data;
+	bool	is_chunked;
+
+	is_chunked = hd->transfer_encoding &&
+								strcmp(hd->transfer_encoding, "chunked") == 0;
+	dld->is_in_chunk = false;
+	clock_gettime(CLOCK_MONOTONIC, &dld->start_download_time);
+	dld->total_bytes_downloaded = 0;
 	if (remaining_data_len > 0) {
 		data = response + received - remaining_data_len;
 		received = remaining_data_len;
 		goto already_recv;
 	}
-	while ((received = read_http_data(sock_fd, ssl,
+	while ((received = read_http_data(dld->sock_fd, dld->ssl,
 										response, REQUEST_BUFFER_SIZE)) > 0) {
 		data = response;
 	already_recv:
-		if (is_chunked) {
-			data = get_chunked_data(sock_fd, ssl, data, &received);
-			if (!data)
-				return 1;
-		}
-		total_bytes_downloaded += received;
-		fwrite(data, 1, received, fp);
-		if (bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
-			limit_speed(start_download_time,
-									bytes_per_sec, total_bytes_downloaded);
-		update_bar(total_bytes_downloaded, header_data->content_size, display);
 		if (is_chunked)
-			free(data);
+			// write_data_chunked_into_file(&data, &received, dld, hd, display);
+		write_data_into_file_core(data, received, dld, hd, display);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
@@ -167,6 +194,7 @@ struct header_data	*download_file(int sock_fd, SSL *ssl,
 	char				response[REQUEST_BUFFER_SIZE];
 	int					received;
 	int					remaining_data_len;
+	struct dl_data		dl_data;
 
 	if (!file_path)
 		return NULL;
@@ -186,7 +214,8 @@ struct header_data	*download_file(int sock_fd, SSL *ssl,
 		goto err_exit;
 	}
 	print_download_infos(header_data, file_path, display);
-	write_data_into_file(sock_fd, ssl, fp, bytes_per_sec, response,
+	fill_basic_dl_data(&dl_data, sock_fd, ssl, fp, bytes_per_sec);
+	write_data_into_file(&dl_data, response,
 							received, remaining_data_len, header_data, display);
 	fclose(fp);
 	return header_data;
