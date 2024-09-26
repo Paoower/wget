@@ -71,27 +71,18 @@ void	update_bar(unsigned long total_bytes_downloaded,
 	fflush(stdout);
 }
 
-/*
-4\r\n    <-- Taille du chunk (4 octets)
-Wiki\r\n <-- Données du chunk (taille 4 octets)
-5\r\n    <-- Taille du chunk (5 octets)
-pedia\r\n <-- Données du chunk (taille 5 octets)
-0\r\n    <-- Fin des chunks
-\r\n     <-- Fin de la réponse
-la size est en hexa
-*/
-
-int	init_chunk(char **data, struct dl_data *dld)
+int	init_chunk(char **data, int *received, struct dl_data *dld)
 {
 	long	chunk_size;
 	char	*endptr;
 
-	dld->is_in_chunk = true;
-	dld->chunk_data_count = 0;
 	chunk_size = strtol(*data, &endptr, 16);
 	if (*data == endptr)
 		return 0; // conversion error
-	*data = endptr;
+	dld->is_in_chunk = true;
+	dld->chunk_data_count = 0;
+	*received -= (endptr + 2) - *data;
+	*data = endptr + 2;
 	return chunk_size;
 }
 
@@ -106,30 +97,36 @@ void	write_data_into_file_core(char *data, int received,
 	update_bar(dld->total_bytes_downloaded, hd->content_size, display);
 }
 
-void write_data_chunked_into_file(char **data, int *received,
+void	write_data_chunked_into_file(char **data, int *buf_size,
 					struct dl_data *dld, struct header_data *hd, bool display)
 {
-	int		first_part_len;
-	int		last_part_len;
-	char	*init_data;
+	int	current_chunk_len;
 
-	init_data = *data;
-	if (!dld->is_in_chunk)
-		dld->chunk_size = init_chunk(data, dld);
-	dld->chunk_data_count += *received;
+new_chunk:
+	if (*buf_size <= 0)
+		return;
+	if (!dld->is_in_chunk) {
+		dld->chunk_size = init_chunk(data, buf_size, dld);
+		if (dld->chunk_size == 0) {
+			*buf_size = 0;
+			return;
+		}
+		// read chunk size and init variables
+	}
+	dld->chunk_data_count += *buf_size;
 	if (dld->chunk_data_count >= dld->chunk_size) {
 	// if buffer contains end of the chunk
 		dld->is_in_chunk = false;
 		if (dld->chunk_data_count > dld->chunk_size) {
-		// if buffer contains also the next chunk
-			first_part_len = dld->chunk_data_count - dld->chunk_size;
-			write_data_into_file_core(*data, first_part_len, dld, hd, display);
-			dld->chunk_size = init_chunk(data, dld);
-			last_part_len = init_data + *received - *data;
-			dld->chunk_data_count += first_part_len + last_part_len;
-			*received = last_part_len;
+		// if buffer contains \r\n or next chunk
+			current_chunk_len = *buf_size - (dld->chunk_data_count - dld->chunk_size);
+			write_data_into_file_core(*data, current_chunk_len, dld, hd, display);
+			*data += current_chunk_len + 2;
+			*buf_size -= current_chunk_len + 2; // ignore \r\n after data
+			goto new_chunk;
 		}
 	}
+	return;
 }
 
 int	write_data_into_file(struct dl_data *dld, char *response, int received,
@@ -153,8 +150,9 @@ int	write_data_into_file(struct dl_data *dld, char *response, int received,
 		data = response;
 	already_recv:
 		if (is_chunked)
-			// write_data_chunked_into_file(&data, &received, dld, hd, display);
-		write_data_into_file_core(data, received, dld, hd, display);
+			write_data_chunked_into_file(&data, &received, dld, hd, display);
+		if (received > 0)
+			write_data_into_file_core(data, received, dld, hd, display);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
