@@ -2,6 +2,7 @@
 **/*.o
 data
 wget
+test
 wget-log
 *.mp4
 *.jpg
