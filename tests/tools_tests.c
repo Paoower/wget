@@ -3,21 +3,56 @@
 #include <stdio.h>
 
 START_TEST(test_array_append) {
-	char **s;
+	char	**array;
 
-	s = NULL;
-	s = array_append(s, NULL);
-	ck_assert_ptr_eq(s, NULL);
-	s = array_append(s, "coucou");
-	ck_assert_ptr_ne(s, NULL);
-	if (s) {
-		ck_assert_str_eq(s[0], "coucou");
-		ck_assert_ptr_eq(s[1], NULL);
-		s = array_append(s, "liamine");
-		ck_assert_str_eq(s[1], "liamine");
-		ck_assert_ptr_eq(s[2], NULL);
+	array = array_append(NULL, NULL);
+	ck_assert_ptr_eq(array, NULL);
+	array = array_append(array, "coucou");
+	ck_assert_ptr_ne(array, NULL);
+	if (array) {
+		ck_assert_str_eq(array[0], "coucou");
+		ck_assert_ptr_eq(array[1], NULL);
+		array = array_append(array, "liamine");
+		ck_assert_str_eq(array[1], "liamine");
+		ck_assert_ptr_eq(array[2], NULL);
+	} else {
+		ck_abort();
+		free_array(array);
 	}
-	free_array(s);
+	free_array(array);
+}
+END_TEST
+
+START_TEST(test_array_concat) {
+	char	**array1;
+	char	**array2;
+	char	**result;
+
+	array1 = NULL;
+	array2 = NULL;
+	result = NULL;
+	result = array_concat(NULL, NULL);
+	ck_assert_ptr_eq(result, NULL);
+	array1 = array_append(NULL, "a1");
+	result = array_concat(result, array1);
+	if (!result)
+		goto error_escape;
+	ck_assert_str_eq(result[0], "a1");
+	array2 = array_append(NULL, "b1");
+	array2 = array_append(array2, "b2");
+	result = array_concat(result, array2);
+	ck_assert_str_eq(result[0], "a1");
+	ck_assert_str_eq(result[2], "b2");
+	ck_assert_ptr_eq(result[3], NULL);
+	free_array(array1);
+	free_array(array2);
+	free_array(result);
+	return;
+error_escape:
+	free_array(array1);
+	free_array(array2);
+	free_array(result);
+	ck_abort();
 }
 END_TEST
 
@@ -28,9 +63,13 @@ Suite*	tools_suite() {
 	s = suite_create("Tools");
 
 	tc_string = tcase_create("String");
+	// create tcases
 
 	tcase_add_test(tc_string, test_array_append);
-	suite_add_tcase(s, tc_string);
+	tcase_add_test(tc_string, test_array_concat);
+	// add tests to tcase
 
+	suite_add_tcase(s, tc_string);
+	// add tacases to suite
 	return s;
 }

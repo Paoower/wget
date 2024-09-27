@@ -18,9 +18,10 @@ char			*get_http_response_info(const char *http_response,
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
-void			free_array(char **array);
+void			free_array(char **heap_array);
 int				array_len(char **array);
-char			**array_append(char **array, const char *s);
+char			**array_append(char **heap_array, char *str);
+char			**array_concat(char **heap_array1, char **array2);
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
 void			copy_string(char **dest, char *src);
