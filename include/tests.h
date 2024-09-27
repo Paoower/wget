@@ -1,6 +1,8 @@
 #ifndef TESTS_H
 # define TESTS_H
 
-void	test_tools();
+# include <check.h>
+
+Suite*	tools_suite();
 
 #endif

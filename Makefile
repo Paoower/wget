@@ -21,6 +21,7 @@ TESTS_OBJ_FILES_NO_SRC_MAIN = $(TESTS_OBJ_FILES) $(filter-out $(BUILD_DIR)/main.
 CC=gcc
 WARN_FLAGS=-Wall -Wextra -Werror
 SSL_FLAGS=-lssl -lcrypto
+CHECK_FLAGS=-lcheck -lsubunit -lm
 RM=rm -rf
 
 # src
@@ -50,7 +51,7 @@ $(TESTS_BUILD_DIR)/%.o: $(TESTS_DIR)/%.c
 	$(CC) $(WARN_FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 $(TESTS_TARGET): $(TESTS_OBJ_FILES_NO_SRC_MAIN)
-	$(CC) $(TESTS_OBJ_FILES_NO_SRC_MAIN) -o $@ $(SSL_FLAGS)
+	$(CC) $(TESTS_OBJ_FILES_NO_SRC_MAIN) -o $@ $(CHECK_FLAGS) $(SSL_FLAGS)
 
 test-clean:
 	$(RM) $(TESTS_BUILD_DIR)

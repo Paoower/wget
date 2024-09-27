@@ -30,6 +30,8 @@ char	**array_append(char **array, const char *s)
 	char	**result;
 	char	*new_str;
 
+	if (!s)
+		return array;
 	new_str = strdup(s);
 	if (!new_str)
 		return array;

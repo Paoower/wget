@@ -18,10 +18,13 @@ char			*get_http_response_info(const char *http_response,
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
+void			free_array(char **array);
+int				array_len(char **array);
+char			**array_append(char **array, const char *s);
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
 void			copy_string(char **dest, char *src);
-// string.c
+// string
 
 int				parse_url();
 // parse_url.c
@@ -32,7 +35,6 @@ struct timespec	get_elapsed_time(struct timespec start_time);
 // time.c
 
 char			**split(const char *str, const char *charset);
-void			free_char_tab(char **strs);
 
 float			bytes_to_megabytes(int bytes);
 

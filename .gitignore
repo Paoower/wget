@@ -4,10 +4,10 @@ data
 wget
 test
 wget-log
+download*.txt
 *.mp4
 *.jpg
 *.png
 *.gif
 *.html
-*.txt
 *.zip

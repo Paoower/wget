@@ -1,16 +1,5 @@
+#include "tools.h"
 #include <stdlib.h>
-
-void	free_char_tab(char **strs)
-{
-	int	i;
-
-	i = 0;
-	while (strs[i]) {
-		free(strs[i]);
-		i++;
-	}
-	free(strs);
-}
 
 int	is_charset(const char *str, const char *charset)
 {
@@ -66,7 +55,7 @@ char	**allocate_memory(const char *str, const char *charset, int nb_words)
 			}
 			strs[y] = malloc(sizeof (char) * (word_size + 1));
 			if (!strs[y]) {
-				free_char_tab(strs);
+				free_array(strs);
 				return NULL;
 			}
 			y++;
