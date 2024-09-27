@@ -8,6 +8,15 @@ START_TEST(test_array_append) {
 	s = NULL;
 	s = array_append(s, NULL);
 	ck_assert_ptr_eq(s, NULL);
+	s = array_append(s, "coucou");
+	ck_assert_ptr_ne(s, NULL);
+	if (s) {
+		ck_assert_str_eq(s[0], "coucou");
+		ck_assert_ptr_eq(s[1], NULL);
+		s = array_append(s, "liamine");
+		ck_assert_str_eq(s[1], "liamine");
+		ck_assert_ptr_eq(s[2], NULL);
+	}
 	free_array(s);
 }
 END_TEST

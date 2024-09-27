@@ -18,7 +18,9 @@ int	array_len(char **array)
 	int	count;
 
 	count = 0;
-	while (array++)
+	if (!array)
+		return 0;
+	while (array[count])
 		count++;
 	return count;
 }
@@ -36,12 +38,13 @@ char	**array_append(char **array, const char *s)
 	if (!new_str)
 		return array;
 	array_length = array_len(array);
-	i = 0;
 	result = malloc(sizeof(char *) * (array_length + 2));
 	if (!result)
 		return array;
+	i = 0;
 	while(i < array_length) {
 		result[i] = array[i];
+		i++;
 	}
 	result[i++] = new_str;
 	result[i] = NULL;
