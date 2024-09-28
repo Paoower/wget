@@ -5,7 +5,7 @@
 
 START_TEST(test_get_urls_from_html) {
 	int		i;
-	char	**urls;
+	Array	urls;
 	char	*expected_urls[] = {
 		"/icons/openlogo-75.png",
 		"/manual",
@@ -32,7 +32,7 @@ START_TEST(test_get_urls_from_html) {
 		ck_assert_str_eq(urls[i], expected_urls[i]);
 		i++;
 	}
-	free_array(urls);
+	free_array(&urls);
 }
 END_TEST
 

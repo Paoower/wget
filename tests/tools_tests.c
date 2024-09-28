@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 START_TEST(test_array_append) {
-	char	**array;
+	Array	array;
 
 	array = NULL;
 	array_append(&array, NULL);
@@ -18,16 +18,16 @@ START_TEST(test_array_append) {
 		ck_assert_ptr_eq(array[2], NULL);
 	} else {
 		ck_abort();
-		free_array(array);
+		free_array(&array);
 	}
-	free_array(array);
+	free_array(&array);
 }
 END_TEST
 
 START_TEST(test_array_concat) {
-	char	**array1;
-	char	**array2;
-	char	**result;
+	Array	array1;
+	Array	array2;
+	Array	result;
 
 	array1 = NULL;
 	array2 = NULL;
@@ -45,14 +45,14 @@ START_TEST(test_array_concat) {
 	ck_assert_str_eq(result[0], "a1");
 	ck_assert_str_eq(result[2], "b2");
 	ck_assert_ptr_eq(result[3], NULL);
-	free_array(array1);
-	free_array(array2);
-	free_array(result);
+	free_array(&array1);
+	free_array(&array2);
+	free_array(&result);
 	return;
 error_escape:
-	free_array(array1);
-	free_array(array2);
-	free_array(result);
+	free_array(&array1);
+	free_array(&array2);
+	free_array(&result);
 	ck_abort();
 }
 END_TEST

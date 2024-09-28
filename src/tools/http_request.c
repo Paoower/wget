@@ -2,7 +2,6 @@
 #include <string.h>
 #include <sys/socket.h>
 
-
 int	send_http_request(int sock_fd, SSL *ssl, char *buffer, int buffer_size)
 {
 	if (ssl)
@@ -44,8 +43,8 @@ int	is_redirect_status(const char *status)
 char	*get_http_response_info(const char *http_response,
 										const char *key, const char *spliter)
 {
-	char	**lines;
-	char	**tokens;
+	Array	lines;
+	Array	tokens;
 	char	*result;
 	int		i;
 
@@ -58,14 +57,14 @@ char	*get_http_response_info(const char *http_response,
 		if (tokens) {
 			if (tokens[0] && strcasecmp(tokens[0], key) == 0) {
 				result = strdup(lines[i] + strlen(tokens[0]) + strlen(spliter));
-				free_array(tokens);
-				free_array(lines);
+				free_array(&tokens);
+				free_array(&lines);
 				return result;
 			}
-			free_array(tokens);
+			free_array(&tokens);
 		}
 		i++;
 	}
-	free_array(lines);
+	free_array(&lines);
 	return NULL;
 }

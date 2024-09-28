@@ -2,19 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-void	free_array(char **heap_array)
+/**
+ * @brief free the array and set the pointer to NULL
+ */
+void	free_array(Array *array)
 {
 	int	i;
 
-	if (!heap_array)
+	if (!array || !*array)
 		return;
 	i = 0;
-	while(heap_array[i])
-		free(heap_array[i++]);
-	free(heap_array);
+	while((*array)[i])
+		free((*array)[i++]);
+	free(*array);
+	*array = NULL;
 }
 
-int	array_len(char **array)
+int	array_len(Array array)
 {
 	int	count;
 
@@ -36,31 +40,31 @@ int	array_len(char **array)
  * or the initial array if something went wrong.
  * Use `free_array` to free memory after use.
  */
-int	array_append(char ***heap_dest_array, char *src_str)
+int	array_append(Array *dest, char *src)
 {
 	int		i;
 	int		array_length;
-	char	**result;
+	Array	result;
 	char	*new_str;
 
-	if (!heap_dest_array || !src_str)
+	if (!dest || !src)
 		return 1;
-	new_str = strdup(src_str);
+	new_str = strdup(src);
 	if (!new_str)
 		return 1;
-	array_length = array_len(*heap_dest_array);
+	array_length = array_len(*dest);
 	result = malloc(sizeof(char *) * (array_length + 2));
 	if (!result)
 		return 1;
 	i = 0;
 	while (i < array_length) {
-		result[i] = (*heap_dest_array)[i];
+		result[i] = (*dest)[i];
 		i++;
 	}
 	result[i++] = new_str;
 	result[i] = NULL;
-	free(*heap_dest_array);
-	*heap_dest_array = result;
+	free(*dest);
+	*dest = result;
 	return 0;
 }
 
@@ -72,7 +76,7 @@ int	array_append(char ***heap_dest_array, char *src_str)
  * @return A new array that contains the two given arrays.
  * Use `free_array` to free memory after use.
  */
-int	array_concat(char ***heap_dest_array, char **src_array)
+int	array_concat(Array *dest, Array src)
 {
 	int		i;
 	int		j;
@@ -81,10 +85,10 @@ int	array_concat(char ***heap_dest_array, char **src_array)
 	char	**result;
 	char	*new_str;
 
-	if (!heap_dest_array)
+	if (!dest)
 		return 1;
-	array1_length = array_len(*heap_dest_array);
-	array2_length = array_len(src_array);
+	array1_length = array_len(*dest);
+	array2_length = array_len(src);
 	if (array2_length == 0)
 		return 1;
 	result = malloc(sizeof(char *) * (array1_length + array2_length + 1));
@@ -94,9 +98,9 @@ int	array_concat(char ***heap_dest_array, char **src_array)
 	j = 0;
 	while (i < array1_length + array2_length) {
 		if (i < array1_length)
-			result[i] = (*heap_dest_array)[i];
+			result[i] = (*dest)[i];
 		else {
-			new_str = strdup(src_array[j]);
+			new_str = strdup(src[j]);
 			if (!new_str) {
 				while(j > 0) {
 					free(result[i - j]);
@@ -111,7 +115,7 @@ int	array_concat(char ***heap_dest_array, char **src_array)
 		i++;
 	}
 	result[i] = NULL;
-	free(*heap_dest_array);
-	*heap_dest_array = result;
+	free(*dest);
+	*dest = result;
 	return 0;
 }
