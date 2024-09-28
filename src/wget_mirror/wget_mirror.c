@@ -6,36 +6,39 @@ int	wget_mirror(char *url, struct parameters_t params)
 {
 	array	urls;
 	array	new_urls;
+	array	dl_history;
 	array	file_paths;
 	char	*file_path;
 	int		i;
 
-	file_paths = array_init(NULL);
 	urls = array_init(url, NULL);
-	// add url in urls
+	dl_history = array_init(NULL);
+	file_paths = array_init(NULL);
 	while (urls) {
-	// while urls is not empty
 		i = 0;
 		while (urls[i]) {
-		// for each url
-			file_path = download_file_from_url(urls[i], params.storage_path,
-					params.output_file, params.rate_limit, params.mirror, 0);
-			array_append(&file_paths, file_path);
-			free(file_path);
-			// append file path from download_file_from_url()
+			if (!is_in_array(dl_history, urls[i])) {
+			// if url is not in the dl_history, dl + add
+				file_path = download_file_from_url(urls[i], params.storage_path,
+						params.output_file, params.rate_limit, params.mirror, 0);
+				array_append(&file_paths, file_path);
+				free(file_path);
+				array_append(&dl_history, urls[i]);
+			}
 			i++;
 		}
 		free_array(&urls);
-		// empty urls tab
 		i = 0;
 		while (file_paths && file_paths[i]) {
-		// for each file path
 			new_urls = get_urls_from_html(file_paths[i],
 									params.reject_list, params.exclude_list);
 			array_concat(&urls, new_urls);
-			// append urls from get_urls_from_html(file_path) to urls
 			free_array(&new_urls);
+			// concatenate every urls in every files
 		}
+		array_deduplicate(&urls);
+		// remove every duplicated in urls
 	}
+	free_array(&dl_history);
 	return 0;
 }

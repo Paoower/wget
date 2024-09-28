@@ -161,3 +161,16 @@ int	array_concat(array *dest, array src)
 	*dest = result;
 	return 0;
 }
+
+int	array_deduplicate(array *array)
+{
+	(void)array;
+	return 0;
+}
+
+bool	is_in_array(array src, char *needle)
+{
+	(void)src;
+	(void)needle;
+	return false;
+}

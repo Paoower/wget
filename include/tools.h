@@ -2,6 +2,7 @@
 # define TOOLS_H
 
 # include <openssl/ssl.h>
+# include <stdbool.h>
 
 typedef char ** array;
 
@@ -25,6 +26,8 @@ int				array_len(array array);
 array			array_init(const char *str, ...);
 int				array_append(array *dest, char *src);
 int				array_concat(array *dest, array src);
+int				array_deduplicate(array *array);
+bool			is_in_array(array src, char *needle);
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
 void			copy_string(char **dest, char *src);
