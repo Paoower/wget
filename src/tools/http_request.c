@@ -43,8 +43,8 @@ int	is_redirect_status(const char *status)
 char	*get_http_response_info(const char *http_response,
 										const char *key, const char *spliter)
 {
-	Array	lines;
-	Array	tokens;
+	array	lines;
+	array	tokens;
 	char	*result;
 	int		i;
 

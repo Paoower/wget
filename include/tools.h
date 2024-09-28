@@ -3,7 +3,7 @@
 
 # include <openssl/ssl.h>
 
-typedef char ** Array;
+typedef char ** array;
 
 char			*get_file_path(const char *file_name, const char *dir_path);
 
@@ -20,14 +20,18 @@ char			*get_http_response_info(const char *http_response,
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
-void			free_array(Array *array);
-int				array_len(Array array);
-int				array_append(Array *dest, char *src);
-int				array_concat(Array *dest, Array src);
+void			free_array(array *array);
+int				array_len(array array);
+array			array_init(const char *str, ...);
+int				array_append(array *dest, char *src);
+int				array_concat(array *dest, array src);
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
 void			copy_string(char **dest, char *src);
 // string
+
+int				arg_ptr_len(va_list args, void *first);
+// arg.c
 
 int				parse_url();
 // parse_url.c

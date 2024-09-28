@@ -4,9 +4,9 @@
 
 int	wget_mirror(char *url, struct parameters_t params)
 {
-	Array	urls;
-	Array	new_urls;
-	Array	file_paths;
+	array	urls;
+	array	new_urls;
+	array	file_paths;
 	char	*file_path;
 	int		i;
 

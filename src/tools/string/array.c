@@ -1,11 +1,12 @@
 #include "tools.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 /**
- * @brief free the array and set the pointer to NULL
+ * @brief Free the array and set the pointer to NULL.
  */
-void	free_array(Array *array)
+void	free_array(array *array)
 {
 	int	i;
 
@@ -18,7 +19,7 @@ void	free_array(Array *array)
 	*array = NULL;
 }
 
-int	array_len(Array array)
+int	array_len(array array)
 {
 	int	count;
 
@@ -31,6 +32,42 @@ int	array_len(Array array)
 }
 
 /**
+ * @brief Init array with x values. Must be terminated by a NULL.
+ */
+array	array_init(const char *str, ...)
+{
+	va_list		args;
+	int			size;
+	array		result;
+	int			i;
+
+	va_start(args, str);
+	size = arg_ptr_len(args, (void *)str);
+	va_end(args);
+	if (size == 0)
+		return NULL;
+	va_start(args, str);
+	result = malloc(sizeof(char *) * (size + 1));
+	i = 0;
+	while (str) {
+		if (i == size) {
+			free_array(&result);
+			return NULL;
+		}
+		result[i] = strdup(str);
+		if (!result[i]) {
+			free_array(&result);
+			return NULL;
+		}
+		i++;
+		str = va_arg(args, const char *);
+	}
+	result[i] = NULL;
+	va_end(args);
+	return result;
+}
+
+/**
  * @brief Append s to the given array.
  * @param heap_array The initial array. Must be dynamically created.
  * Put NULL to create an array.
@@ -40,11 +77,11 @@ int	array_len(Array array)
  * or the initial array if something went wrong.
  * Use `free_array` to free memory after use.
  */
-int	array_append(Array *dest, char *src)
+int	array_append(array *dest, char *src)
 {
 	int		i;
 	int		array_length;
-	Array	result;
+	array	result;
 	char	*new_str;
 
 	if (!dest || !src)
@@ -76,7 +113,7 @@ int	array_append(Array *dest, char *src)
  * @return A new array that contains the two given arrays.
  * Use `free_array` to free memory after use.
  */
-int	array_concat(Array *dest, Array src)
+int	array_concat(array *dest, array src)
 {
 	int		i;
 	int		j;

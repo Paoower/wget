@@ -5,7 +5,7 @@
 
 START_TEST(test_get_urls_from_html) {
 	int		i;
-	Array	urls;
+	array	urls;
 	char	*expected_urls[] = {
 		"/icons/openlogo-75.png",
 		"/manual",

@@ -2,8 +2,23 @@
 #include <check.h>
 #include <stdio.h>
 
+START_TEST(test_array_init) {
+	array	array;
+
+	array = array_init(NULL);
+	ck_assert_ptr_eq(array, NULL);
+	array = array_init("coucou", "yo", NULL);
+	if (!array)
+		ck_abort();
+	ck_assert_str_eq(array[0], "coucou");
+	ck_assert_str_eq(array[1], "yo");
+	ck_assert_ptr_eq(array[2], NULL);
+	free_array(&array);
+}
+END_TEST
+
 START_TEST(test_array_append) {
-	Array	array;
+	array	array;
 
 	array = NULL;
 	array_append(&array, NULL);
@@ -25,9 +40,9 @@ START_TEST(test_array_append) {
 END_TEST
 
 START_TEST(test_array_concat) {
-	Array	array1;
-	Array	array2;
-	Array	result;
+	array	array1;
+	array	array2;
+	array	result;
 
 	array1 = NULL;
 	array2 = NULL;
@@ -59,18 +74,19 @@ END_TEST
 
 Suite*	tools_suite() {
 	Suite *s;
-	TCase *tc_string;
+	TCase *tc_array;
 
 	s = suite_create("Tools");
 
-	tc_string = tcase_create("String");
+	tc_array = tcase_create("Array");
 	// create tcases
 
-	tcase_add_test(tc_string, test_array_append);
-	tcase_add_test(tc_string, test_array_concat);
+	tcase_add_test(tc_array, test_array_init);
+	tcase_add_test(tc_array, test_array_append);
+	tcase_add_test(tc_array, test_array_concat);
 	// add tests to tcase
 
-	suite_add_tcase(s, tc_string);
+	suite_add_tcase(s, tc_array);
 	// add tacases to suite
 	return s;
 }
