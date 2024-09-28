@@ -5,6 +5,7 @@
 
 /**
  * @brief Free the array and set the pointer to NULL.
+ * @param array Pointer to an array that has been created dynamically.
  */
 void	free_array(array *array)
 {
@@ -32,7 +33,11 @@ int	array_len(array array)
 }
 
 /**
- * @brief Init array with x values. Must be terminated by a NULL.
+ * @brief Init array with x values.
+ * @param str The list of strings to add. Must be terminated by a NULL.
+ * @return
+ * Pointer to an array made of the given strings or NULL if the creation fails.
+ * Use `free_array` to free memory after use.
  */
 array	array_init(const char *str, ...)
 {

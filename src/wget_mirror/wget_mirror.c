@@ -10,9 +10,8 @@ int	wget_mirror(char *url, struct parameters_t params)
 	char	*file_path;
 	int		i;
 
-	file_paths = NULL;
-	urls = NULL;
-	array_append(&urls, url);
+	file_paths = array_init(NULL);
+	urls = array_init(url, NULL);
 	// add url in urls
 	while (urls) {
 	// while urls is not empty

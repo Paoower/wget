@@ -20,8 +20,7 @@ END_TEST
 START_TEST(test_array_append) {
 	array	array;
 
-	array = NULL;
-	array_append(&array, NULL);
+	array = array_init(NULL);
 	ck_assert_ptr_eq(array, NULL);
 	array_append(&array, "coucou");
 	ck_assert_ptr_ne(array, NULL);
@@ -44,18 +43,14 @@ START_TEST(test_array_concat) {
 	array	array2;
 	array	result;
 
-	array1 = NULL;
-	array2 = NULL;
-	result = NULL;
-	array_concat(&result, NULL);
+	result = array_init(NULL);
 	ck_assert_ptr_eq(result, NULL);
-	array_append(&array1, "a1");
+	array1 = array_init("a1", NULL);
 	array_concat(&result, array1);
 	if (!result)
 		goto error_escape;
 	ck_assert_str_eq(result[0], "a1");
-	array_append(&array2, "b1");
-	array_append(&array2, "b2");
+	array2 = array_init("b1", "b2", NULL);
 	array_concat(&result, array2);
 	ck_assert_str_eq(result[0], "a1");
 	ck_assert_str_eq(result[2], "b2");
