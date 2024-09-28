@@ -5,14 +5,15 @@
 START_TEST(test_array_append) {
 	char	**array;
 
-	array = array_append(NULL, NULL);
+	array = NULL;
+	array_append(&array, NULL);
 	ck_assert_ptr_eq(array, NULL);
-	array = array_append(array, "coucou");
+	array_append(&array, "coucou");
 	ck_assert_ptr_ne(array, NULL);
 	if (array) {
 		ck_assert_str_eq(array[0], "coucou");
 		ck_assert_ptr_eq(array[1], NULL);
-		array = array_append(array, "liamine");
+		array_append(&array, "liamine");
 		ck_assert_str_eq(array[1], "liamine");
 		ck_assert_ptr_eq(array[2], NULL);
 	} else {
@@ -31,16 +32,16 @@ START_TEST(test_array_concat) {
 	array1 = NULL;
 	array2 = NULL;
 	result = NULL;
-	result = array_concat(NULL, NULL);
+	array_concat(&result, NULL);
 	ck_assert_ptr_eq(result, NULL);
-	array1 = array_append(NULL, "a1");
-	result = array_concat(result, array1);
+	array_append(&array1, "a1");
+	array_concat(&result, array1);
 	if (!result)
 		goto error_escape;
 	ck_assert_str_eq(result[0], "a1");
-	array2 = array_append(NULL, "b1");
-	array2 = array_append(array2, "b2");
-	result = array_concat(result, array2);
+	array_append(&array2, "b1");
+	array_append(&array2, "b2");
+	array_concat(&result, array2);
 	ck_assert_str_eq(result[0], "a1");
 	ck_assert_str_eq(result[2], "b2");
 	ck_assert_ptr_eq(result[3], NULL);

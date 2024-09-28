@@ -20,8 +20,8 @@ int				does_match_with_pattern(const char *str, char *pattern);
 
 void			free_array(char **heap_array);
 int				array_len(char **array);
-char			**array_append(char **heap_array, char *str);
-char			**array_concat(char **heap_array1, char **array2);
+int				array_append(char ***heap_dest_array, char *src_str);
+int				array_concat(char ***heap_dest_array, char **src_array);
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
 void			copy_string(char **dest, char *src);

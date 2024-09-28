@@ -3,15 +3,21 @@
 
 int	main()
 {
-	SRunner	*sr_src;
-	SRunner	*sr_tools;
+	int		i;
+	SRunner	*sr;
+	Suite	*suites[] = {
+		src_suite(),
+		tools_suite(),
+		NULL
+	};
 
-	sr_src = srunner_create(src_suite());
-	sr_tools = srunner_create(tools_suite());
-
-	srunner_run(sr_src, NULL, NULL, CK_NORMAL);
-	srunner_run(sr_tools, NULL, NULL, CK_NORMAL);
-
-	srunner_free(sr_src);
-	srunner_free(sr_tools);
+	i = 0;
+	while (suites[i]) {
+		sr = srunner_create(suites[i]);
+		srunner_run(sr, NULL, NULL, CK_NORMAL);
+		if (suites[i + 1])
+			printf("\n");
+		srunner_free(sr);
+		i++;
+	}
 }

@@ -11,7 +11,8 @@ int	wget_mirror(char *url, struct parameters_t params)
 	int		i;
 
 	file_paths = NULL;
-	urls = array_append(NULL, url);
+	urls = NULL;
+	array_append(&urls, url);
 	// add url in urls
 	while (urls) {
 	// while urls is not empty
@@ -20,7 +21,7 @@ int	wget_mirror(char *url, struct parameters_t params)
 		// for each url
 			file_path = download_file_from_url(urls[i], params.storage_path,
 					params.output_file, params.rate_limit, params.mirror, 0);
-			file_paths = array_append(file_paths, file_path);
+			array_append(&file_paths, file_path);
 			free(file_path);
 			// append file path from download_file_from_url()
 			i++;

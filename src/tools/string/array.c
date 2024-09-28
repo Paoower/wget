@@ -36,31 +36,32 @@ int	array_len(char **array)
  * or the initial array if something went wrong.
  * Use `free_array` to free memory after use.
  */
-char	**array_append(char **heap_array, char *str)
+int	array_append(char ***heap_dest_array, char *src_str)
 {
 	int		i;
 	int		array_length;
 	char	**result;
 	char	*new_str;
 
-	if (!str)
-		return heap_array;
-	new_str = strdup(str);
+	if (!heap_dest_array || !src_str)
+		return 1;
+	new_str = strdup(src_str);
 	if (!new_str)
-		return heap_array;
-	array_length = array_len(heap_array);
+		return 1;
+	array_length = array_len(*heap_dest_array);
 	result = malloc(sizeof(char *) * (array_length + 2));
 	if (!result)
-		return heap_array;
+		return 1;
 	i = 0;
 	while (i < array_length) {
-		result[i] = heap_array[i];
+		result[i] = (*heap_dest_array)[i];
 		i++;
 	}
 	result[i++] = new_str;
 	result[i] = NULL;
-	free(heap_array);
-	return result;
+	free(*heap_dest_array);
+	*heap_dest_array = result;
+	return 0;
 }
 
 /**
@@ -71,7 +72,7 @@ char	**array_append(char **heap_array, char *str)
  * @return A new array that contains the two given arrays.
  * Use `free_array` to free memory after use.
  */
-char	**array_concat(char **heap_array1, char **array2)
+int	array_concat(char ***heap_dest_array, char **src_array)
 {
 	int		i;
 	int		j;
@@ -80,27 +81,29 @@ char	**array_concat(char **heap_array1, char **array2)
 	char	**result;
 	char	*new_str;
 
-	array1_length = array_len(heap_array1);
-	array2_length = array_len(array2);
+	if (!heap_dest_array)
+		return 1;
+	array1_length = array_len(*heap_dest_array);
+	array2_length = array_len(src_array);
 	if (array2_length == 0)
-		return heap_array1;
+		return 1;
 	result = malloc(sizeof(char *) * (array1_length + array2_length + 1));
 	if (!result)
-		return heap_array1;
+		return 1;
 	i = 0;
 	j = 0;
 	while (i < array1_length + array2_length) {
 		if (i < array1_length)
-			result[i] = heap_array1[i];
+			result[i] = (*heap_dest_array)[i];
 		else {
-			new_str = strdup(array2[j]);
+			new_str = strdup(src_array[j]);
 			if (!new_str) {
 				while(j > 0) {
 					free(result[i - j]);
 					j--;
 				}
 				free(result);
-				return heap_array1;
+				return 1;
 			}
 			result[i] = new_str;
 			j++;
@@ -108,6 +111,7 @@ char	**array_concat(char **heap_array1, char **array2)
 		i++;
 	}
 	result[i] = NULL;
-	free(heap_array1);
-	return result;
+	free(*heap_dest_array);
+	*heap_dest_array = result;
+	return 0;
 }
