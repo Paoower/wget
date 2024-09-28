@@ -6,11 +6,12 @@
 START_TEST(test_get_urls_from_html) {
 	int		i;
 	char	**urls;
-	char	*expected_urls[] = {"/icons/openlogo-75.png",
-								"/manual",
-								"http://httpd.apache.org/docs/2.4/mod/mod_userdir.html",
-								"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0"
-								};
+	char	*expected_urls[] = {
+			"/icons/openlogo-75.png",
+			"/manual",
+			"http://httpd.apache.org/docs/2.4/mod/mod_userdir.html",
+			"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0"
+	};
 	urls = get_urls_from_html("./tests/src_test_files/univ-lehavre.html", NULL, NULL);
 	if (!urls)
 		ck_abort();

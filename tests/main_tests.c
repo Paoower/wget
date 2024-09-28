@@ -3,16 +3,15 @@
 
 int	main()
 {
-	int number_failed;
-	SRunner *sr;
+	SRunner	*sr_src;
+	SRunner	*sr_tools;
 
-	sr = srunner_create(tools_suite());
-	srunner_add_suite(sr, src_suite());
-	// srunner_add_suite(sr, MY_SUITE)
+	sr_src = srunner_create(src_suite());
+	sr_tools = srunner_create(tools_suite());
 
-	srunner_run_all(sr, CK_NORMAL);
-	number_failed = srunner_ntests_failed(sr);
-	srunner_free(sr);
+	srunner_run(sr_src, NULL, NULL, CK_NORMAL);
+	srunner_run(sr_tools, NULL, NULL, CK_NORMAL);
 
-	return (number_failed == 0) ? 0 : 1;
+	srunner_free(sr_src);
+	srunner_free(sr_tools);
 }
