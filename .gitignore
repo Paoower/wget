@@ -9,5 +9,5 @@ download*.txt
 *.jpg
 *.png
 *.gif
-*.html
+/*.html
 *.zip

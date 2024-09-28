@@ -4,5 +4,6 @@
 # include <check.h>
 
 Suite*	tools_suite();
+Suite*	src_suite();
 
 #endif
