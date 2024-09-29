@@ -170,7 +170,13 @@ int	array_deduplicate(array *array)
 
 bool	is_in_array(array src, char *needle)
 {
-	(void)src;
-	(void)needle;
+	int	i;
+
+	i = 0;
+	while (src[i]) {
+		if (strcmp(src[i], needle) == 0)
+			return true;
+		i++;
+	}
 	return false;
 }
