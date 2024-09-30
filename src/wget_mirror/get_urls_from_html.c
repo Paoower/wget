@@ -23,13 +23,14 @@ static int is_url_in_list(const char *url, const char *list) {
 }
 
 static char *extract_url(const char *tag, const char *attr) {
+    char start_quote = '"';
     const char *start = strstr(tag, attr);
     if (!start) return NULL;
     start = strchr(start, '"');
-    if (!start) start = strchr(tag, '\'');
+    if (!start) start = strchr(tag, (start_quote = '\''));
     if (!start) return NULL;
     start++;
-    const char *end = strchr(start, *start);
+    const char *end = strchr(start, start_quote);
     if (!end) return NULL;
     size_t length = end - start;
     if (length >= MAX_URL_LENGTH) return NULL;
@@ -61,6 +62,8 @@ char **get_urls_from_html(char *file_path, char *reject_list, char *exclude_list
             if (tag_positions[i]) {
                 char *url = extract_url(tag_positions[i], attributes[i]);
                 if (url && !is_url_in_list(url, reject_list) && !is_url_in_list(url, exclude_list)) {
+                    // printf("attributes %s found at line %d with url \"%s\"\n",
+                    // attributes[i], url_count, url);
                     urls[url_count++] = url;
                 } else {
                     free(url);
@@ -68,7 +71,6 @@ char **get_urls_from_html(char *file_path, char *reject_list, char *exclude_list
             }
         }
     }
-
     fclose(file);
     urls[url_count] = NULL;
     return urls;
