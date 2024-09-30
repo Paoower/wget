@@ -27,18 +27,18 @@ int	wget_mirror(char *url, struct parameters_t params)
 			}
 			i++;
 		}
-		free_array(&urls);
+		clean_array(&urls);
 		i = 0;
 		while (file_paths && file_paths[i]) {
 			new_urls = get_urls_from_html(file_paths[i],
 									params.reject_list, params.exclude_list);
 			array_concat(&urls, new_urls);
-			free_array(&new_urls);
+			clean_array(&new_urls);
 			// concatenate every urls in every files
 		}
 		array_deduplicate(&urls);
 		// remove every duplicated in urls
 	}
-	free_array(&dl_history);
+	clean_array(&dl_history);
 	return 0;
 }

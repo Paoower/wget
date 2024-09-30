@@ -21,12 +21,13 @@ char			*get_http_response_info(const char *http_response,
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
-void			free_array(array *array);
+void			free_array(array array);
+void			clean_array(array *array);
 int				array_len(array array);
 array			array_init(const char *str, ...);
 int				array_append(array *dest, char *src);
 int				array_concat(array *dest, array src);
-int				array_deduplicate(array *array);
+void			array_deduplicate(array *arr);
 bool			is_in_array(array src, char *needle);
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);

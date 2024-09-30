@@ -57,14 +57,14 @@ char	*get_http_response_info(const char *http_response,
 		if (tokens) {
 			if (tokens[0] && strcasecmp(tokens[0], key) == 0) {
 				result = strdup(lines[i] + strlen(tokens[0]) + strlen(spliter));
-				free_array(&tokens);
-				free_array(&lines);
+				clean_array(&tokens);
+				clean_array(&lines);
 				return result;
 			}
-			free_array(&tokens);
+			clean_array(&tokens);
 		}
 		i++;
 	}
-	free_array(&lines);
+	clean_array(&lines);
 	return NULL;
 }

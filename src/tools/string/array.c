@@ -3,20 +3,25 @@
 #include <string.h>
 #include <stdarg.h>
 
-/**
- * @brief Free the array and set the pointer to NULL.
- * @param array Pointer to an array that has been created dynamically.
- */
-void	free_array(array *array)
+void	free_array(array array)
 {
 	int	i;
 
 	if (!array || !*array)
 		return;
 	i = 0;
-	while((*array)[i])
-		free((*array)[i++]);
-	free(*array);
+	while(array[i])
+		free(array[i++]);
+	free(array);
+}
+
+/**
+ * @brief Free the array and set the pointer to NULL.
+ * @param array Pointer to an array that has been created dynamically.
+ */
+void	clean_array(array *array)
+{
+	free_array(*array);
 	*array = NULL;
 }
 
@@ -37,7 +42,7 @@ int	array_len(array array)
  * @param str The list of strings to add. Must be terminated by a NULL.
  * @return
  * Pointer to an array made of the given strings or NULL if the creation fails.
- * Use `free_array` to free memory after use.
+ * Use `free_array` or `clean_array` to free memory after use.
  */
 array	array_init(const char *str, ...)
 {
@@ -56,12 +61,12 @@ array	array_init(const char *str, ...)
 	i = 0;
 	while (str) {
 		if (i == size) {
-			free_array(&result);
+			clean_array(&result);
 			return NULL;
 		}
 		result[i] = strdup(str);
 		if (!result[i]) {
-			free_array(&result);
+			clean_array(&result);
 			return NULL;
 		}
 		i++;
@@ -80,7 +85,7 @@ array	array_init(const char *str, ...)
  * @return
  * The new array of string with s added,
  * or the initial array if something went wrong.
- * Use `free_array` to free memory after use.
+ * Use `free_array` or `clean_array` to free memory after use.
  */
 int	array_append(array *dest, char *src)
 {
@@ -116,7 +121,7 @@ int	array_append(array *dest, char *src)
  * @param heap_array1 The first array. Must be dynamically created.
  * @param array2 The second array.
  * @return A new array that contains the two given arrays.
- * Use `free_array` to free memory after use.
+ * Use `free_array` or `clean_array` to free memory after use.
  */
 int	array_concat(array *dest, array src)
 {
@@ -166,6 +171,8 @@ bool	is_in_array(array src, char *needle)
 {
 	int	i;
 
+	if (!src)
+		return false;
 	i = 0;
 	while (src[i]) {
 		if (strcmp(src[i], needle) == 0)
@@ -180,12 +187,16 @@ void	array_deduplicate(array *arr)
 	int		i;
 	array	result;
 
+	if (!arr)
+		return;
 	result = array_init(NULL);
 	i = 0;
-	while (arr[i]) {
-		if (!is_in_array(result, arr[i])) {
-			array_append(&result, arr[i]);
+	while ((*arr)[i]) {
+		if (!is_in_array(result, (*arr)[i])) {
+			array_append(&result, (*arr)[i]);
 		}
 		i++;
 	}
+	free_array(*arr);
+	*arr = result;
 }

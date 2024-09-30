@@ -32,7 +32,7 @@ START_TEST(test_get_urls_from_html) {
 		ck_assert_str_eq(urls[i], expected_urls[i]);
 		i++;
 	}
-	free_array(&urls);
+	clean_array(&urls);
 }
 END_TEST
 
