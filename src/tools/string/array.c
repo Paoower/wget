@@ -162,12 +162,6 @@ int	array_concat(array *dest, array src)
 	return 0;
 }
 
-int	array_deduplicate(array *array)
-{
-	(void)array;
-	return 0;
-}
-
 bool	is_in_array(array src, char *needle)
 {
 	int	i;
@@ -179,4 +173,19 @@ bool	is_in_array(array src, char *needle)
 		i++;
 	}
 	return false;
+}
+
+void	array_deduplicate(array *arr)
+{
+	int		i;
+	array	result;
+
+	result = array_init(NULL);
+	i = 0;
+	while (arr[i]) {
+		if (!is_in_array(result, arr[i])) {
+			array_append(&result, arr[i]);
+		}
+		i++;
+	}
 }
