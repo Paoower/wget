@@ -1,31 +1,63 @@
 #include "src.h"
+#include "tools.h"
 #include <stdbool.h>
 
-int	convert_link_to_online(char **link, struct file_data *file_data)
+char	*navigate_after_domain_name(char *link, struct file_data *file_data)
 {
-	// if has not http or htttps
-	// if is_secured add https, else http
-	(void)link;
-	(void)file_data;
-	return 0;
+	char	*cursor;
+	char	*temp_ptr;
+	char	*end_link;
+
+	end_link = link + strlen(link);
+	cursor = link;
+	temp_ptr = strstr(cursor, file_data->host_data->hostname);
+	if (temp_ptr)
+		cursor = temp_ptr + strlen(file_data->host_data->hostname);
+	if (cursor >= end_link)
+		return NULL; // cursor out of range
+	return cursor;
 }
 
-int	convert_link_to_offline(char **link, struct file_data *file_data)
+char	*convert_link_to_online(char *link, struct file_data *file_data)
+{
+	char	*cursor;
+	array	arr;
+	char	*result;
+
+	cursor = navigate_after_domain_name(link, file_data);
+	if (!cursor)
+		return NULL;
+	if (file_data->host_data->is_secured)
+		arr = array_init("https://", file_data->host_data->hostname, NULL);
+	else
+		arr = array_init("http://", file_data->host_data->hostname, NULL);
+	// ERROR: need to handle link starting with ./
+	if (*cursor != '/')
+		array_append(&arr, "/");
+	array_append(&arr, cursor);
+	result = array_join(arr);
+	free_array(arr);
+	return result;
+}
+
+char	*convert_link_to_offline(char *link, struct file_data *file_data)
 {
 	(void)link;
 	(void)file_data;
-	return 0;
+	return NULL;
 }
 
-int	convert_link(char **link, struct file_data *file_data, bool is_mirror)
+/**
+ * @return Pointer to the formated link.
+ * The caller is responsible for freeing this memory.
+ */
+char	*convert_link(char *link, struct file_data *file_data, bool is_mirror)
 {
 	if (!link || !file_data || !file_data->host_data ||
-											!file_data->host_data->hostname ||
-											!file_data->host_data->is_secured)
-		return 1;
+											!file_data->host_data->hostname)
+		return NULL;
 	if (is_mirror)
-		convert_link_to_offline(link, file_data);
+		return convert_link_to_offline(link, file_data);
 	else
-		convert_link_to_online(link, file_data);
-	return 0;
+		return convert_link_to_online(link, file_data);
 }

@@ -167,6 +167,12 @@ int	array_merge(array *dest, array src)
 	return 0;
 }
 
+/**
+ * @brief Concatenate every strings from an array to a final string.
+ * @param src The source array.
+ * @return Pointer to the joined string.
+ * The caller is responsible for freeing this memory.
+ */
 char	*array_join(array src)
 {
 	int		i;

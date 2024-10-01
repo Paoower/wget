@@ -2,7 +2,8 @@
 #include <check.h>
 #include <stdio.h>
 
-START_TEST(test_array_init) {
+START_TEST(test_array_init)
+{
 	array	array;
 
 	array = array_init(NULL);
@@ -17,7 +18,8 @@ START_TEST(test_array_init) {
 }
 END_TEST
 
-START_TEST(test_array_append) {
+START_TEST(test_array_append)
+{
 	array	array;
 
 	array = array_init(NULL);
@@ -38,7 +40,8 @@ START_TEST(test_array_append) {
 }
 END_TEST
 
-START_TEST(test_array_merge) {
+START_TEST(test_array_merge)
+{
 	array	array1;
 	array	array2;
 	array	result;
@@ -67,7 +70,8 @@ error_escape:
 }
 END_TEST
 
-START_TEST(test_array_deduplicate) {
+START_TEST(test_array_deduplicate)
+{
 	array	arr;
 
 	arr = array_init("1", "2", "2a", "2", "1", "1a", "3a", "3", "3", NULL);
@@ -85,7 +89,8 @@ START_TEST(test_array_deduplicate) {
 }
 END_TEST
 
-START_TEST(test_array_join) {
+START_TEST(test_array_join)
+{
 	char	*joined;
 	array	arr;
 
@@ -99,7 +104,8 @@ START_TEST(test_array_join) {
 }
 END_TEST
 
-Suite*	tools_suite() {
+Suite*	tools_suite()
+{
 	Suite *s;
 	TCase *tc_array;
 

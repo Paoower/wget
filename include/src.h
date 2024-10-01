@@ -37,7 +37,7 @@ int					wget_from_file(struct parameters_t params);
 int					wget_mirror(char *url, struct parameters_t params);
 // wget mode
 
-int					convert_links(char **link,
-									struct file_data file_data, bool is_mirror);
+char				*convert_link(char *link,
+								struct file_data *file_data, bool is_mirror);
 
 #endif
