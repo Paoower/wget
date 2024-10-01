@@ -1,6 +1,7 @@
 #ifndef SRC_H
 # define SRC_H
 
+# include "download_file_from_url.h"
 # include <time.h>
 # include <stdbool.h>
 
@@ -20,18 +21,23 @@ struct parameters_t {
 	int				convert_links;
 };
 
-int		handle_args(struct parameters_t *parameters, int argc, char *argv[]);
-void	free_args(struct parameters_t *params);
-char	*download_file_from_url(char *url, char *storage_dir_path,
+int					handle_args(struct parameters_t *parameters,
+														int argc, char *argv[]);
+void				free_args(struct parameters_t *params);
+void				free_file_data(struct file_data *file_data);
+struct file_data	*download_file_from_url(char *url, char *storage_dir_path,
 								char *file_name, unsigned long bytes_per_sec,
 								int is_mirror, bool display);
 
-int		wget(struct parameters_t params);
-int		wget_in_background(struct parameters_t params);
+int					wget(struct parameters_t params);
+int					wget_in_background(struct parameters_t params);
 // wget
 
-int		wget_from_file(struct parameters_t params);
-int		wget_mirror(char *url, struct parameters_t params);
+int					wget_from_file(struct parameters_t params);
+int					wget_mirror(char *url, struct parameters_t params);
 // wget mode
+
+int					convert_links(char **link,
+									struct file_data file_data, bool is_mirror);
 
 #endif

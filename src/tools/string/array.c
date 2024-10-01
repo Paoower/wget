@@ -7,7 +7,7 @@ void	free_array(array array)
 {
 	int	i;
 
-	if (!array || !*array)
+	if (!array)
 		return;
 	i = 0;
 	while(array[i])

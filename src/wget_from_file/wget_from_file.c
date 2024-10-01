@@ -62,17 +62,19 @@ void wget_from_file_cleanup(struct params_thread **params_threads,
 void apply_function_to_line(char *line, struct parameters_t params)
 {
 
-	char	*file_path;
+	struct file_data	*file_data;
 
-	file_path = download_file_from_url(line, params.storage_path,
+	file_data = download_file_from_url(line, params.storage_path,
 						params.output_file, params.rate_limit, params.mirror, 0);
-	if (!file_path)
-		return ;
-	printf("Downloaded [%s]\n", file_path);
-	free(file_path);
+	if (!file_data || !file_data->file_path) {
+		free_file_data(file_data);
+		return;
+	}
+	printf("Downloaded [%s]\n", file_data->file_path);
+	free_file_data(file_data);
 	print_current_date("finished at ");
 
-	return ;
+	return;
 }
 
 void *thread_function(void *arg)

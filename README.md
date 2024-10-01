@@ -4,7 +4,7 @@
 - gcc
 - make
 - openSSL
-- check (unit test lib)
+- check (unit test lib) (use check-devel instead for fedora)
 
 ## Quick Start
 ```sh

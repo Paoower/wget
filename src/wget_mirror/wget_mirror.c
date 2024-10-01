@@ -4,12 +4,12 @@
 
 int	wget_mirror(char *url, struct parameters_t params)
 {
-	array	urls;
-	array	new_urls;
-	array	dl_history;
-	array	file_paths;
-	char	*file_path;
-	int		i;
+	array				urls;
+	array				new_urls;
+	array				dl_history;
+	array				file_paths;
+	struct file_data	*file_data;
+	int					i;
 
 	urls = array_init(url, NULL);
 	dl_history = array_init(NULL);
@@ -19,10 +19,14 @@ int	wget_mirror(char *url, struct parameters_t params)
 		while (urls[i]) {
 			if (!is_in_array(dl_history, urls[i])) {
 			// if url is not in the dl_history, dl + add
-				file_path = download_file_from_url(urls[i], params.storage_path,
+				file_data = download_file_from_url(urls[i], params.storage_path,
 						params.output_file, params.rate_limit, params.mirror, 0);
-				array_append(&file_paths, file_path);
-				free(file_path);
+				if (!file_data || !file_data->file_path) {
+					free_file_data(file_data);
+					continue;
+				}
+				array_append(&file_paths, file_data->file_path);
+				free_file_data(file_data);
 				array_append(&dl_history, urls[i]);
 			}
 			i++;
