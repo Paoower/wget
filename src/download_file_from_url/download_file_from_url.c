@@ -19,7 +19,7 @@ void	free_file_data(struct file_data *file_data)
 	}
 }
 
-void	cleanup(SSL *ssl, SSL_CTX *ctx, int sock_fd,
+void	download_file_from_url_cleanup(SSL *ssl, SSL_CTX *ctx, int sock_fd,
 											struct host_data *host_data)
 {
 	if (ssl) {
@@ -135,19 +135,19 @@ struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 	struct file_data	*file_data;
 
 	if (send_request(sock_fd, ssl, host_data, display)) {
-		cleanup(ssl, ctx, sock_fd, host_data);
+		download_file_from_url_cleanup(ssl, ctx, sock_fd, host_data);
 		return NULL;
 	}
 	file_data = malloc(sizeof(struct file_data));
 	if (!file_data) {
-		cleanup(ssl, ctx, sock_fd, host_data);
+		download_file_from_url_cleanup(ssl, ctx, sock_fd, host_data);
 		return NULL;
 	}
 	file_data->file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
 	file_data->header_data = download_file(sock_fd, ssl,
 								file_data->file_path, bytes_per_sec, display);
-	cleanup(ssl, ctx, sock_fd, NULL);
+	download_file_from_url_cleanup(ssl, ctx, sock_fd, NULL);
 	return file_data;
 }
 
@@ -167,13 +167,13 @@ struct file_data	*download_file_from_url_core(char *url,
 		return NULL;
 	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
 	if (sock_fd == -1) {
-		cleanup(NULL, NULL, sock_fd, host_data);
+		download_file_from_url_cleanup(NULL, NULL, sock_fd, host_data);
 		return NULL;
 	}
 	if (host_data->is_secured) {
 		ssl = create_ssl_connection(&ctx, sock_fd);
 		if (!ssl) {
-			cleanup(NULL, NULL, sock_fd, host_data);
+			download_file_from_url_cleanup(NULL, NULL, sock_fd, host_data);
 			return NULL;
 		}
 	}
