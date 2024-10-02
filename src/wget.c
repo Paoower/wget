@@ -9,15 +9,17 @@
 int	wget_classic(char *url, char *storage_dir_path,
 								char *file_name, unsigned long bytes_per_sec)
 {
-	char	*file_path;
+	struct file_data	*file_data;
 
 	print_current_date("start at ");
-	file_path = download_file_from_url(url, storage_dir_path,
+	file_data = download_file_from_url(url, storage_dir_path,
 											file_name, bytes_per_sec, 0, true);
-	if (!file_path)
+	if (!file_data || !file_data->file_path) {
+		free_file_data(file_data);
 		return 1;
-	printf("Downloaded [%s]\n", file_path);
-	free(file_path);
+	}
+	printf("Downloaded [%s]\n", file_data->file_path);
+	free_file_data(file_data);
 	print_current_date("finished at ");
 	return 0;
 }

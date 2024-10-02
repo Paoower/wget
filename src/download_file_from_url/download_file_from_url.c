@@ -9,8 +9,18 @@
 #include <openssl/err.h>
 #include <arpa/inet.h>
 
-void	cleanup(SSL *ssl, SSL_CTX *ctx, struct host_data *host_data,
-									int sock_fd, struct file_data *file_data)
+void	free_file_data(struct file_data *file_data)
+{
+	if (file_data) {
+		free_hostdata(file_data->host_data);
+		free_header_data(file_data->header_data);
+		free(file_data->file_path);
+		free(file_data);
+	}
+}
+
+void	download_file_from_url_cleanup(SSL *ssl, SSL_CTX *ctx, int sock_fd,
+											struct host_data *host_data)
 {
 	if (ssl) {
 		SSL_shutdown(ssl);
@@ -19,13 +29,7 @@ void	cleanup(SSL *ssl, SSL_CTX *ctx, struct host_data *host_data,
 	if (ctx)
 		SSL_CTX_free(ctx);
 	EVP_cleanup();
-	if (file_data) {
-		free(file_data->file_path);
-		free_header_data(file_data->header_data);
-		free(file_data);
-	}
-	if (host_data)
-		free_hostdata(host_data);
+	free_hostdata(host_data);
 	if (sock_fd != -1)
 		close(sock_fd);
 }
@@ -131,19 +135,19 @@ struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 	struct file_data	*file_data;
 
 	if (send_request(sock_fd, ssl, host_data, display)) {
-		cleanup(ssl, ctx, host_data, sock_fd, NULL);
+		download_file_from_url_cleanup(ssl, ctx, sock_fd, host_data);
 		return NULL;
 	}
 	file_data = malloc(sizeof(struct file_data));
 	if (!file_data) {
-		cleanup(ssl, ctx, host_data, sock_fd, NULL);
+		download_file_from_url_cleanup(ssl, ctx, sock_fd, host_data);
 		return NULL;
 	}
 	file_data->file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
 	file_data->header_data = download_file(sock_fd, ssl,
 								file_data->file_path, bytes_per_sec, display);
-	cleanup(ssl, ctx, host_data, sock_fd, NULL);
+	download_file_from_url_cleanup(ssl, ctx, sock_fd, NULL);
 	return file_data;
 }
 
@@ -152,6 +156,7 @@ struct file_data	*download_file_from_url_core(char *url,
 					unsigned long bytes_per_sec, int is_mirror, bool display)
 {
 	int					sock_fd;
+	struct file_data	*file_data;
 	struct host_data	*host_data;
 	SSL_CTX				*ctx;
 	SSL					*ssl;
@@ -162,18 +167,20 @@ struct file_data	*download_file_from_url_core(char *url,
 		return NULL;
 	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
 	if (sock_fd == -1) {
-		cleanup(NULL, NULL, host_data, sock_fd, NULL);
+		download_file_from_url_cleanup(NULL, NULL, sock_fd, host_data);
 		return NULL;
 	}
 	if (host_data->is_secured) {
 		ssl = create_ssl_connection(&ctx, sock_fd);
 		if (!ssl) {
-			cleanup(NULL, NULL, host_data, sock_fd, NULL);
+			download_file_from_url_cleanup(NULL, NULL, sock_fd, host_data);
 			return NULL;
 		}
 	}
-	return request_and_download_file(sock_fd, ssl, ctx, host_data,
+	file_data = request_and_download_file(sock_fd, ssl, ctx, host_data,
 			storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
+	file_data->host_data = host_data;
+	return file_data;
 }
 
 /**
@@ -183,16 +190,15 @@ struct file_data	*download_file_from_url_core(char *url,
  * @param file_name Optionnal parameter to override the file name
  * @param bytes_per_sec Optionnal speed limit in bytes/s
  * @return A pointer to the file path.
- * The caller is responsible for freeing this memory.
+ * The caller is responsible for freeing this memory with `free_file_data`.
  */
-char	*download_file_from_url(char *url, const char *storage_dir_path,
-								char *file_name, unsigned long bytes_per_sec,
-								int is_mirror, bool display)
+struct file_data	*download_file_from_url(char *url,
+					const char *storage_dir_path, char *file_name,
+					unsigned long bytes_per_sec, int is_mirror, bool display)
 {
 	struct file_data	*file_data;
 	struct file_data	*new_file_data;
 	struct header_data	*hd;
-	char				*file_path;
 
 	file_data = download_file_from_url_core(url, storage_dir_path,
 								file_name, bytes_per_sec, is_mirror, display);
@@ -202,16 +208,13 @@ char	*download_file_from_url(char *url, const char *storage_dir_path,
 			printf("\nRedirect to \"%s\"\n", hd->redirect_url);
 		new_file_data = download_file_from_url_core(hd->redirect_url,
 				storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
-		cleanup(NULL, NULL, NULL, -1, file_data);
+		free_file_data(file_data);
 		file_data = new_file_data;
 	}
 	if (!file_data || !(hd = file_data->header_data) ||
 							!is_ok_status(hd->status)) {
-		cleanup(NULL, NULL, NULL, -1, file_data);
+		free_file_data(file_data);
 		return NULL;
 	}
-	file_path = file_data->file_path;
-	free_header_data(hd);
-	free(file_data);
-	return file_path;
+	return file_data;
 }

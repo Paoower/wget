@@ -2,7 +2,8 @@
 #include <check.h>
 #include <stdio.h>
 
-START_TEST(test_array_init) {
+START_TEST(test_array_init)
+{
 	array	array;
 
 	array = array_init(NULL);
@@ -17,7 +18,8 @@ START_TEST(test_array_init) {
 }
 END_TEST
 
-START_TEST(test_array_append) {
+START_TEST(test_array_append)
+{
 	array	array;
 
 	array = array_init(NULL);
@@ -38,7 +40,8 @@ START_TEST(test_array_append) {
 }
 END_TEST
 
-START_TEST(test_array_concat) {
+START_TEST(test_array_merge)
+{
 	array	array1;
 	array	array2;
 	array	result;
@@ -46,12 +49,12 @@ START_TEST(test_array_concat) {
 	result = array_init(NULL);
 	ck_assert_ptr_eq(result, NULL);
 	array1 = array_init("a1", NULL);
-	array_concat(&result, array1);
+	array_merge(&result, array1);
 	if (!result)
 		goto error_escape;
 	ck_assert_str_eq(result[0], "a1");
 	array2 = array_init("b1", "b2", NULL);
-	array_concat(&result, array2);
+	array_merge(&result, array2);
 	ck_assert_str_eq(result[0], "a1");
 	ck_assert_str_eq(result[2], "b2");
 	ck_assert_ptr_eq(result[3], NULL);
@@ -67,7 +70,8 @@ error_escape:
 }
 END_TEST
 
-START_TEST(test_array_deduplicate) {
+START_TEST(test_array_deduplicate)
+{
 	array	arr;
 
 	arr = array_init("1", "2", "2a", "2", "1", "1a", "3a", "3", "3", NULL);
@@ -85,7 +89,23 @@ START_TEST(test_array_deduplicate) {
 }
 END_TEST
 
-Suite*	tools_suite() {
+START_TEST(test_array_join)
+{
+	char	*joined;
+	array	arr;
+
+	arr = array_init("a", "bc", "d", "efg", NULL);
+	joined = array_join(arr);
+	if (!joined)
+		ck_abort();
+	ck_assert_str_eq(joined, "abcdefg");
+	free_array(arr);
+	free(joined);
+}
+END_TEST
+
+Suite*	tools_suite()
+{
 	Suite *s;
 	TCase *tc_array;
 
@@ -96,8 +116,9 @@ Suite*	tools_suite() {
 
 	tcase_add_test(tc_array, test_array_init);
 	tcase_add_test(tc_array, test_array_append);
-	tcase_add_test(tc_array, test_array_concat);
+	tcase_add_test(tc_array, test_array_merge);
 	tcase_add_test(tc_array, test_array_deduplicate);
+	tcase_add_test(tc_array, test_array_join);
 	// add tests to tcase
 
 	suite_add_tcase(s, tc_array);

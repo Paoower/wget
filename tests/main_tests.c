@@ -16,7 +16,7 @@ int	main()
 		sr = srunner_create(suites[i]);
 		srunner_run(sr, NULL, NULL, CK_NORMAL);
 		if (suites[i + 1])
-			printf("\n");
+			printf("\n\n");
 		srunner_free(sr);
 		i++;
 	}

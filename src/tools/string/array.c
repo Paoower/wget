@@ -7,7 +7,7 @@ void	free_array(array array)
 {
 	int	i;
 
-	if (!array || !*array)
+	if (!array)
 		return;
 	i = 0;
 	while(array[i])
@@ -116,14 +116,14 @@ int	array_append(array *dest, char *src)
 }
 
 /**
- * @brief Concatenate the two arrays over array1.
+ * @brief Merge the two arrays over array1.
  * Keep every strings from array1 and copy every strings from array2
  * @param heap_array1 The first array. Must be dynamically created.
  * @param array2 The second array.
  * @return A new array that contains the two given arrays.
  * Use `free_array` or `clean_array` to free memory after use.
  */
-int	array_concat(array *dest, array src)
+int	array_merge(array *dest, array src)
 {
 	int		i;
 	int		j;
@@ -165,6 +165,32 @@ int	array_concat(array *dest, array src)
 	free(*dest);
 	*dest = result;
 	return 0;
+}
+
+/**
+ * @brief Concatenate every strings from an array to a final string.
+ * @param src The source array.
+ * @return Pointer to the joined string.
+ * The caller is responsible for freeing this memory.
+ */
+char	*array_join(array src)
+{
+	int		i;
+	int		total_char;
+	char	*result;
+
+	i = 0;
+	total_char = 0;
+	while (src[i])
+		total_char += strlen(src[i++]);
+	result = malloc(total_char + 1);
+	if (!result)
+		return NULL;
+	memset(result, 0, total_char + 1);
+	i = 0;
+	while (src[i])
+		strcat(result, src[i++]);
+	return result;
 }
 
 bool	is_in_array(array src, char *needle)

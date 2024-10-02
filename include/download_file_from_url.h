@@ -32,6 +32,7 @@ struct	dl_data {
 };
 
 struct file_data {
+	struct host_data	*host_data;
 	struct header_data	*header_data;
 	char				*file_path;
 };
