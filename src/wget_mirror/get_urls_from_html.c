@@ -22,23 +22,35 @@ static int is_url_in_list(const char *url, const char *list) {
     return 0;
 }
 
-static char *extract_url(const char *tag, const char *attr) {
-    char start_quote = '"';
-    const char *start = strstr(tag, attr);
-    if (!start) return NULL;
-    start = strchr(start, '"');
-    if (!start) start = strchr(tag, (start_quote = '\''));
+static char *extract_url(const char *tag) {
+    const char *start = strchr(tag, '=');
     if (!start) return NULL;
     start++;
-    const char *end = strchr(start, start_quote);
-    if (!end) return NULL;
+
+    while (isspace(*start)) start++;
+
+    char quote = (*start == '"' || *start == '\'') ? *start : 0;
+    if (quote) start++;
+
+    const char *end = quote ? strchr(start, quote) : start;
+    while (*end && !isspace(*end) && *end != '>' && *end != quote) end++;
+
     size_t length = end - start;
     if (length >= MAX_URL_LENGTH) return NULL;
+
     char *url = malloc(length + 1);
     if (!url) return NULL;
+
     strncpy(url, start, length);
     url[length] = '\0';
-    return url;
+
+    // Check if the URL starts with '/' or "http"
+    if (url[0] == '/' || strncmp(url, "http", 4) == 0) {
+        return url;
+    }
+
+    free(url);
+    return NULL;
 }
 
 char **get_urls_from_html(char *file_path, char *reject_list, char *exclude_list) {
@@ -52,26 +64,56 @@ char **get_urls_from_html(char *file_path, char *reject_list, char *exclude_list
     }
 
     int url_count = 0;
-    char line[4096];
+    char buffer[4096];
+    size_t buffer_size = 0;
 
-    while (fgets(line, sizeof(line), file) && url_count < MAX_URLS) {
-        char *tag_positions[] = {strstr(line, "<a "), strstr(line, "<link "), strstr(line, "<img ")};
-        const char *attributes[] = {"href=", "href=", "src="};
+    while (fgets(buffer + buffer_size, sizeof(buffer) - buffer_size, file) && url_count < MAX_URLS) {
+        buffer_size = strlen(buffer);
+        char *tag_start = buffer;
 
-        for (int i = 0; i < 3; i++) {
-            if (tag_positions[i]) {
-                char *url = extract_url(tag_positions[i], attributes[i]);
+        while ((tag_start = strchr(tag_start, '<')) && url_count < MAX_URLS) {
+            char *tag_end = strchr(tag_start, '>');
+            if (!tag_end) break;
+
+            *tag_end = '\0';
+            char *attr = tag_start;
+
+            while ((attr = strpbrk(attr, " \t\n\r\f\v")) != NULL) {
+                attr++;
+                char *url = extract_url(attr);
                 if (url && !is_url_in_list(url, reject_list) && !is_url_in_list(url, exclude_list)) {
-                    // printf("attributes %s found at line %d with url \"%s\"\n",
-                    // attributes[i], url_count, url);
                     urls[url_count++] = url;
+                    printf("Debug: Extracted URL: %s\n", url);  // Debug output
                 } else {
                     free(url);
                 }
             }
+
+            *tag_end = '>';
+            tag_start = tag_end + 1;
+        }
+
+        if (!feof(file) && !strchr(buffer, '\n')) {
+            char *last_tag = strrchr(buffer, '<');
+            if (last_tag) {
+                buffer_size = strlen(last_tag);
+                memmove(buffer, last_tag, buffer_size);
+            } else {
+                buffer_size = 0;
+            }
+        } else {
+            buffer_size = 0;
         }
     }
+
     fclose(file);
     urls[url_count] = NULL;
+
+    // Debug output
+    printf("Debug: Total URLs extracted: %d\n", url_count);
+    for (int i = 0; i < url_count; i++) {
+        printf("Debug: URL %d: %s\n", i, urls[i]);
+    }
+
     return urls;
 }
