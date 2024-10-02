@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+/**
+ * @brief Free the given array.
+ * Do not works properly if the elements
+ * are composed of other allocated elements.
+ */
 void	free_array(void **array)
 {
 	int	i;
@@ -43,29 +48,29 @@ int	array_len(void **array)
  * Pointer to an array made of the given elements or NULL if the creation fails.
  * Use `free_array` or `clean_array` to free memory after use.
  */
-void	**array_init(void *elem, ...)
+void	**array_init(void *heap_elem, ...)
 {
 	va_list	args;
 	int		size;
 	void	**result;
 	int		i;
 
-	va_start(args, elem);
-	size = arg_ptr_len(elem, args);
+	va_start(args, heap_elem);
+	size = arg_ptr_len(heap_elem, args);
 	va_end(args);
 	if (size == 0)
 		return NULL;
-	va_start(args, elem);
+	va_start(args, heap_elem);
 	result = malloc(sizeof(void *) * (size + 1));
 	result[size] = NULL;
 	i = 0;
-	while (elem) {
+	while (heap_elem) {
 		if (i == size) {
 			free_array(result);
 			return NULL;
 		}
-		result[i++] = elem;
-		elem = va_arg(args, void *);
+		result[i++] = heap_elem;
+		heap_elem = va_arg(args, void *);
 	}
 	va_end(args);
 	return result;
@@ -74,6 +79,7 @@ void	**array_init(void *elem, ...)
 /**
  * @brief Append `elem` to the given array.
  * @param dest The initial array. Must be dynamically created.
+ * If NULL, array is created, starting with `heap_elem`.
  * @param elem The element to add. Must be synamically created.
  * @return
  * The new array with the given element added,

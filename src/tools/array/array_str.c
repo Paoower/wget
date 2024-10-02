@@ -61,7 +61,7 @@ array_str	array_str_init(const char *str, ...)
 /**
  * @brief Append `elem` to the given array.
  * @param dest The initial array. Must be dynamically created.
- * Put NULL to create an array.
+ * If NULL, array is created, starting with `str`.
  * @param str The string to add.
  * @return
  * The new array of string with s added,

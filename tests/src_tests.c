@@ -6,27 +6,30 @@
 
 START_TEST(test_get_urls_from_html)
 {
-	int		i;
-	array_str	urls;
-	char	*expected_urls[] = {
-		"/icons/openlogo-75.png",
-		"/manual",
-		"http://httpd.apache.org/docs/2.4/mod/mod_userdir.html",
-		"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0"
+	int					i;
+	array_str			urls;
+	struct file_data	file_data;
+	char				*file_path = "./tests/src_test_files/univ-lehavre.html";
+	char				*expected_urls[] = {
+							"/icons/openlogo-75.png",
+							"/manual",
+							"http://httpd.apache.org/docs/2.4/mod/mod_userdir.html",
+							"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0"
 	};
 
-	urls = get_urls_from_html("./tests/src_test_files/univ-lehavre.html", NULL, NULL);
+	file_data.file_path = file_path;
+	urls = get_urls_from_html(&file_data, NULL, NULL);
 	if (!urls)
 		ck_abort();
-	i = 0;
-	printf("URLS=[");
-	while (urls[i]) {
-		printf("\"%s\"", urls[i]);
-		if (urls[i + 1])
-			printf(", ");
-		i++;
-	}
-	printf("]\n");
+	// i = 0;
+	// printf("URLS=[");
+	// while (urls[i]) {
+	// 	printf("\"%s\"", urls[i]);
+	// 	if (urls[i + 1])
+	// 		printf(", ");
+	// 	i++;
+	// }
+	// printf("]\n");
 	i = 0;
 	while (expected_urls[i]) {
 		if (!urls[i])
