@@ -4,79 +4,79 @@
 
 START_TEST(test_array_init)
 {
-	array	array;
+	array_str	array;
 
-	array = array_init(NULL);
+	array = array_str_init(NULL);
 	ck_assert_ptr_eq(array, NULL);
-	array = array_init("coucou", "yo", NULL);
+	array = array_str_init("coucou", "yo", NULL);
 	if (!array)
 		ck_abort();
 	ck_assert_str_eq(array[0], "coucou");
 	ck_assert_str_eq(array[1], "yo");
 	ck_assert_ptr_eq(array[2], NULL);
-	clean_array(&array);
+	clean_array_str(&array);
 }
 END_TEST
 
 START_TEST(test_array_append)
 {
-	array	array;
+	array_str	array;
 
-	array = array_init(NULL);
+	array = array_str_init(NULL);
 	ck_assert_ptr_eq(array, NULL);
-	array_append(&array, "coucou");
+	array_str_append(&array, "coucou");
 	ck_assert_ptr_ne(array, NULL);
 	if (array) {
 		ck_assert_str_eq(array[0], "coucou");
 		ck_assert_ptr_eq(array[1], NULL);
-		array_append(&array, "liamine");
+		array_str_append(&array, "liamine");
 		ck_assert_str_eq(array[1], "liamine");
 		ck_assert_ptr_eq(array[2], NULL);
 	} else {
 		ck_abort();
-		clean_array(&array);
+		clean_array_str(&array);
 	}
-	clean_array(&array);
+	clean_array_str(&array);
 }
 END_TEST
 
 START_TEST(test_array_merge)
 {
-	array	array1;
-	array	array2;
-	array	result;
+	array_str	array1;
+	array_str	array2;
+	array_str	result;
 
-	result = array_init(NULL);
+	result = array_str_init(NULL);
 	ck_assert_ptr_eq(result, NULL);
-	array1 = array_init("a1", NULL);
-	array_merge(&result, array1);
+	array1 = array_str_init("a1", NULL);
+	array_str_merge(&result, array1);
 	if (!result)
 		goto error_escape;
 	ck_assert_str_eq(result[0], "a1");
-	array2 = array_init("b1", "b2", NULL);
-	array_merge(&result, array2);
+	array2 = array_str_init("b1", "b2", NULL);
+	array_str_merge(&result, array2);
 	ck_assert_str_eq(result[0], "a1");
 	ck_assert_str_eq(result[2], "b2");
 	ck_assert_ptr_eq(result[3], NULL);
-	clean_array(&array1);
-	clean_array(&array2);
-	clean_array(&result);
+	clean_array_str(&array1);
+	clean_array_str(&array2);
+	clean_array_str(&result);
 	return;
 error_escape:
-	clean_array(&array1);
-	clean_array(&array2);
-	clean_array(&result);
+	clean_array_str(&array1);
+	clean_array_str(&array2);
+	clean_array_str(&result);
 	ck_abort();
 }
 END_TEST
 
 START_TEST(test_array_deduplicate)
 {
-	array	arr;
+	array_str	arr;
 
-	arr = array_init("1", "2", "2a", "2", "1", "1a", "3a", "3", "3", NULL);
-	array_deduplicate(&arr);
-	if (array_len(arr) < 6)
+	arr = array_str_init("1", "2", "2a", "2", "1", "1a", "3a", "3", "3", NULL);
+	array_str_deduplicate(&arr);
+	if (array_str_len(arr) < 6)
 		ck_abort();
 	ck_assert_str_eq(arr[0], "1");
 	ck_assert_str_eq(arr[1], "2");
@@ -85,21 +85,21 @@ START_TEST(test_array_deduplicate)
 	ck_assert_str_eq(arr[4], "3a");
 	ck_assert_str_eq(arr[5], "3");
 	ck_assert_ptr_eq(arr[6], NULL);
-	clean_array(&arr);
+	clean_array_str(&arr);
 }
 END_TEST
 
 START_TEST(test_array_join)
 {
 	char	*joined;
-	array	arr;
+	array_str	arr;
 
-	arr = array_init("a", "bc", "d", "efg", NULL);
-	joined = array_join(arr);
+	arr = array_str_init("a", "bc", "d", "efg", NULL);
+	joined = array_str_join(arr);
 	if (!joined)
 		ck_abort();
 	ck_assert_str_eq(joined, "abcdefg");
-	free_array(arr);
+	free_array_str(arr);
 	free(joined);
 }
 END_TEST

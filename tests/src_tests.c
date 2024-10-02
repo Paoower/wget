@@ -7,7 +7,7 @@
 START_TEST(test_get_urls_from_html)
 {
 	int		i;
-	array	urls;
+	array_str	urls;
 	char	*expected_urls[] = {
 		"/icons/openlogo-75.png",
 		"/manual",
@@ -34,7 +34,7 @@ START_TEST(test_get_urls_from_html)
 		ck_assert_str_eq(urls[i], expected_urls[i]);
 		i++;
 	}
-	clean_array(&urls);
+	clean_array_str(&urls);
 }
 END_TEST
 
@@ -114,7 +114,7 @@ Suite*	src_suite()
 	// add tests to tcase
 
 	suite_add_tcase(s, tc_convert_links);
-	// suite_add_tcase(s, tc_mirror);
+	suite_add_tcase(s, tc_mirror);
 	// add tacases to suite
 	return s;
 }

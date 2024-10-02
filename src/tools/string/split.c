@@ -55,7 +55,7 @@ char	**allocate_memory(const char *str, const char *charset, int nb_words)
 			}
 			strs[y] = malloc(sizeof (char) * (word_size + 1));
 			if (!strs[y]) {
-				free_array(strs);
+				free_array_str(strs);
 				return NULL;
 			}
 			y++;

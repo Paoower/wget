@@ -21,23 +21,23 @@ char	*navigate_after_domain_name(char *link, struct file_data *file_data)
 char	*convert_link_to_online(char *link, struct file_data *file_data)
 {
 	char	*cursor;
-	array	arr;
+	array_str	arr;
 	char	*result;
 
 	cursor = navigate_after_domain_name(link, file_data);
 	if (!cursor)
 		return NULL;
 	if (file_data->host_data->is_secured)
-		arr = array_init("https://", file_data->host_data->hostname, NULL);
+		arr = array_str_init("https://", file_data->host_data->hostname, NULL);
 	else
-		arr = array_init("http://", file_data->host_data->hostname, NULL);
+		arr = array_str_init("http://", file_data->host_data->hostname, NULL);
 	if (cursor[0] == '.' && cursor[1] == '/')
 		cursor++;
 	if (cursor[0] != '/')
-		array_append(&arr, "/");
-	array_append(&arr, cursor);
-	result = array_join(arr);
-	free_array(arr);
+		array_str_append(&arr, "/");
+	array_str_append(&arr, cursor);
+	result = array_str_join(arr);
+	free_array_str(arr);
 	return result;
 }
 

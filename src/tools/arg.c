@@ -1,6 +1,6 @@
 #include <stdarg.h>
 
-int	arg_ptr_len(va_list args, void *first)
+int	arg_ptr_len(void *first, va_list args)
 {
 	int		size;
 	void	*ptr;
