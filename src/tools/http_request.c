@@ -43,8 +43,8 @@ int	is_redirect_status(const char *status)
 char	*get_http_response_info(const char *http_response,
 										const char *key, const char *spliter)
 {
-	array_str	lines;
-	array_str	tokens;
+	arraystr	lines;
+	arraystr	tokens;
 	char	*result;
 	int		i;
 
@@ -57,14 +57,14 @@ char	*get_http_response_info(const char *http_response,
 		if (tokens) {
 			if (tokens[0] && strcasecmp(tokens[0], key) == 0) {
 				result = strdup(lines[i] + strlen(tokens[0]) + strlen(spliter));
-				clean_array_str(&tokens);
-				clean_array_str(&lines);
+				clean_arraystr(&tokens);
+				clean_arraystr(&lines);
 				return result;
 			}
-			clean_array_str(&tokens);
+			clean_arraystr(&tokens);
 		}
 		i++;
 	}
-	clean_array_str(&lines);
+	clean_arraystr(&lines);
 	return NULL;
 }

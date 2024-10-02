@@ -3,17 +3,17 @@
 #include <string.h>
 #include <stdarg.h>
 
-void	free_array_str(array_str array)
+void	free_arraystr(arraystr array)
 {
 	free_array((void **)array);
 }
 
-void	clean_array_str(array_str *array)
+void	clean_arraystr(arraystr *array)
 {
 	clean_array((void ***)array);
 }
 
-int	array_str_len(array_str array)
+int	arraystr_len(arraystr array)
 {
 	return array_len((void **)array);
 }
@@ -25,11 +25,11 @@ int	array_str_len(array_str array)
  * Pointer to an array made of the given strings or NULL if the creation fails.
  * Use `free_array_str` or `clean_array_str` to free memory after use.
  */
-array_str	array_str_init(const char *str, ...)
+arraystr	arraystr_init(const char *str, ...)
 {
 	va_list		args;
 	int			size;
-	array_str	result;
+	arraystr	result;
 	int			i;
 
 	va_start(args, str);
@@ -43,12 +43,12 @@ array_str	array_str_init(const char *str, ...)
 	i = 0;
 	while (str) {
 		if (i == size) {
-			free_array_str(result);
+			free_arraystr(result);
 			return NULL;
 		}
 		result[i] = strdup(str);
 		if (!result[i]) {
-			free_array_str(result);
+			free_arraystr(result);
 			return NULL;
 		}
 		i++;
@@ -68,22 +68,22 @@ array_str	array_str_init(const char *str, ...)
  * or the initial array if something went wrong.
  * Use `free_array_str` or `clean_array_str` to free memory after use.
  */
-int	array_str_append(array_str *dest, char *str)
+int	arraystr_append(arraystr *dest, char *str)
 {
 	if (!dest || !str)
 		return 1;
 	return array_append((void ***)dest, (void *)strdup(str));
 }
 
-array_str	array_str_cpy(array_str src)
+arraystr	arraystr_cpy(arraystr src)
 {
-	array_str	result;
+	arraystr	result;
 	int			i;
 	int			src_length;
 
 	if (!src)
 		return NULL;
-	src_length = array_str_len(src);
+	src_length = arraystr_len(src);
 	if (src_length <= 0)
 		return NULL;
 	result = malloc(src_length + 1);
@@ -114,11 +114,11 @@ array_str	array_str_cpy(array_str src)
  * @return A new array that contains the two given arrays.
  * Use `free_array_str` or `clean_array_str` to free memory after use.
  */
-int	array_str_merge(array_str *dest, array_str src)
+int	arraystr_merge(arraystr *dest, arraystr src)
 {
-	array_str	arr_cpy;
+	arraystr	arr_cpy;
 
-	arr_cpy = array_str_cpy(src);
+	arr_cpy = arraystr_cpy(src);
 	if (!arr_cpy)
 		return 1;
 	array_merge((void ***)dest, (void **)arr_cpy);
@@ -132,7 +132,7 @@ int	array_str_merge(array_str *dest, array_str src)
  * @return Pointer to the joined string.
  * The caller is responsible for freeing this memory.
  */
-char	*array_str_join(array_str src)
+char	*arraystr_join(arraystr src)
 {
 	int		i;
 	int		total_char;
@@ -152,7 +152,7 @@ char	*array_str_join(array_str src)
 	return result;
 }
 
-bool	is_in_array_str(array_str src, char *needle)
+bool	is_in_arraystr(arraystr src, char *needle)
 {
 	int	i;
 
@@ -167,21 +167,21 @@ bool	is_in_array_str(array_str src, char *needle)
 	return false;
 }
 
-void	array_str_deduplicate(array_str *arr)
+void	arraystr_deduplicate(arraystr *arr)
 {
 	int			i;
-	array_str	result;
+	arraystr	result;
 
 	if (!arr)
 		return;
-	result = array_str_init(NULL);
+	result = arraystr_init(NULL);
 	i = 0;
 	while ((*arr)[i]) {
-		if (!is_in_array_str(result, (*arr)[i])) {
-			array_str_append(&result, (*arr)[i]);
+		if (!is_in_arraystr(result, (*arr)[i])) {
+			arraystr_append(&result, (*arr)[i]);
 		}
 		i++;
 	}
-	free_array_str(*arr);
+	free_arraystr(*arr);
 	*arr = result;
 }

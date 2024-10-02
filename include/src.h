@@ -38,7 +38,7 @@ int					wget_from_file(struct parameters_t params);
 int					wget_mirror(char *url, struct parameters_t params);
 // wget mode
 
-array_str			get_urls_from_html(struct file_data *file_data,
+arraystr			get_urls_from_html(struct file_data *file_data,
 										char *reject_list, char *exclude_list);
 
 char				*convert_link(char *link,

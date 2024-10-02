@@ -4,7 +4,7 @@
 # include <openssl/ssl.h>
 # include <stdbool.h>
 
-typedef char ** array_str;
+typedef char ** arraystr;
 
 char			*get_file_path(const char *file_name, const char *dir_path);
 
@@ -21,16 +21,16 @@ char			*get_http_response_info(const char *http_response,
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
-void			free_array_str(array_str array);
-void			clean_array_str(array_str *array);
-int				array_str_len(array_str array);
-array_str		array_str_init(const char *str, ...);
-int				array_str_append(array_str *dest, char *src);
-int				array_str_merge(array_str *dest, array_str src);
-char			*array_str_join(array_str src);
-void			array_str_deduplicate(array_str *arr);
-bool			is_in_array_str(array_str src, char *needle);
-// array_str.c
+void			free_arraystr(arraystr array);
+void			clean_arraystr(arraystr *array);
+int				arraystr_len(arraystr array);
+arraystr		arraystr_init(const char *str, ...);
+int				arraystr_append(arraystr *dest, char *src);
+int				arraystr_merge(arraystr *dest, arraystr src);
+char			*arraystr_join(arraystr src);
+void			arraystr_deduplicate(arraystr *arr);
+bool			is_in_arraystr(arraystr src, char *needle);
+// arraystr.c
 
 void			free_array(void **array);
 void			clean_array(void ***array);

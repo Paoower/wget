@@ -7,7 +7,7 @@
 START_TEST(test_get_urls_from_html)
 {
 	int					i;
-	array_str			urls;
+	arraystr			urls;
 	struct file_data	file_data;
 	char				*file_path = "./tests/src_test_files/univ-lehavre.html";
 	char				*expected_urls[] = {
@@ -37,7 +37,7 @@ START_TEST(test_get_urls_from_html)
 		ck_assert_str_eq(urls[i], expected_urls[i]);
 		i++;
 	}
-	clean_array_str(&urls);
+	clean_arraystr(&urls);
 }
 END_TEST
 

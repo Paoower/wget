@@ -53,11 +53,11 @@ static char *extract_url(const char *tag) {
 	return NULL;
 }
 
-array_str	get_urls_from_html(struct file_data *file_data,
+arraystr	get_urls_from_html(struct file_data *file_data,
 										char *reject_list, char *exclude_list) {
-	array_str	urls;
+	arraystr	urls;
 
-	urls = array_str_init(NULL);
+	urls = arraystr_init(NULL);
 	FILE *file = fopen(file_data->file_path, "r");
 	if (!file) return NULL;
 
@@ -80,7 +80,7 @@ array_str	get_urls_from_html(struct file_data *file_data,
 				attr++;
 				char *url = extract_url(attr);
 				if (url && !is_url_in_list(url, reject_list) && !is_url_in_list(url, exclude_list)) {
-					array_str_append(&urls, url);
+					arraystr_append(&urls, url);
 					url_count++;
 					printf("Debug: Extracted URL: %s\n", url);  // Debug output
 				} else {
