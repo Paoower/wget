@@ -53,7 +53,7 @@ static char *extract_url(const char *tag) {
 	return NULL;
 }
 
-arraystr	get_urls_from_html(struct file_data *file_data,
+arraystr	parse_links_from_html(struct file_data *file_data,
 										char *reject_list, char *exclude_list) {
 	arraystr	urls;
 
@@ -65,20 +65,24 @@ arraystr	get_urls_from_html(struct file_data *file_data,
 	char buffer[4096];
 	size_t buffer_size = 0;
 
+	// TODO: create a buffer that	contains the whole content of the file
 	while (fgets(buffer + buffer_size, sizeof(buffer) - buffer_size, file)) {
+		// url not spoted if the line is longer than the buffer
 		buffer_size = strlen(buffer);
 		char *tag_start = buffer;
-
 		while ((tag_start = strchr(tag_start, '<'))) {
 			char *tag_end = strchr(tag_start, '>');
 			if (!tag_end) break;
 
 			*tag_end = '\0';
 			char *attr = tag_start;
-
+			// TODO: be sure that the link is local or has the right domain name
+			// domain name is stored in file_data->host_data->hostname
 			while ((attr = strpbrk(attr, " \t\n\r\f\v")) != NULL) {
 				attr++;
 				char *url = extract_url(attr);
+				// TODO: convert_link()
+				// TODO: edit_link_in_buffer()
 				if (url && !is_url_in_list(url, reject_list) && !is_url_in_list(url, exclude_list)) {
 					arraystr_append(&urls, url);
 					url_count++;
@@ -103,8 +107,11 @@ arraystr	get_urls_from_html(struct file_data *file_data,
 		} else {
 			buffer_size = 0;
 		}
+		// nani sore ?
+		// TODO: concatenate the buffer into the buffer that contains all content
 	}
 	fclose(file);
+	// TODO: edit the file with the new buffer that contains all the new content
 
 	// Debug output
 	printf("Debug: Total URLs extracted: %d\n", url_count);

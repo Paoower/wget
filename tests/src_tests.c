@@ -18,7 +18,7 @@ START_TEST(test_get_urls_from_html)
 	};
 
 	file_data.file_path = file_path;
-	urls = get_urls_from_html(&file_data, NULL, NULL);
+	urls = parse_links_from_html(&file_data, NULL, NULL);
 	if (!urls)
 		ck_abort();
 	// i = 0;
