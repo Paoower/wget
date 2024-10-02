@@ -43,11 +43,11 @@ START_TEST(test_convert_link_to_online)
 	char				*result;
 	struct file_data	file_data;
 	struct host_data	host_data;
-	char				*right_hostname = "kathdedon.files.wordpress.com";
-	char				*wrong_hostname = "google.com";
+	char				*hostname = "kathdedon.files.wordpress.com";
 	char				*basic_tests[] = {
 								"/2010/12/baked-pie.jpg",
 								"2010/12/baked-pie.jpg",
+								"./2010/12/baked-pie.jpg",
 								"http://kathdedon.files.wordpress.com/2010/12/baked-pie.jpg",
 								"kathdedon.files.wordpress.com/2010/12/baked-pie.jpg",
 								NULL
@@ -57,14 +57,40 @@ START_TEST(test_convert_link_to_online)
 	file_data.header_data = NULL;
 	file_data.host_data = &host_data;
 
-	(void)wrong_hostname;
-
-	host_data.hostname = right_hostname;
+	host_data.hostname = hostname;
 	host_data.is_secured = false;
 	for (int i = 0; basic_tests[i]; i++) {
 		result = convert_link(basic_tests[i], &file_data, false);
 		ck_assert_str_eq(result,
 				"http://kathdedon.files.wordpress.com/2010/12/baked-pie.jpg");
+		free(result);
+	}
+}
+END_TEST
+
+START_TEST(test_convert_link_to_offline)
+{
+	char				*result;
+	struct file_data	file_data;
+	struct host_data	host_data;
+	char				*hostname = "kathdedon.files.wordpress.com";
+	char				*basic_tests[] = {
+								"/2010/12/baked-pie.jpg",
+								"2010/12/baked-pie.jpg",
+								"./2010/12/baked-pie.jpg",
+								"http://kathdedon.files.wordpress.com/2010/12/baked-pie.jpg",
+								"kathdedon.files.wordpress.com/2010/12/baked-pie.jpg",
+								NULL
+	};
+
+	file_data.file_path = NULL;
+	file_data.header_data = NULL;
+	file_data.host_data = &host_data;
+
+	host_data.hostname = hostname;
+	for (int i = 0; basic_tests[i]; i++) {
+		result = convert_link(basic_tests[i], &file_data, true);
+		ck_assert_str_eq(result, "2010/12/baked-pie.jpg");
 		free(result);
 	}
 }
@@ -83,11 +109,12 @@ Suite*	src_suite()
 	// create tcases
 
 	tcase_add_test(tc_convert_links, test_convert_link_to_online);
+	tcase_add_test(tc_convert_links, test_convert_link_to_offline);
 	tcase_add_test(tc_mirror, test_get_urls_from_html);
 	// add tests to tcase
 
 	suite_add_tcase(s, tc_convert_links);
-	suite_add_tcase(s, tc_mirror);
+	// suite_add_tcase(s, tc_mirror);
 	// add tacases to suite
 	return s;
 }

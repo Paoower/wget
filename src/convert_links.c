@@ -31,8 +31,9 @@ char	*convert_link_to_online(char *link, struct file_data *file_data)
 		arr = array_init("https://", file_data->host_data->hostname, NULL);
 	else
 		arr = array_init("http://", file_data->host_data->hostname, NULL);
-	// ERROR: need to handle link starting with ./
-	if (*cursor != '/')
+	if (cursor[0] == '.' && cursor[1] == '/')
+		cursor++;
+	if (cursor[0] != '/')
 		array_append(&arr, "/");
 	array_append(&arr, cursor);
 	result = array_join(arr);
@@ -42,8 +43,17 @@ char	*convert_link_to_online(char *link, struct file_data *file_data)
 
 char	*convert_link_to_offline(char *link, struct file_data *file_data)
 {
-	(void)link;
-	(void)file_data;
+	char	*cursor;
+
+	cursor = navigate_after_domain_name(link, file_data);
+	if (!cursor)
+		return NULL;
+	if (cursor[0] == '.')
+		cursor++;
+	if (cursor[0] == '/')
+		cursor++;
+	if (cursor)
+		return strdup(cursor);
 	return NULL;
 }
 
