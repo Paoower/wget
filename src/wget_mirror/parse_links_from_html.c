@@ -45,6 +45,8 @@ static char *extract_url(const char *tag) {
 	url[length] = '\0';
 
 	// Check if the URL starts with '/' or "http"
+	// TODO: be sure that the link is local or has the right domain name
+	// domain name is stored in file_data->host_data->hostname
 	if (url[0] == '/' || strncmp(url, "http", 4) == 0) {
 		return url;
 	}
@@ -54,9 +56,12 @@ static char *extract_url(const char *tag) {
 }
 
 arraystr	parse_links_from_html(struct file_data *file_data,
-										char *reject_list, char *exclude_list) {
+										char *reject_list, char *exclude_list,
+										bool convert_links, bool is_mirror) {
 	arraystr	urls;
 
+	(void)convert_links;
+	(void)is_mirror;
 	urls = arraystr_init(NULL);
 	FILE *file = fopen(file_data->file_path, "r");
 	if (!file) return NULL;
@@ -65,7 +70,7 @@ arraystr	parse_links_from_html(struct file_data *file_data,
 	char buffer[4096];
 	size_t buffer_size = 0;
 
-	// TODO: create a buffer that	contains the whole content of the file
+	// TODO: create a buffer that contains the whole content of the file
 	while (fgets(buffer + buffer_size, sizeof(buffer) - buffer_size, file)) {
 		// url not spoted if the line is longer than the buffer
 		buffer_size = strlen(buffer);
@@ -76,14 +81,12 @@ arraystr	parse_links_from_html(struct file_data *file_data,
 
 			*tag_end = '\0';
 			char *attr = tag_start;
-			// TODO: be sure that the link is local or has the right domain name
-			// domain name is stored in file_data->host_data->hostname
 			while ((attr = strpbrk(attr, " \t\n\r\f\v")) != NULL) {
 				attr++;
 				char *url = extract_url(attr);
-				// TODO: convert_link()
-				// TODO: edit_link_in_buffer()
 				if (url && !is_url_in_list(url, reject_list) && !is_url_in_list(url, exclude_list)) {
+					// TODO: convert_link()
+					// TODO: edit_link_in_buffer()
 					arraystr_append(&urls, url);
 					url_count++;
 					printf("Debug: Extracted URL: %s\n", url);  // Debug output

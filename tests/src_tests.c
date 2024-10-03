@@ -4,7 +4,7 @@
 #include <check.h>
 #include <stdio.h>
 
-START_TEST(test_get_urls_from_html)
+START_TEST(test_parse_links_from_html)
 {
 	int					i;
 	arraystr			urls;
@@ -18,7 +18,7 @@ START_TEST(test_get_urls_from_html)
 	};
 
 	file_data.file_path = file_path;
-	urls = parse_links_from_html(&file_data, NULL, NULL);
+	urls = parse_links_from_html(&file_data, NULL, NULL, false, false);
 	if (!urls)
 		ck_abort();
 	// i = 0;
@@ -113,7 +113,7 @@ Suite*	src_suite()
 
 	tcase_add_test(tc_convert_links, test_convert_link_to_online);
 	tcase_add_test(tc_convert_links, test_convert_link_to_offline);
-	tcase_add_test(tc_mirror, test_get_urls_from_html);
+	tcase_add_test(tc_mirror, test_parse_links_from_html);
 	// add tests to tcase
 
 	suite_add_tcase(s, tc_convert_links);
