@@ -14,13 +14,14 @@ START_TEST(test_parse_links_from_html)
 							"/icons/openlogo-75.png",
 							"/manual",
 							"http://httpd.apache.org/docs/2.4/mod/mod_userdir.html",
-							"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0"
+							"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0",
+							NULL
 	};
 
 	file_data.file_path = file_path;
 	urls = parse_links_from_html(&file_data, NULL, NULL, false, false);
 	if (!urls)
-		ck_abort();
+		ck_abort_msg("no urls found");
 	// i = 0;
 	// printf("URLS=[");
 	// while (urls[i]) {

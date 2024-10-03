@@ -61,5 +61,8 @@ test-fclean: fclean test-clean
 
 test-re: test-fclean $(TESTS_TARGET)
 
+test-noflags: WARN_FLAGS=
+test-noflags: $(TESTS_TARGET)
+
 .PHONY: all tests clean fclean re re-noflags \
 		test-clean test-fclean test-re

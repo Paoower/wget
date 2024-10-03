@@ -59,7 +59,7 @@ arraystr	arraystr_init(const char *str, ...)
 }
 
 /**
- * @brief Append `elem` to the given array.
+ * @brief Append `str` to the given array.
  * @param dest The initial array. Must be dynamically created.
  * If NULL, array is created, starting with `str`.
  * @param str The string to add.

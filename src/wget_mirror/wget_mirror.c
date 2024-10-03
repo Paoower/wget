@@ -46,6 +46,7 @@ int	wget_mirror(char *url, struct parameters_t params)
 		clean_arraystr(&urls);
 		i = 0;
 		while (files_data && files_data[i]) {
+			// is html ?
 			new_urls = parse_links_from_html(files_data[i], params.reject_list,
 					params.exclude_list, params.convert_links, params.mirror);
 			arraystr_merge(&urls, new_urls);
