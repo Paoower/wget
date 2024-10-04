@@ -60,10 +60,22 @@ arraystr	catch_links_from_lines(char **lines, char *reject_list,
  * @brief Write the concatanation of every buffers that contains
  * `new_file_content` over the file
  */
-void	edit_file_with_new_content(char *file_path, arraystr new_file_content)
+void	edit_file_with_new_content(char *file_path, arraystr new_content_arr)
 {
-	(void)file_path;
-	(void)new_file_content;
+	FILE	*file;
+	char	*new_content;
+
+	if (!file_path || !new_content_arr)
+		return;
+	file = fopen(file_path, "w");
+	if (!file)
+		return;
+	new_content = arraystr_join(new_content_arr);
+	if (!new_content)
+		return;
+	fprintf(file, "%s", new_content);
+	free(new_content);
+	fclose(file);
 }
 
 arraystr	parse_links_from_html(struct file_data *file_data,
