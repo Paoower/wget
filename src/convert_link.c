@@ -61,13 +61,22 @@ char	*convert_link_to_offline(char *link, struct file_data *file_data)
  * @return Pointer to the formated link.
  * The caller is responsible for freeing this memory.
  */
-char	*convert_link(char *link, struct file_data *file_data, bool is_mirror)
+void	convert_link(char **link, struct file_data *file_data,
+											bool convert_links, bool is_mirror)
 {
-	if (!link || !file_data || !file_data->host_data ||
+	char	*new_url;
+
+	if (!convert_links)
+		return;
+	if (!link || !*link || !file_data || !file_data->host_data ||
 											!file_data->host_data->hostname)
-		return NULL;
+		return;
 	if (is_mirror)
-		return convert_link_to_offline(link, file_data);
+		new_url = convert_link_to_offline(*link, file_data);
 	else
-		return convert_link_to_online(link, file_data);
+		new_url = convert_link_to_online(*link, file_data);
+	if (new_url) {
+		free(*link);
+		*link = new_url;
+	}
 }

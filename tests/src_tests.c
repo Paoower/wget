@@ -13,14 +13,15 @@ START_TEST(test_parse_links_from_html)
 	char				*hostname = "wims.univ-lehavre";
 	char				*file_path = "./tests/src_test_files/univ-lehavre.html";
 	char				*expected_urls[] = {
-							"/icons/openlogo-75.png",
+							"https://wims.univ-lehavre/icons/openlogo-75.png",
+							"https://wims.univ-lehavre/manual",
 							NULL
 	};
 
 	file_data.file_path = file_path;
 	file_data.host_data = &host_data;
 	file_data.host_data->hostname = hostname;
-	urls = parse_links_from_html(&file_data, NULL, NULL, false, false);
+	urls = parse_links_from_html(&file_data, NULL, NULL, true, false);
 	if (!urls)
 		ck_abort_msg("no urls found");
 	// i = 0;
@@ -65,7 +66,8 @@ START_TEST(test_convert_link_to_online)
 	host_data.hostname = hostname;
 	host_data.is_secured = false;
 	for (int i = 0; basic_tests[i]; i++) {
-		result = convert_link(basic_tests[i], &file_data, false);
+		result = strdup(basic_tests[i]);
+		convert_link(&result, &file_data, true, false);
 		ck_assert_str_eq(result,
 				"http://kathdedon.files.wordpress.com/2010/12/baked-pie.jpg");
 		free(result);
@@ -94,7 +96,8 @@ START_TEST(test_convert_link_to_offline)
 
 	host_data.hostname = hostname;
 	for (int i = 0; basic_tests[i]; i++) {
-		result = convert_link(basic_tests[i], &file_data, true);
+		result = strdup(basic_tests[i]);
+		convert_link(&result, &file_data, true, true);
 		ck_assert_str_eq(result, "2010/12/baked-pie.jpg");
 		free(result);
 	}
