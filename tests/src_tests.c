@@ -9,16 +9,17 @@ START_TEST(test_parse_links_from_html)
 	int					i;
 	arraystr			urls;
 	struct file_data	file_data;
+	struct host_data	host_data;
+	char				*hostname = "wims.univ-lehavre";
 	char				*file_path = "./tests/src_test_files/univ-lehavre.html";
 	char				*expected_urls[] = {
 							"/icons/openlogo-75.png",
-							"/manual",
-							"http://httpd.apache.org/docs/2.4/mod/mod_userdir.html",
-							"http://bugs.debian.org/cgi-bin/pkgreport.cgi?ordering=normal;archive=0;src=apache2;repeatmerged=0",
 							NULL
 	};
 
 	file_data.file_path = file_path;
+	file_data.host_data = &host_data;
+	file_data.host_data->hostname = hostname;
 	urls = parse_links_from_html(&file_data, NULL, NULL, false, false);
 	if (!urls)
 		ck_abort_msg("no urls found");
