@@ -23,27 +23,47 @@ static int is_url_in_list(const char *url, const char *list) {
 	return 0;
 }
 
-// returns the starting quote
-static char	move_cursor_at_quote(char **cursor)
+/**
+ * @brief Get the attribute and move the cursor after it.
+ * @return The attribute
+ */
+static char	*get_attribute(char **cursor)
 {
-	char	*new_cursor;
+	char	*end_attribut;
+	char	*attribute;
+	char	*temp;
 
 	if (!cursor || !*cursor)
+		return NULL;
+	end_attribut = strchr(*cursor, '=');
+	if (!end_attribut)
+		return NULL;
+	attribute = strndup(*cursor, end_attribut - *cursor);
+	if (!attribute)
+		return NULL;
+	temp = trim_spaces(attribute);
+	if (temp) {
+		free(attribute);
+		attribute = temp;
+	}
+	*cursor = end_attribut;
+	return attribute;
+}
+
+static char get_quote(char **cursor)
+{
+	if (!cursor || !*cursor)
 		return 0;
-	new_cursor = *cursor;
-	new_cursor = strchr(*cursor, '=');
-	if (!new_cursor)
-		return 0;
-	new_cursor++;
-	while (*new_cursor && isspace((unsigned char)*new_cursor))
-		new_cursor++;
-	*cursor = new_cursor;
-	if (*new_cursor == '"' || *new_cursor == '\'')
-		return *new_cursor;
+	(*cursor)++;
+	while (**cursor && isspace((unsigned char)**cursor))
+		(*cursor)++;
+	if (**cursor == '"' || **cursor == '\'')
+		return **cursor;
 	return 0;
 }
 
-static bool is_valid_host_link(char *link, struct file_data *file_data)
+static bool is_valid_host_link(char *link,
+									struct file_data *file_data, char *attribute)
 {
 	char	*cursor;
 
@@ -54,18 +74,18 @@ static bool is_valid_host_link(char *link, struct file_data *file_data)
 		// if link is url with the right domain name and is followed by a '/'
 			return true;
 	}
-	if (does_match_with_pattern(link, FILE_PATH_REGEX)) { // not an url
-		// has the right html attribut
+	if (does_match_with_pattern(link, FILE_PATH_REGEX)
+						&& is_in_arraystr((arraystr)LINK_ATTRIBUTES, attribute))
+	// is not an url and has the right html attribut
 		return true;
-	}
 	return false;
 }
 
 /**
  * move the cursor at the end of the parameter
  */
-static char *get_url_from_param(char **cursor, char quote,
-												struct file_data *file_data) {
+static char *get_link(char **cursor, char quote,
+								struct file_data *file_data, char *attribute) {
 	char	*start;
 	char	*end;
 	char	*url;
@@ -84,7 +104,7 @@ static char *get_url_from_param(char **cursor, char quote,
 		return NULL;
 	strncpy(url, start, length);
 	url[length] = '\0';
-	if (is_valid_host_link(url, file_data))
+	if (is_valid_host_link(url, file_data, attribute))
 		return url;
 	free(url);
 	return NULL;
@@ -99,6 +119,7 @@ arraystr	extract_urls_from_line(char **lines, char *reject_list,
 	char		*cursor;
 	char		*url;
 	char		quote;
+	char		*attribute;
 
 	(void)convert_links;
 	(void)is_mirror;
@@ -112,10 +133,9 @@ arraystr	extract_urls_from_line(char **lines, char *reject_list,
 				cursor++; // ignore other spaces
 			if (!*cursor || *cursor == '>')
 				break;
-			quote = move_cursor_at_quote(&cursor);
-			if (!quote || !*cursor)
-				break;
-			url = get_url_from_param(&cursor, quote, file_data);
+			attribute = get_attribute(&cursor);
+			quote = get_quote(&cursor);
+			url = get_link(&cursor, quote, file_data, attribute);
 			if (url) {
 				if (!is_url_in_list(url, reject_list)
 									&& !is_url_in_list(url, exclude_list)) {
@@ -126,6 +146,8 @@ arraystr	extract_urls_from_line(char **lines, char *reject_list,
 				}
 				free(url);
 			}
+			if (attribute)
+				free(attribute);
 			cursor++;
 		}
 	}

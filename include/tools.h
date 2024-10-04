@@ -42,6 +42,7 @@ int				array_merge(void ***dest, void **src);
 
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);
+char			*trim_spaces(char *str);
 void			copy_string(char **dest, char *src);
 // string
 

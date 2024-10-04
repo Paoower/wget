@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 /**
  * Catch from src the string between the first match of start
@@ -76,4 +77,33 @@ void copy_string(char **dest, char *src)
 	{
 		strcpy(*dest, src);
 	}
+}
+
+char	*trim_spaces(char *str)
+{
+	int		i;
+	int		j;
+	int		count_spaces;
+	char	*result;
+
+	i = 0;
+	count_spaces = 0;
+	while (str[i]) {
+		if (isspace((unsigned int)str[i++]))
+			count_spaces++;
+	}
+	if (count_spaces == 0)
+		return NULL;
+	result = malloc(strlen(str) - count_spaces + 1);
+	if (!result)
+		return NULL;
+	i = 0;
+	j = 0;
+	while (str[i]) {
+		if (!isspace((unsigned int)str[i]))
+			result[j++] = str[i];
+		i++;
+	}
+	result[j] = '\0';
+	return result;
 }
