@@ -7,7 +7,29 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_URL_LENGTH 2048
+const char	*link_attributes[] = {
+	"src",
+	"href",
+	"action",
+	"formaction",
+	"cite",
+	"data",
+	"usemap",
+	"codebase",
+	"manifest",
+	"poster",
+	"icon",
+	"profile",
+	"archive",
+	"longdesc",
+	"ping",
+	"srcset",
+	"integrity",
+	"background",
+	"srcdoc",
+	"content",
+	NULL
+};
 
 static int is_link_in_list(const char *url, const char *list) {
 	if (!list) return 0;
@@ -76,7 +98,7 @@ static bool is_valid_host_link(char *link,
 			return true;
 	}
 	if (does_match_with_pattern(link, FILE_PATH_REGEX)
-						&& is_in_arraystr((arraystr)LINK_ATTRIBUTES, attribute))
+						&& is_in_arraystr((arraystr)link_attributes, attribute))
 	// is not an url and has the right html attribut
 		return true;
 	return false;
@@ -120,6 +142,7 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 	char	*attribute;
 	char	*quote_pos;
 	char	*link;
+	int		offset;
 
 	attribute = get_attribute(cursor);
 	quote = get_quote(cursor);
@@ -129,7 +152,8 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 		if (!is_link_in_list(link, reject_list)
 							&& !is_link_in_list(link, exclude_list)) {
 			convert_link(&link, file_data, convert_links, is_mirror);
-			edit_link_in_buffer(lines, quote_pos, link);
+			offset = edit_link_in_buffer(lines, quote_pos, link);
+			*cursor += offset;
 			arraystr_append(links, link);
 		}
 		free(link);

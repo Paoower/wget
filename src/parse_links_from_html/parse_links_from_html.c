@@ -62,6 +62,7 @@ arraystr	catch_links_from_lines(char **lines, char *reject_list,
  */
 void	edit_file_with_new_content(char *file_path, arraystr new_file_content)
 {
+	(void)file_path;
 	(void)new_file_content;
 }
 
