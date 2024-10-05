@@ -46,30 +46,47 @@ static int is_link_in_list(const char *url, const char *list) {
 	return 0;
 }
 
+static char	*get_last_word(char *start, char *end)
+{
+	char	*cursor;
+
+	cursor = end - 1;
+	while (cursor >= start && isspace((unsigned char)*cursor))
+		cursor--;
+	while (cursor >= start && !isspace((unsigned char)*cursor))
+		cursor--;
+	cursor++;
+	printf("test=%ld\n", end - cursor);
+	return strndup(cursor, end - cursor);
+}
+
 /**
  * @brief Get the attribute and move the cursor after it.
  * @return The attribute
  */
 static char	*get_attribute(char **cursor)
 {
-	char	*end_attribut;
 	char	*attribute;
 	char	*temp;
+	char	*start;
+	char	*end_attribute;
 
 	if (!cursor || !*cursor)
 		return NULL;
-	end_attribut = strchr(*cursor, '=');
-	if (!end_attribut)
+	start = *cursor;
+	end_attribute = strchr(*cursor, '=');
+	if (!end_attribute)
 		return NULL;
-	attribute = strndup(*cursor, end_attribut - *cursor);
+	*cursor = end_attribute;
+	attribute = get_last_word(start, *cursor);
 	if (!attribute)
 		return NULL;
+	printf("attribute=%s\n\n", attribute);
 	temp = trim_spaces(attribute);
 	if (temp) {
 		free(attribute);
 		attribute = temp;
 	}
-	*cursor = end_attribut;
 	return attribute;
 }
 
@@ -147,6 +164,8 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 	char	*online_link;
 
 	attribute = get_attribute(cursor);
+	if (!attribute)
+		return;
 	quote = get_quote(cursor);
 	quote_pos = *cursor;
 	link = get_link(cursor, quote, file_data, attribute);
