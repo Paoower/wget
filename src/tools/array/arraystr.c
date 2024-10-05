@@ -23,14 +23,17 @@ void	print_arraystr(arraystr arr, char *name)
 {
 	int	i;
 
+	if (!arr)
+		return;
 	i = 0;
 	if (name)
 		printf("%s = ", name);
 	printf("[ ");
 	while (arr[i]) {
-		printf("\"%s\"", arr[i++]);
+		printf("\"%s\"", arr[i]);
 		if (arr[i] && arr[i + 1])
 			printf(", ");
+		i++;
 	}
 	printf(" ]\n");
 }

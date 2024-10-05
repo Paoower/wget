@@ -22,6 +22,7 @@ void	free_header_data(struct header_data *header_data)
 struct header_data	*fill_http_data(char *http_header)
 {
 	struct header_data	*header_data;
+	char				*content_type;
 
 	header_data = malloc(sizeof(struct header_data));
 	header_data->status = get_http_response_info(http_header, "HTTP/1.1", " ");
@@ -31,6 +32,11 @@ struct header_data	*fill_http_data(char *http_header)
 										http_header, "location", NULL);
 	header_data->transfer_encoding = get_http_response_info(
 										http_header, "transfer-encoding", NULL);
+	content_type = get_http_response_info(http_header, "content-type", NULL);
+	if (content_type && strncmp(content_type, "text/html", 9) == 0) {
+		header_data->is_html = true;
+	} else
+		header_data->is_html = false;
 	return header_data;
 }
 
@@ -80,6 +86,7 @@ struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 			return NULL;
 		header_end = strstr(response_merged, header_finish_pattern);
 		if (header_end) {
+			// printf("\nHEADER\n%s\n\n", response_merged);
 			*remaining_data_len = response_merged + header_size
 								- (header_end + strlen(header_finish_pattern));
 			header_data = fill_http_data(response_merged);

@@ -17,6 +17,7 @@ struct	header_data {
 	char	*content_size;
 	char	*redirect_url;
 	char	*transfer_encoding;
+	bool	is_html;
 };
 
 struct	dl_data {
