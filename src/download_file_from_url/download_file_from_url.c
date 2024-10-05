@@ -179,6 +179,8 @@ struct file_data	*download_file_from_url_core(char *url,
 	}
 	file_data = request_and_download_file(sock_fd, ssl, ctx, host_data,
 			storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
+	if (!file_data)
+		return NULL;
 	file_data->host_data = host_data;
 	return file_data;
 }
