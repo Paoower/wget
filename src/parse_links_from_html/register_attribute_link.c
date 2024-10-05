@@ -152,7 +152,7 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 		if (!is_link_in_list(link, reject_list)
 							&& !is_link_in_list(link, exclude_list)) {
 			convert_link(&link, file_data, convert_links, is_mirror);
-			offset = edit_link_in_buffer(lines, quote_pos, link);
+			offset = replace_link_in_buffer(lines, quote_pos, link);
 			*cursor += offset;
 			arraystr_append(links, link);
 		}
