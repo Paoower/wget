@@ -112,7 +112,8 @@ arraystr	parse_links_from_html(struct file_data *file_data,
 	}
 	free(line);
 	fclose(file);
-	edit_file_with_new_content(file_data->file_path, new_file_content);
+	if (convert_links)
+		edit_file_with_new_content(file_data->file_path, new_file_content);
 	free_arraystr(new_file_content);
 	return links;
 }

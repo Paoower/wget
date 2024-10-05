@@ -43,17 +43,21 @@ int	wget_mirror(char *url, struct parameters_t params)
 			i++;
 		}
 		clean_arraystr(&urls);
-		// i = 0;
-		// while (files_data && files_data[i]) {
-		// 	// is html ?
-		// 	new_urls = parse_links_from_html(files_data[i], params.reject_list,
-		// 			params.exclude_list, params.convert_links, params.mirror);
-		// 	arraystr_merge(&urls, new_urls);
-		// 	clean_arraystr(&new_urls);
-		// 	// concatenate every urls in every files
-		// }
+		i = 0;
+		while (files_data && files_data[i]) { // TODO: And is HTML
+			new_urls = parse_links_from_html(files_data[i], params.reject_list,
+					params.exclude_list, params.convert_links, params.mirror);
+			arraystr_merge(&urls, new_urls);
+			clean_arraystr(&new_urls);
+			// concatenate every urls in every files
+
+			// TEMPORARY STOP TO AVOID SEG FAULT
+			print_arraystr(urls, "ulrs");
+			return 0;
+			////////////////////////////////////
+		}
 		clean_files_data(&files_data);
-		// arraystr_deduplicate(&urls); // issue seg fault
+		arraystr_deduplicate(&urls);
 		// remove every duplicated in urls
 	}
 	clean_arraystr(&dl_history);

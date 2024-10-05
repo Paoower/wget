@@ -143,6 +143,8 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 	char	*quote_pos;
 	char	*link;
 	int		offset;
+	char	*new_link;
+	char	*online_link;
 
 	attribute = get_attribute(cursor);
 	quote = get_quote(cursor);
@@ -151,10 +153,18 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 	if (link) {
 		if (!is_link_in_list(link, reject_list)
 							&& !is_link_in_list(link, exclude_list)) {
-			convert_link(&link, file_data, convert_links, is_mirror);
-			offset = replace_link_in_buffer(lines, quote_pos, link);
-			*cursor += offset;
-			arraystr_append(links, link);
+			if (convert_links) {
+				new_link = convert_link(link, file_data, is_mirror);
+				// TODO: fix seg fault from replace_link_in_buffer
+				offset = replace_link_in_buffer(lines, quote_pos, new_link);
+				free(new_link);
+				*cursor += offset;
+			}
+			online_link = convert_link_to_online(link, file_data);
+			if (online_link) {
+				arraystr_append(links, online_link);
+				free(online_link);
+			}
 		}
 		free(link);
 	}

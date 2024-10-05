@@ -21,6 +21,7 @@ char			*get_http_response_info(const char *http_response,
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
 
+void			print_arraystr(arraystr arr, char *name);
 void			free_arraystr(arraystr array);
 void			clean_arraystr(arraystr *array);
 int				arraystr_len(arraystr array);

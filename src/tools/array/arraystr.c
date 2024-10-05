@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 void	free_arraystr(arraystr array)
 {
@@ -16,6 +17,22 @@ void	clean_arraystr(arraystr *array)
 int	arraystr_len(arraystr array)
 {
 	return array_len((void **)array);
+}
+
+void	print_arraystr(arraystr arr, char *name)
+{
+	int	i;
+
+	i = 0;
+	if (name)
+		printf("%s = ", name);
+	printf("[ ");
+	while (arr[i]) {
+		printf("\"%s\"", arr[i++]);
+		if (arr[i] && arr[i + 1])
+			printf(", ");
+	}
+	printf(" ]\n");
 }
 
 /**
@@ -172,7 +189,7 @@ void	arraystr_deduplicate(arraystr *arr)
 	int			i;
 	arraystr	result;
 
-	if (!arr)
+	if (!arr || !*arr)
 		return;
 	result = arraystr_init(NULL);
 	i = 0;
