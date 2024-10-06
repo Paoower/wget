@@ -19,8 +19,7 @@ void	free_file_data(struct file_data *file_data)
 	}
 }
 
-void	download_file_from_url_cleanup(SSL *ssl, int sock_fd,
-													struct host_data *host_data)
+static void	cleanup(SSL *ssl, int sock_fd, struct host_data *host_data)
 {
 	if (ssl) {
 		SSL_shutdown(ssl);
@@ -103,22 +102,15 @@ struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 {
 	struct file_data	*file_data;
 
-	if (send_request(sock_fd, ssl, host_data, display)) {
-		download_file_from_url_cleanup(ssl, sock_fd, host_data);
+	if (send_request(sock_fd, ssl, host_data, display))
 		return NULL;
-	}
 	file_data = malloc(sizeof(struct file_data));
-	if (!file_data) {
-		download_file_from_url_cleanup(ssl, sock_fd, host_data);
+	if (!file_data)
 		return NULL;
-	}
 	file_data->file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
 	file_data->header_data = download_file(sock_fd, ssl,
 								file_data->file_path, bytes_per_sec, display);
-	printf("TEST1\n"); // DEBUG
-	download_file_from_url_cleanup(ssl, sock_fd, NULL);
-	printf("TEST2\n"); // DEBUG
 	return file_data;
 }
 
@@ -136,21 +128,26 @@ struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
 		return NULL;
 	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
 	if (sock_fd == -1) {
-		download_file_from_url_cleanup(NULL, sock_fd, host_data);
+		cleanup(NULL, sock_fd, host_data);
 		return NULL;
 	}
 	if (host_data->is_secured) {
 		ssl = create_ssl_connection(ctx, sock_fd);
 		if (!ssl) {
-			download_file_from_url_cleanup(NULL, sock_fd, host_data);
+			cleanup(NULL, sock_fd, host_data);
 			return NULL;
 		}
 	}
 	file_data = request_and_download_file(sock_fd, ssl, host_data,
 			storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
-	if (!file_data)
+	if (!file_data) {
+		cleanup(ssl, sock_fd, host_data);
 		return NULL;
+	}
 	file_data->host_data = host_data;
+	printf("TEST1\n"); // DEBUG
+	cleanup(ssl, sock_fd, NULL);
+	printf("TEST2\n"); // DEBUG
 	return file_data;
 }
 
