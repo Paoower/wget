@@ -15,7 +15,7 @@ void	clean_files_data(struct file_data ***files_data)
 	*files_data = NULL;
 }
 
-int	wget_mirror(char *url, struct parameters_t params)
+int	wget_mirror(SSL_CTX *ctx, char *url, struct parameters_t params)
 {
 	arraystr			urls;
 	arraystr			new_urls;
@@ -33,9 +33,13 @@ int	wget_mirror(char *url, struct parameters_t params)
 		while (urls[i]) {
 			if (!is_in_arraystr(dl_history, urls[i])) {
 			// if url is not in the dl_history, dl + add to list if is html
-				file_data = download_file_from_url(urls[i],
+				file_data = download_file_from_url(ctx, urls[i],
 									params.storage_path, params.output_file,
-									params.rate_limit, params.mirror, 0);
+									params.rate_limit, params.mirror, 1);
+				if (!file_data)
+					printf("no file_data\n");
+				else
+					printf("downloaded: %s\n", file_data->file_path);
 				if (file_data && file_data->header_data
 										&& file_data->header_data->is_html) {
 					printf("parsing: add url %s\n", urls[i]);

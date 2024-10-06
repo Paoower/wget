@@ -26,16 +26,18 @@ int					handle_args(struct parameters_t *parameters,
 														int argc, char *argv[]);
 void				free_args(struct parameters_t *params);
 void				free_file_data(struct file_data *file_data);
-struct file_data	*download_file_from_url(char *url, char *storage_dir_path,
-								char *file_name, unsigned long bytes_per_sec,
-								int is_mirror, bool display);
+struct file_data	*download_file_from_url(SSL_CTX *ctx, char *url,
+					const char *storage_dir_path, char *file_name,
+					unsigned long bytes_per_sec, int is_mirror, bool display);
 
 int					wget(struct parameters_t params);
 int					wget_in_background(struct parameters_t params);
 // wget
 
-int					wget_from_file(struct parameters_t params);
-int					wget_mirror(char *url, struct parameters_t params);
+int					wget_from_file(SSL_CTX *ctx,
+											struct parameters_t parameters);
+int					wget_mirror(SSL_CTX *ctx, char *url,
+													struct parameters_t params);
 // wget mode
 
 arraystr			parse_links_from_html(struct file_data *file_data,

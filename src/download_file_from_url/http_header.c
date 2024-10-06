@@ -37,6 +37,7 @@ struct header_data	*fill_http_data(char *http_header)
 		header_data->is_html = true;
 	} else
 		header_data->is_html = false;
+	free(content_type);
 	return header_data;
 }
 

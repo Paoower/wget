@@ -26,14 +26,6 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	else if (parameters.links_file)
-	{
-		if (wget_from_file(parameters))
-		{
-			free_args(&parameters);
-			return 1;
-		}
-	}
 	else if (wget(parameters))
 	{
 		free_args(&parameters);

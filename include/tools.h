@@ -53,6 +53,10 @@ int				arg_ptr_len(void *first, va_list args);
 int				parse_url();
 // parse_url.c
 
+SSL_CTX			*create_ctx_ssl();
+SSL				*create_ssl_connection(SSL_CTX *ctx, int sock_fd);
+// ssl.c
+
 void			print_current_date(char *text_before);
 struct timespec	time_diff(struct timespec time1, struct timespec time2);
 struct timespec	get_elapsed_time(struct timespec start_time);

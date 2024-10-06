@@ -56,7 +56,6 @@ static char	*get_last_word(char *start, char *end)
 	while (cursor >= start && !isspace((unsigned char)*cursor))
 		cursor--;
 	cursor++;
-	printf("test=%ld\n", end - cursor);
 	return strndup(cursor, end - cursor);
 }
 
@@ -81,7 +80,6 @@ static char	*get_attribute(char **cursor)
 	attribute = get_last_word(start, *cursor);
 	if (!attribute)
 		return NULL;
-	printf("attribute=%s\n\n", attribute);
 	temp = trim_spaces(attribute);
 	if (temp) {
 		free(attribute);

@@ -19,47 +19,16 @@ void	free_file_data(struct file_data *file_data)
 	}
 }
 
-void	download_file_from_url_cleanup(SSL *ssl, SSL_CTX *ctx, int sock_fd,
+void	download_file_from_url_cleanup(SSL *ssl, int sock_fd,
 											struct host_data *host_data)
 {
 	if (ssl) {
 		SSL_shutdown(ssl);
 		SSL_free(ssl);
 	}
-	if (ctx)
-		SSL_CTX_free(ctx);
-	EVP_cleanup();
 	free_hostdata(host_data);
 	if (sock_fd != -1)
 		close(sock_fd);
-}
-
-SSL	*create_ssl_connection(SSL_CTX **ctx, int sock_fd)
-{
-	SSL	*ssl;
-
-	SSL_library_init();
-	SSL_load_error_strings(); // give precise error descriptions
-	OpenSSL_add_ssl_algorithms(); // init crypto lib used by ssl
-	*ctx = SSL_CTX_new(TLS_client_method());
-	if (!*ctx) {
-		ERR_print_errors_fp(stderr);
-		return NULL;
-	}
-	ssl = SSL_new(*ctx);
-	if (!ssl) {
-		ERR_print_errors_fp(stderr);
-		SSL_CTX_free(*ctx);
-		return NULL;
-	}
-	SSL_set_fd(ssl, sock_fd);
-	if (SSL_connect(ssl) <= 0) {
-		ERR_print_errors_fp(stderr);
-		SSL_free(ssl);
-		SSL_CTX_free(*ctx);
-		return NULL;
-	}
-	return ssl;
 }
 
 struct sockaddr	*get_server_socket_address(char *hostname, int is_secured)
@@ -128,56 +97,57 @@ int send_request(int sock_fd, SSL *ssl,
 }
 
 struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
-					SSL_CTX *ctx, struct host_data *host_data,
+					struct host_data *host_data,
 					const char *storage_dir_path, char *file_name,
 					unsigned long bytes_per_sec, int is_mirror, bool display)
 {
 	struct file_data	*file_data;
 
 	if (send_request(sock_fd, ssl, host_data, display)) {
-		download_file_from_url_cleanup(ssl, ctx, sock_fd, host_data);
+		download_file_from_url_cleanup(ssl, sock_fd, host_data);
 		return NULL;
 	}
 	file_data = malloc(sizeof(struct file_data));
 	if (!file_data) {
-		download_file_from_url_cleanup(ssl, ctx, sock_fd, host_data);
+		download_file_from_url_cleanup(ssl, sock_fd, host_data);
 		return NULL;
 	}
 	file_data->file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
 	file_data->header_data = download_file(sock_fd, ssl,
 								file_data->file_path, bytes_per_sec, display);
-	download_file_from_url_cleanup(ssl, ctx, sock_fd, NULL);
+	printf("invalid ssl=%p\n", ssl);
+	printf("TEST1\n");
+	download_file_from_url_cleanup(ssl, sock_fd, NULL);
+	printf("TEST2\n");
 	return file_data;
 }
 
-struct file_data	*download_file_from_url_core(char *url,
+struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
 					const char *storage_dir_path, char *file_name,
 					unsigned long bytes_per_sec, int is_mirror, bool display)
 {
 	int					sock_fd;
 	struct file_data	*file_data;
 	struct host_data	*host_data;
-	SSL_CTX				*ctx;
 	SSL					*ssl;
 
 	ssl = NULL;
-	ctx = NULL;
 	if (!(host_data = get_hostdata(url)))
 		return NULL;
 	sock_fd = connect_to_server(host_data->hostname, host_data->is_secured);
 	if (sock_fd == -1) {
-		download_file_from_url_cleanup(NULL, NULL, sock_fd, host_data);
+		download_file_from_url_cleanup(NULL, sock_fd, host_data);
 		return NULL;
 	}
 	if (host_data->is_secured) {
-		ssl = create_ssl_connection(&ctx, sock_fd);
+		ssl = create_ssl_connection(ctx, sock_fd);
 		if (!ssl) {
-			download_file_from_url_cleanup(NULL, NULL, sock_fd, host_data);
+			download_file_from_url_cleanup(NULL, sock_fd, host_data);
 			return NULL;
 		}
 	}
-	file_data = request_and_download_file(sock_fd, ssl, ctx, host_data,
+	file_data = request_and_download_file(sock_fd, ssl, host_data,
 			storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
 	if (!file_data)
 		return NULL;
@@ -194,7 +164,7 @@ struct file_data	*download_file_from_url_core(char *url,
  * @return A pointer to the file path.
  * The caller is responsible for freeing this memory with `free_file_data`.
  */
-struct file_data	*download_file_from_url(char *url,
+struct file_data	*download_file_from_url(SSL_CTX *ctx, char *url,
 					const char *storage_dir_path, char *file_name,
 					unsigned long bytes_per_sec, int is_mirror, bool display)
 {
@@ -202,13 +172,13 @@ struct file_data	*download_file_from_url(char *url,
 	struct file_data	*new_file_data;
 	struct header_data	*hd;
 
-	file_data = download_file_from_url_core(url, storage_dir_path,
+	file_data = download_file_from_url_core(ctx, url, storage_dir_path,
 								file_name, bytes_per_sec, is_mirror, display);
 	while (file_data && (hd = file_data->header_data) &&
 											is_redirect_status(hd->status)) {
 		if (display)
 			printf("\nRedirect to \"%s\"\n", hd->redirect_url);
-		new_file_data = download_file_from_url_core(hd->redirect_url,
+		new_file_data = download_file_from_url_core(ctx, hd->redirect_url,
 				storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
 		free_file_data(file_data);
 		file_data = new_file_data;

@@ -11,6 +11,7 @@
 struct params_thread {
 	struct parameters_t	params;
 	char				*line;
+	SSL_CTX				*ctx;
 };
 
 char **read_lines_from_file(const char *filename, int *line_count) {
@@ -59,12 +60,11 @@ void wget_from_file_cleanup(struct params_thread **params_threads,
 	free(params_threads);
 }
 
-void apply_function_to_line(char *line, struct parameters_t params)
+void apply_function_to_line(SSL_CTX *ctx, char *line, struct parameters_t params)
 {
-
 	struct file_data	*file_data;
 
-	file_data = download_file_from_url(line, params.storage_path,
+	file_data = download_file_from_url(ctx, line, params.storage_path,
 						params.output_file, params.rate_limit, params.mirror, 0);
 	if (!file_data || !file_data->file_path) {
 		free_file_data(file_data);
@@ -82,11 +82,12 @@ void *thread_function(void *arg)
 	struct params_thread	*params_thread;
 
 	params_thread = (struct params_thread *)arg;
-	apply_function_to_line(params_thread->line, params_thread->params);
+	apply_function_to_line(params_thread->ctx,
+									params_thread->line, params_thread->params);
 	return NULL;
 }
 
-int wget_from_file(struct parameters_t parameters)
+int wget_from_file(SSL_CTX *ctx, struct parameters_t parameters)
 {
 	struct params_thread	**params_threads;
 	const char *filename = parameters.links_file;
@@ -102,6 +103,7 @@ int wget_from_file(struct parameters_t parameters)
 		params_threads[i] = malloc(sizeof(struct params_thread));
 		params_threads[i]->line = lines[i];
 		params_threads[i]->params = parameters;
+		params_threads[i]->ctx = ctx;
 		int rc = pthread_create(&threads[i], NULL,
 									thread_function, (void *)params_threads[i]);
 		if (rc) {
