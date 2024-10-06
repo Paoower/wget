@@ -102,7 +102,7 @@ arraystr	parse_links_from_html(struct file_data *file_data,
 							exclude_list, file_data, convert_links, is_mirror);
 			if (new_links) {
 				arraystr_merge(&links, new_links);
-				free(new_links);
+				free_arraystr(new_links);
 			}
 			array_append((void ***)&new_file_content, (void *)lines);
 			lines = NULL;

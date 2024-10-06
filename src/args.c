@@ -9,13 +9,14 @@
 
 void free_args(struct parameters_t *params)
 {
+	if (!params)
+		return;
 	free(params->output_file);
 	free(params->storage_path);
 	free(params->links_file);
 	free(params->reject_list);
 	free(params->exclude_list);
 	free(params->url);
-	// free(params);
 }
 
 /**
@@ -57,7 +58,7 @@ char* parse_equal(char* optarg) {
 
 	if (s)
 		return s + 1;
-	
+
 	return optarg;
 }
 

@@ -106,7 +106,7 @@ arraystr	arraystr_cpy(arraystr src)
 	src_length = arraystr_len(src);
 	if (src_length <= 0)
 		return NULL;
-	result = malloc(src_length + 1);
+	result = malloc(sizeof(char *) * (src_length + 1));
 	if (!result)
 		return NULL;
 	result[src_length] = NULL;
@@ -141,7 +141,10 @@ int	arraystr_merge(arraystr *dest, arraystr src)
 	arr_cpy = arraystr_cpy(src);
 	if (!arr_cpy)
 		return 1;
-	array_merge((void ***)dest, (void **)arr_cpy);
+	if (array_merge((void ***)dest, (void **)arr_cpy)) {
+		free_arraystr(arr_cpy);
+		return 1;
+	}
 	free(arr_cpy); // free container only
 	return 0;
 }
@@ -194,7 +197,7 @@ void	arraystr_deduplicate(arraystr *arr)
 
 	if (!arr || !*arr)
 		return;
-	result = arraystr_init(NULL);
+	result = NULL;
 	i = 0;
 	while ((*arr)[i]) {
 		if (!is_in_arraystr(result, (*arr)[i])) {

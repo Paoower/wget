@@ -137,7 +137,8 @@ int	array_merge(void ***dest, void **src)
 		i++;
 	}
 	result[i] = NULL;
-	free(*dest);
+	if (*dest)
+		free(*dest);
 	*dest = result;
 	return 0;
 }

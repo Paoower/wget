@@ -145,9 +145,7 @@ struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
 		return NULL;
 	}
 	file_data->host_data = host_data;
-	printf("TEST1\n"); // DEBUG
 	cleanup(ssl, sock_fd, NULL);
-	printf("TEST2\n"); // DEBUG
 	return file_data;
 }
 

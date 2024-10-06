@@ -18,16 +18,13 @@ int main(int argc, char *argv[])
 	};
 
 	handle_args(&parameters, argc, argv);
-	if (parameters.background)
-	{
-		if (wget_in_background(parameters))
-		{
+	if (parameters.background) {
+		if (wget_in_background(parameters)) {
 			free_args(&parameters);
 			return 1;
 		}
 	}
-	else if (wget(parameters))
-	{
+	else if (wget(parameters)) {
 		free_args(&parameters);
 		return 1;
 	}
