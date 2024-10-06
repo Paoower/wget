@@ -36,13 +36,16 @@ int	wget_mirror(SSL_CTX *ctx, char *url, struct parameters_t params)
 				file_data = download_file_from_url(ctx, urls[i],
 									params.storage_path, params.output_file,
 									params.rate_limit, params.mirror, 1);
+									// TEMP SET DISPLAY TO 1 FOR DEBUG
+				//////// DEBUG ////////
 				if (!file_data)
 					printf("no file_data\n");
 				else
 					printf("downloaded: %s\n", file_data->file_path);
+				///////////////////////
 				if (file_data && file_data->header_data
 										&& file_data->header_data->is_html) {
-					printf("parsing: add url %s\n", urls[i]);
+					printf("parsing: add url %s\n", urls[i]); // DEBUG
 					array_append((void ***)&files_data_to_parse,
 															(void *)file_data);
 					arraystr_append(&dl_history, urls[i]);

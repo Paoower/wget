@@ -20,7 +20,7 @@ void	free_file_data(struct file_data *file_data)
 }
 
 void	download_file_from_url_cleanup(SSL *ssl, int sock_fd,
-											struct host_data *host_data)
+													struct host_data *host_data)
 {
 	if (ssl) {
 		SSL_shutdown(ssl);
@@ -116,10 +116,9 @@ struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 											file_name, host_data, is_mirror);
 	file_data->header_data = download_file(sock_fd, ssl,
 								file_data->file_path, bytes_per_sec, display);
-	printf("invalid ssl=%p\n", ssl);
-	printf("TEST1\n");
+	printf("TEST1\n"); // DEBUG
 	download_file_from_url_cleanup(ssl, sock_fd, NULL);
-	printf("TEST2\n");
+	printf("TEST2\n"); // DEBUG
 	return file_data;
 }
 
