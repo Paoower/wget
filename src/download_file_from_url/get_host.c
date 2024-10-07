@@ -11,6 +11,7 @@ void free_hostdata(struct host_data *host_data)
 	free(host_data->hostname);
 	free(host_data->filename);
 	free(host_data->filepath);
+	free(host_data->dirpath);
 	free(host_data);
 }
 
@@ -25,9 +26,10 @@ char	*get_host_file_path(const char *storage_dir_path,
 	if (is_mirror) {
 		if (storage_dir_path)
 			new_storage_dir_path = str_concat(storage_dir_path,
-												"/", host_data->hostname, NULL);
+					"/", host_data->hostname, "/", host_data->dirpath, NULL);
 		else
-			new_storage_dir_path = strdup(host_data->hostname);
+			new_storage_dir_path = str_concat(host_data->hostname,
+					"/", host_data->dirpath, NULL);
 		if (new_storage_dir_path) {
 			file_path = get_file_path(file_name, new_storage_dir_path);
 			free(new_storage_dir_path);
@@ -40,7 +42,7 @@ char	*get_host_file_path(const char *storage_dir_path,
 struct host_data *get_hostdata(char *url)
 {
 	struct host_data *host_data;
-	char *protocol_end, *hostname_end, *filepath_start;
+	char *protocol_end, *hostname_end;
 
 	if (!url)
 		return NULL;
@@ -74,17 +76,19 @@ struct host_data *get_hostdata(char *url)
 		host_data->hostname = strndup(protocol_end, hostname_end - protocol_end);
 
 		// Extract filepath
-		filepath_start = hostname_end;
-		host_data->filepath = strdup(filepath_start);
+		host_data->filepath = strdup(hostname_end);
 	}
 
 	// Extract filename (last part of the filepath)
 	char *filename_start = strrchr(host_data->filepath, '/');
 	if (filename_start && *(filename_start + 1) != '\0') {
 		host_data->filename = strdup(filename_start + 1);
+		host_data->dirpath = strndup(host_data->filepath + 1,
+							(filename_start + 1) - (host_data->filepath + 1));
 	} else {
 		// If no filename is found, use a default name
 		host_data->filename = strdup("index.html");
+		host_data->dirpath = strdup("");
 	}
 
 	// Check if memory allocation was successful

@@ -9,6 +9,7 @@ struct	host_data {
 	char	*hostname;
 	char	*filepath;
 	char	*filename;
+	char	*dirpath;
 	int		is_secured;
 };
 
