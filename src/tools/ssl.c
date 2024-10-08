@@ -23,7 +23,11 @@ SSL	*create_ssl_connection(SSL_CTX *ctx, int sock_fd)
 		ERR_print_errors_fp(stderr);
 		return NULL;
 	}
-	SSL_set_fd(ssl, sock_fd);
+	if (SSL_set_fd(ssl, sock_fd) != 1) {
+		ERR_print_errors_fp(stderr);
+		SSL_free(ssl);
+		return NULL;
+	}
 	if (SSL_connect(ssl) <= 0) {
 		ERR_print_errors_fp(stderr);
 		SSL_free(ssl);

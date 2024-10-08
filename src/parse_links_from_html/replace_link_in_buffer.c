@@ -18,9 +18,9 @@ char	*get_new_buffer_with_new_link(char **cursor, char *buffer,
 	strncat(new_buffer, new_link, new_link_size); // cpy new link
 	*cursor = new_buffer + strlen(new_buffer); // set cursor at the end of the link
 	strncat(new_buffer, pos_after_link, strlen(pos_after_link));
+	// cpy part after link
 	new_buffer[new_buffer_size - 1] = '\0';
 	return new_buffer;
-	// cpy part after link
 }
 
 /**

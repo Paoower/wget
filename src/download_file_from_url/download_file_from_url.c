@@ -30,49 +30,33 @@ static void	cleanup(SSL *ssl, int sock_fd, struct host_data *host_data)
 		close(sock_fd);
 }
 
-struct sockaddr	*get_server_socket_address(char *hostname, int is_secured)
-{
-	struct hostent		*host;
-	struct sockaddr_in	*server;
-
-	host = gethostbyname(hostname);
-	if (!host) {
-		fprintf(stderr, "Error : Host not found (%s)\n", hostname);
-		return NULL;
-	}
-	server = malloc(sizeof(struct sockaddr_in));
-	if (!server) {
-		perror("Failed to allocate memory for strings");
-		return NULL;
-	}
-	server->sin_addr = *(struct in_addr *)host->h_addr_list[0];
-	// use the host first IP address
-	server->sin_family = AF_INET; // define type of IP (IPv4)
-	server->sin_port = is_secured ? htons(443) : htons(80);
-	// default port for HTTPS AND HTTP
-	return (struct sockaddr *)server;
-}
-
 int connect_to_server(char *hostname, int is_secured)
 {
 	int				sock;
-	struct sockaddr	*server;
+	int				status;
+	struct addrinfo	hints, *res, *rp;
 
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	// config as a stream socket with connection through IPv4
-	if (sock == -1) {
-		perror("Error during socket creation");
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC; // Allow IPV4 or IPV6
+	hints.ai_socktype = SOCK_STREAM; // TCP
+	status = getaddrinfo(hostname, is_secured ? "443" : "80", &hints, &res);
+	if (status != 0) {
+		fprintf(stderr, "getaddrinfo %s\n", gai_strerror(status));
 		return -1;
 	}
-	server = get_server_socket_address(hostname, is_secured);
-	if (!server)
-		return -1;
-	if (connect(sock, server, sizeof(struct sockaddr_in)) < 0) {
-		perror("Error during socket connection");
-		free(server);
-		return -1;
+	for (rp = res; rp != NULL; rp = rp->ai_next) {
+		sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		if (sock == -1) {
+			perror("Error during socket creation");
+			continue;
+		}
+		if (connect(sock, rp->ai_addr, rp->ai_addrlen) == 0)
+			break;
+		close(sock);
 	}
-	free(server);
+	freeaddrinfo(res);
+	if (!rp)
+		return -1;
 	return sock;
 }
 
