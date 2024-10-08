@@ -70,7 +70,7 @@ static char	*get_attribute(char **cursor)
 	char	*start;
 	char	*end_attribute;
 
-	if (!cursor || !*cursor)
+	if (!cursor || !*cursor || !**cursor)
 		return NULL;
 	start = *cursor;
 	end_attribute = strchr(*cursor, '=');
@@ -90,7 +90,7 @@ static char	*get_attribute(char **cursor)
 
 static char get_quote(char **cursor)
 {
-	if (!cursor || !*cursor)
+	if (!cursor || !*cursor || !**cursor)
 		return 0;
 	(*cursor)++;
 	while (**cursor && isspace((unsigned char)**cursor))
@@ -128,6 +128,8 @@ static char *get_link(char **cursor, char quote,
 	char	*end;
 	char	*url;
 
+	if (!cursor || !*cursor || !**cursor)
+		return NULL;
 	start = *cursor;
 	start++;
 	end = quote ? strchr(start, quote) : start;
@@ -157,7 +159,6 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 	char	*attribute;
 	char	*quote_pos;
 	char	*link;
-	int		offset;
 	char	*new_link;
 	char	*online_link;
 
@@ -172,15 +173,15 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 							&& !is_link_in_list(link, exclude_list)) {
 			if (convert_links) {
 				new_link = convert_link(link, file_data, is_mirror);
-				// TODO: fix seg fault from replace_link_in_buffer
-				offset = replace_link_in_buffer(lines, quote_pos, new_link);
+				replace_link_in_buffer(cursor, lines, quote_pos, new_link);
 				free(new_link);
-				*cursor += offset;
 			}
-			online_link = convert_link_to_online(link, file_data);
-			if (online_link) {
-				arraystr_append(links, online_link);
-				free(online_link);
+			if (is_mirror) {
+				online_link = convert_link_to_online(link, file_data);
+				if (online_link) {
+					arraystr_append(links, online_link);
+					free(online_link);
+				}
 			}
 		}
 		free(link);

@@ -160,10 +160,7 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 			break;
 
 		case 'C':
-			if (parameters->mirror)
-			{
-				parameters->convert_links = 1;
-			}
+			parameters->convert_links = 1;
 			break;
 
 		case ':':

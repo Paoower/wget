@@ -7,19 +7,23 @@
 #include <fcntl.h>
 #include <openssl/err.h>
 
-int	wget_classic(SSL_CTX *ctx, char *url, char *storage_dir_path,
-								char *file_name, unsigned long bytes_per_sec)
+int	wget_classic(SSL_CTX *ctx, char *url, struct parameters_t p)
 {
 	struct file_data	*file_data;
 
 	print_current_date("start at ");
-	file_data = download_file_from_url(ctx, url, storage_dir_path,
-											file_name, bytes_per_sec, 0, true);
+	file_data = download_file_from_url(ctx, url, p.storage_path,
+									p.output_file, p.rate_limit, 0, true);
 	if (!file_data || !file_data->file_path) {
 		free_file_data(file_data);
 		return 1;
 	}
 	printf("Downloaded [%s]\n", file_data->file_path);
+	if (p.convert_links && file_data->header_data
+						&& file_data->header_data->is_html) {
+		parse_links_from_html(file_data, p.reject_list,
+											p.exclude_list, p.convert_links, 0);
+	}
 	free_file_data(file_data);
 	print_current_date("finished at ");
 	return 0;
@@ -30,8 +34,7 @@ int	wget_in_mode(SSL_CTX *ctx, int is_mirror, struct parameters_t params)
 	if (is_mirror)
 		return wget_mirror(ctx, params.url, params);
 	else
-		return wget_classic(ctx, params.url, params.storage_path,
-										params.output_file, params.rate_limit);
+		return wget_classic(ctx, params.url, params);
 }
 
 int	wget(struct parameters_t params)

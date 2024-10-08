@@ -50,7 +50,8 @@ arraystr	catch_links_from_lines(char **lines, char *reject_list,
 				break;
 			register_attribute_link(&cursor, &links, lines, reject_list,
 							exclude_list, file_data, convert_links, is_mirror);
-			cursor++;
+			if (*cursor)
+				cursor++;
 		}
 	}
 	return links;
@@ -78,6 +79,22 @@ void	edit_file_with_new_content(char *file_path, arraystr new_content_arr)
 	fclose(file);
 }
 
+/**
+ * @brief Parse the html given in the file_data and catch every links
+ * for download or edit purpose.
+ * @param file_data Objet that contains necessary variables like file_path and
+ * host_data with hostname set.
+ * @param reject_list List of file suffixes that the program will
+ * avoid downloading during the retrieval.
+ * @param exclude_list List of paths that the program
+ * will avoid to follow and retrieve.
+ * @param convert_links On true, convert links in html to online.
+ * If mirror is also true, convert links in html to offline.
+ * @param is_mirror On true, returns an array that contains every links
+ * that are related to the host.
+ * @return The array of the links turned into urls if is_mirror is true.
+ * Else returns NULL
+ */
 arraystr	parse_links_from_html(struct file_data *file_data,
 										char *reject_list, char *exclude_list,
 										bool convert_links, bool is_mirror) {
