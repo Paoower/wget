@@ -14,6 +14,7 @@ struct	host_data {
 };
 
 struct	header_data {
+	int		status_code;
 	char	*status;
 	char	*content_size;
 	char	*redirect_url;

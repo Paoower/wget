@@ -72,6 +72,7 @@ int send_request(int sock_fd, SSL *ssl,
 			"User-Agent: Wbaget/1.0\r\n"
 			"Connection: close\r\n\r\n", // default format for http request
 			host_data->filepath, host_data->hostname);
+	// printf("\nREQUEST:\n%s\n\n", request);
 	if (send_http_request(sock_fd, ssl, request, strlen(request)) < 0) {
 		perror("Error at sending request");
 		return 1;
@@ -116,7 +117,7 @@ struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
 		return NULL;
 	}
 	if (host_data->is_secured) {
-		ssl = create_ssl_connection(ctx, sock_fd);
+		ssl = create_ssl_connection(ctx, sock_fd, host_data->hostname);
 		if (!ssl) {
 			cleanup(NULL, sock_fd, host_data);
 			return NULL;
@@ -153,7 +154,7 @@ struct file_data	*download_file_from_url(SSL_CTX *ctx, char *url,
 	file_data = download_file_from_url_core(ctx, url, storage_dir_path,
 								file_name, bytes_per_sec, is_mirror, display);
 	while (file_data && (hd = file_data->header_data) &&
-											is_redirect_status(hd->status)) {
+										is_redirect_status(hd->status_code)) {
 		if (display)
 			printf("\nRedirect to \"%s\"\n", hd->redirect_url);
 		new_file_data = download_file_from_url_core(ctx, hd->redirect_url,
@@ -162,7 +163,7 @@ struct file_data	*download_file_from_url(SSL_CTX *ctx, char *url,
 		file_data = new_file_data;
 	}
 	if (!file_data || !(hd = file_data->header_data) ||
-							!is_ok_status(hd->status)) {
+										!is_ok_status(hd->status_code)) {
 		free_file_data(file_data);
 		return NULL;
 	}

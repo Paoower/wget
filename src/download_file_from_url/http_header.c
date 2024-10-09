@@ -19,13 +19,36 @@ void	free_header_data(struct header_data *header_data)
 	}
 }
 
+void	fill_status(char *http_header, struct header_data *header_data)
+{
+	char	*status_str;
+	char	*mid_pos;
+
+	header_data->status = NULL;
+	header_data->status_code = 0;
+	status_str = get_http_response_info(http_header, "HTTP/1.1", " ");
+	if (!status_str)
+		return;
+	header_data->status_code = atoi(status_str);
+	mid_pos = strchr(status_str, ' ');
+	if (!mid_pos) {
+		header_data->status = strdup("");
+		free(status_str);
+		return;
+	}
+	header_data->status = strdup(mid_pos + 1);
+	free(status_str);
+}
+
 struct header_data	*fill_http_data(char *http_header)
 {
 	struct header_data	*header_data;
 	char				*content_type;
 
 	header_data = malloc(sizeof(struct header_data));
-	header_data->status = get_http_response_info(http_header, "HTTP/1.1", " ");
+	if (!header_data)
+		return NULL;
+	fill_status(http_header, header_data);
 	header_data->content_size = get_http_response_info(
 										http_header, "content-length", NULL);
 	header_data->redirect_url = get_http_response_info(

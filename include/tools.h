@@ -12,8 +12,8 @@ int				send_http_request(int sock_fd, SSL *ssl,
 												char *buffer, int buffer_size);
 int				read_http_data(int sock_fd, SSL *ssl,
 												char *buffer, int buffer_size);
-int				is_ok_status(const char *status);
-int				is_redirect_status(const char *status);
+int				is_ok_status(int status_code);
+int				is_redirect_status(int status_code);
 char			*get_http_response_info(const char *http_response,
 										const char *key, const char *spliter);
 // http_request.c
@@ -53,8 +53,9 @@ int				arg_ptr_len(void *first, va_list args);
 int				parse_url();
 // parse_url.c
 
-SSL_CTX			*create_ctx_ssl();
-SSL				*create_ssl_connection(SSL_CTX *ctx, int sock_fd);
+SSL_CTX			*init_ssl();
+SSL				*create_ssl_connection(SSL_CTX *ctx,
+											int sock_fd, char *hostname);
 // ssl.c
 
 void			print_current_date(char *text_before);

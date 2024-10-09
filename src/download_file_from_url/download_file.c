@@ -188,7 +188,7 @@ struct header_data	*download_file(int sock_fd, SSL *ssl,
 					char *file_path, unsigned long bytes_per_sec, bool display)
 {
 	FILE				*fp;
-	struct header_data	*header_data;
+	struct header_data	*hd;
 	char				response[REQUEST_BUFFER_SIZE];
 	int					received;
 	int					remaining_data_len;
@@ -196,28 +196,28 @@ struct header_data	*download_file(int sock_fd, SSL *ssl,
 
 	if (!file_path)
 		return NULL;
-	header_data = skip_htpp_header(sock_fd, ssl,
+	hd = skip_htpp_header(sock_fd, ssl,
 									response, &received, &remaining_data_len);
-	if (!header_data || !header_data->status)
+	if (!hd || !hd->status)
 		goto err_exit;
 	if (display)
-		printf("status %s\n", header_data->status);
-	if (is_redirect_status(header_data->status))
-		return header_data;
-	if (!is_ok_status(header_data->status))
+		printf("status %d %s\n", hd->status_code, hd->status);
+	if (is_redirect_status(hd->status_code))
+		return hd;
+	if (!is_ok_status(hd->status_code))
 		goto err_exit;
 	fp = fopen(file_path, "wb");
 	if (fp == NULL) {
 		perror("Error trying to open file");
 		goto err_exit;
 	}
-	print_download_infos(header_data, file_path, display);
+	print_download_infos(hd, file_path, display);
 	fill_basic_dl_data(&dl_data, sock_fd, ssl, fp, bytes_per_sec);
 	write_data_into_file(&dl_data, response,
-							received, remaining_data_len, header_data, display);
+							received, remaining_data_len, hd, display);
 	fclose(fp);
-	return header_data;
+	return hd;
 err_exit:
-	free_header_data(header_data);
+	free_header_data(hd);
 	return NULL;
 }

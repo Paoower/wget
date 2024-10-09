@@ -42,7 +42,7 @@ int	wget(struct parameters_t params)
 	SSL_CTX	*ctx;
 	int		result;
 
-	ctx = create_ctx_ssl();
+	ctx = init_ssl();
 	if (!ctx) {
 		ERR_print_errors_fp(stderr);
 		return 1;
