@@ -28,6 +28,7 @@ const char	*link_attributes[] = {
 	"background",
 	"srcdoc",
 	"content",
+	"url",
 	NULL
 };
 
@@ -46,62 +47,40 @@ static int is_link_in_list(const char *url, const char *list) {
 	return 0;
 }
 
-static char	*get_last_word(char *start, char *end)
+char	find_next_attribut_quote(char **cursor)
 {
-	char	*cursor;
-
-	cursor = end - 1;
-	while (cursor >= start && isspace((unsigned char)*cursor))
-		cursor--;
-	while (cursor >= start && !isspace((unsigned char)*cursor))
-		cursor--;
-	cursor++;
-	return strndup(cursor, end - cursor);
-}
-
-/**
- * @brief Get the attribute and move the cursor after it.
- * @return The attribute
- */
-static char	*get_attribute(char **cursor)
-{
-	char	*attribute;
-	char	*temp;
-	char	*start;
-	char	*end_attribute;
+	char	*ptr;
+	char	*next_attr_quote;
+	int		i;
 
 	if (!cursor || !*cursor || !**cursor)
-		return NULL;
-	start = *cursor;
-	end_attribute = strchr(*cursor, '=');
-	if (!end_attribute)
-		return NULL;
-	*cursor = end_attribute;
-	attribute = get_last_word(start, *cursor);
-	if (!attribute)
-		return NULL;
-	temp = trim_spaces(attribute);
-	if (temp) {
-		free(attribute);
-		attribute = temp;
+		return '\0';
+	next_attr_quote = NULL;
+	for (i = 0; link_attributes[i]; i++) {
+		if ((ptr = strstr(*cursor, link_attributes[i])) && ptr) {
+			ptr += strlen(link_attributes[i]);
+			while (*ptr && isspace(*ptr))
+				ptr++;
+			if (*ptr != '=' && *ptr != '(')
+				continue;
+			ptr++;
+			while (*ptr && isspace(*ptr))
+				ptr++;
+			if (*ptr == '\'' || *ptr == '"') {
+				if (!next_attr_quote || ptr < next_attr_quote)
+					next_attr_quote = ptr;
+			}
+		}
 	}
-	return attribute;
+	if (!next_attr_quote) {
+		*cursor += strlen(*cursor); // set the cursor at the end
+		return '\0';
+	}
+	*cursor = next_attr_quote;
+	return *next_attr_quote;
 }
 
-static char get_quote(char **cursor)
-{
-	if (!cursor || !*cursor || !**cursor)
-		return 0;
-	(*cursor)++;
-	while (**cursor && isspace((unsigned char)**cursor))
-		(*cursor)++;
-	if (**cursor == '"' || **cursor == '\'')
-		return **cursor;
-	return 0;
-}
-
-static bool is_valid_host_link(char *link,
-								struct file_data *file_data, char *attribute)
+static bool is_valid_host_link(char *link, struct file_data *file_data)
 {
 	char	*cursor;
 
@@ -112,9 +91,8 @@ static bool is_valid_host_link(char *link,
 		// if link is url with the right domain name and is followed by a '/'
 			return true;
 	}
-	if (does_match_with_pattern(link, FILE_PATH_REGEX)
-						&& is_in_arraystr((arraystr)link_attributes, attribute))
-	// is not an url and has the right html attribut
+	if (does_match_with_pattern(link, FILE_PATH_REGEX))
+	// is not an url
 		return true;
 	return false;
 }
@@ -122,8 +100,7 @@ static bool is_valid_host_link(char *link,
 /**
  * move the cursor at the end of the parameter
  */
-static char *get_link(char **cursor, char quote,
-								struct file_data *file_data, char *attribute) {
+static char *get_link(char **cursor, char quote, struct file_data *file_data) {
 	char	*start;
 	char	*end;
 	char	*url;
@@ -144,7 +121,7 @@ static char *get_link(char **cursor, char quote,
 		return NULL;
 	strncpy(url, start, length);
 	url[length] = '\0';
-	if (is_valid_host_link(url, file_data, attribute))
+	if (is_valid_host_link(url, file_data))
 		return url;
 	free(url);
 	return NULL;
@@ -156,18 +133,16 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 								bool convert_links, bool is_mirror)
 {
 	char	quote;
-	char	*attribute;
 	char	*quote_pos;
 	char	*link;
 	char	*new_link;
 	char	*online_link;
 
-	attribute = get_attribute(cursor);
-	if (!attribute)
+	quote = find_next_attribut_quote(cursor);
+	if (!quote || !*cursor || !**cursor)
 		return;
-	quote = get_quote(cursor);
 	quote_pos = *cursor;
-	link = get_link(cursor, quote, file_data, attribute);
+	link = get_link(cursor, quote, file_data);
 	if (link) {
 		if (!is_link_in_list(link, reject_list)
 							&& !is_link_in_list(link, exclude_list)) {
@@ -186,6 +161,4 @@ void	register_attribute_link(char **cursor, arraystr *links, char **lines,
 		}
 		free(link);
 	}
-	if (attribute)
-		free(attribute);
 }

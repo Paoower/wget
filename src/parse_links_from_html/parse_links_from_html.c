@@ -22,11 +22,17 @@ void	concat_buffer(char *line, size_t len, char **lines, size_t *lines_len)
 	*lines = temp;
 }
 
-bool	does_lines_contains_full_beacon(char *lines)
+bool	does_lines_contains_full_links(char *lines)
 {
-	while ((lines = strchr(lines, '<')))
-		if (!(lines = strchr(lines, '>')))
+	char	*cursor;
+	char	quote;
+
+	cursor = lines;
+	while ((quote = find_next_attribut_quote(&cursor)) && cursor && *cursor) {
+		cursor++;
+		if (!(cursor = strchr(cursor, quote)))
 			return false;
+	}
 	return true;
 }
 
@@ -40,19 +46,11 @@ arraystr	catch_links_from_lines(char **lines, char *reject_list,
 
 	links = NULL;
 	cursor = *lines;
-	while (*cursor && (cursor = strchr(cursor, '<'))) {
-		while (*cursor && !isspace((unsigned char)*cursor))
-				cursor++; // ignore beacon name
-		while (*cursor && *cursor != '>') {
-			while (*cursor && isspace((unsigned char)*cursor))
-				cursor++; // ignore other spaces
-			if (!*cursor || *cursor == '>')
-				break;
-			register_attribute_link(&cursor, &links, lines, reject_list,
+	while (*cursor) {
+		register_attribute_link(&cursor, &links, lines, reject_list,
 							exclude_list, file_data, convert_links, is_mirror);
-			if (*cursor)
-				cursor++;
-		}
+		if (*cursor)
+			cursor++;
 	}
 	return links;
 }
@@ -97,7 +95,8 @@ void	edit_file_with_new_content(char *file_path, arraystr new_content_arr)
  */
 arraystr	parse_links_from_html(struct file_data *file_data,
 										char *reject_list, char *exclude_list,
-										bool convert_links, bool is_mirror) {
+										bool convert_links, bool is_mirror)
+{
 	FILE		*file;
 	arraystr	links,	new_links;
 	char		*line,	*lines;
@@ -114,7 +113,7 @@ arraystr	parse_links_from_html(struct file_data *file_data,
 	new_file_content = NULL;
 	while (getline(&line, &len, file) != -1) {
 		concat_buffer(line, len, &lines, &lines_len);
-		if (does_lines_contains_full_beacon(lines)) {
+		if (does_lines_contains_full_links(lines)) {
 			new_links = catch_links_from_lines(&lines, reject_list,
 							exclude_list, file_data, convert_links, is_mirror);
 			if (new_links) {
