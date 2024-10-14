@@ -34,7 +34,8 @@ int	wget_mirror(SSL_CTX *ctx, char *url, struct parameters_t params)
 			// if url is not in the dl_history, dl + add to list if is html
 				file_data = download_file_from_url(ctx, urls[i],
 									params.storage_path, params.output_file,
-									params.rate_limit, params.mirror, 0);
+									params.rate_limit, params.mirror,
+									false, params.background);
 				if (file_data) {
 					if (file_data->header_data
 										&& file_data->header_data->is_html) {

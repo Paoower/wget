@@ -16,7 +16,7 @@ void free_hostdata(struct host_data *host_data)
 }
 
 char	*get_host_file_path(const char *storage_dir_path,
-					char *file_name, struct host_data *host_data, int is_mirror)
+					char *file_name, struct host_data *host_data, bool is_mirror)
 {
 	char	*new_storage_dir_path;
 	char	*file_path;

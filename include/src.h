@@ -28,7 +28,8 @@ void				free_args(struct parameters_t *params);
 void				free_file_data(struct file_data *file_data);
 struct file_data	*download_file_from_url(SSL_CTX *ctx, char *url,
 					const char *storage_dir_path, char *file_name,
-					unsigned long bytes_per_sec, int is_mirror, bool display);
+					unsigned long bytes_per_sec, bool is_mirror,
+					bool display, bool is_background);
 
 int					wget(struct parameters_t params);
 int					wget_in_background(struct parameters_t params);

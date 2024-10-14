@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 
 	handle_args(&parameters, argc, argv);
 	if (parameters.background) {
+		printf("Output will be written to wget-log\n");
 		if (wget_in_background(parameters)) {
 			free_args(&parameters);
 			return 1;

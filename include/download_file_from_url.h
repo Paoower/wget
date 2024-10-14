@@ -41,10 +41,11 @@ struct file_data {
 };
 
 struct header_data	*download_file(int sock_fd, SSL *ssl,
-					char *file_path, unsigned long bytes_per_sec, bool display);
+								char *file_path, unsigned long bytes_per_sec,
+								bool display, bool is_background);
 char				*get_host_file_path(const char *storage_dir_path,
 								char *file_name, struct host_data *host_data,
-																int is_mirror);
+																bool is_mirror);
 struct host_data	*get_hostdata(char *url);
 void				free_hostdata(struct host_data *host_data);
 

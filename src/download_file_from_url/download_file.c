@@ -45,14 +45,14 @@ void	limit_speed(struct timespec start_time,
 }
 
 void	update_bar(unsigned long total_bytes_downloaded,
-											char *content_size, bool display)
+						char *content_size, bool display, bool is_background)
 {
 	int		content_size_f;
 	int		bar_width;
 	float	percentage;
 	int		position;
 
-	if (!display || !content_size)
+	if (!display || is_background || !content_size)
 		return;
 	content_size_f = atof(content_size);
 	bar_width = 50;
@@ -87,18 +87,21 @@ int	init_chunk(char **data, int *received, struct dl_data *dld)
 }
 
 void	write_data_into_file_core(char *data, int received,
-					struct dl_data *dld, struct header_data *hd, bool display)
+								struct dl_data *dld, struct header_data *hd,
+								bool display, bool is_background)
 {
 	dld->total_bytes_downloaded += received;
 	fwrite(data, 1, received, dld->fp);
 	if (dld->bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
 		limit_speed(dld->start_download_time,
 							dld->bytes_per_sec, dld->total_bytes_downloaded);
-	update_bar(dld->total_bytes_downloaded, hd->content_size, display);
+	update_bar(dld->total_bytes_downloaded,
+								hd->content_size, display, is_background);
 }
 
 void	write_data_chunked_into_file(char **data, int *buf_size,
-					struct dl_data *dld, struct header_data *hd, bool display)
+									struct dl_data *dld, struct header_data *hd,
+									bool display, bool is_background)
 {
 	int	current_chunk_len;
 
@@ -119,8 +122,10 @@ new_chunk:
 		dld->is_in_chunk = false;
 		if (dld->chunk_data_count > dld->chunk_size) {
 		// if buffer contains \r\n or next chunk
-			current_chunk_len = *buf_size - (dld->chunk_data_count - dld->chunk_size);
-			write_data_into_file_core(*data, current_chunk_len, dld, hd, display);
+			current_chunk_len = *buf_size -
+									(dld->chunk_data_count - dld->chunk_size);
+			write_data_into_file_core(*data, current_chunk_len,
+											dld, hd, display, is_background);
 			*data += current_chunk_len + 2;
 			*buf_size -= current_chunk_len + 2; // ignore \r\n after data
 			goto new_chunk;
@@ -130,7 +135,8 @@ new_chunk:
 }
 
 int	write_data_into_file(struct dl_data *dld, char *response, int received,
-		int remaining_data_len, struct header_data *hd, bool display)
+								int remaining_data_len, struct header_data *hd,
+								bool display, bool is_background)
 {
 	char	*data;
 	bool	is_chunked;
@@ -150,9 +156,11 @@ int	write_data_into_file(struct dl_data *dld, char *response, int received,
 		data = response;
 	already_recv:
 		if (is_chunked)
-			write_data_chunked_into_file(&data, &received, dld, hd, display);
+			write_data_chunked_into_file(&data, &received, dld,
+													hd, display, is_background);
 		if (received > 0)
-			write_data_into_file_core(data, received, dld, hd, display);
+			write_data_into_file_core(data, received, dld,
+													hd, display, is_background);
 	}
 	if (received < 0) {
 		perror("Error receiving data");
@@ -185,7 +193,8 @@ void	print_download_infos(struct header_data *header_data,
  * A pointer to the header_data, or NULL
  */
 struct header_data	*download_file(int sock_fd, SSL *ssl,
-					char *file_path, unsigned long bytes_per_sec, bool display)
+								char *file_path, unsigned long bytes_per_sec,
+								bool display, bool is_background)
 {
 	FILE				*fp;
 	struct header_data	*hd;
@@ -214,7 +223,7 @@ struct header_data	*download_file(int sock_fd, SSL *ssl,
 	print_download_infos(hd, file_path, display);
 	fill_basic_dl_data(&dl_data, sock_fd, ssl, fp, bytes_per_sec);
 	write_data_into_file(&dl_data, response,
-							received, remaining_data_len, hd, display);
+				received, remaining_data_len, hd, display, is_background);
 	fclose(fp);
 	return hd;
 err_exit:

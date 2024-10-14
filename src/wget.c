@@ -13,7 +13,8 @@ int	wget_classic(SSL_CTX *ctx, char *url, struct parameters_t p)
 
 	print_current_date("start at ");
 	file_data = download_file_from_url(ctx, url, p.storage_path,
-									p.output_file, p.rate_limit, 0, true);
+										p.output_file, p.rate_limit,
+										false, true, p.background);
 	if (!file_data || !file_data->file_path) {
 		free_file_data(file_data);
 		return 1;
@@ -77,11 +78,6 @@ int wget_in_background(struct parameters_t params)
 		if (wget(params))
 			return 1;
 		exit(EXIT_SUCCESS);
-	}
-	else {
-		// Wait for the child process
-		wait(NULL);
-		printf("Output will be written to wget-log\n");
 	}
 	return EXIT_SUCCESS;
 }

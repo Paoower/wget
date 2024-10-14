@@ -65,7 +65,8 @@ void apply_function_to_line(SSL_CTX *ctx, char *line, struct parameters_t params
 	struct file_data	*file_data;
 
 	file_data = download_file_from_url(ctx, line, params.storage_path,
-						params.output_file, params.rate_limit, params.mirror, 0);
+									params.output_file, params.rate_limit,
+									params.mirror, false, params.background);
 	if (!file_data || !file_data->file_path) {
 		free_file_data(file_data);
 		return;

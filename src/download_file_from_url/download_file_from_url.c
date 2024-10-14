@@ -83,7 +83,8 @@ int send_request(int sock_fd, SSL *ssl,
 struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 					struct host_data *host_data,
 					const char *storage_dir_path, char *file_name,
-					unsigned long bytes_per_sec, int is_mirror, bool display)
+					unsigned long bytes_per_sec, bool is_mirror,
+					bool display, bool is_background)
 {
 	struct file_data	*file_data;
 
@@ -95,13 +96,14 @@ struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 	file_data->file_path = get_host_file_path(storage_dir_path,
 											file_name, host_data, is_mirror);
 	file_data->header_data = download_file(sock_fd, ssl,
-								file_data->file_path, bytes_per_sec, display);
+				file_data->file_path, bytes_per_sec, display, is_background);
 	return file_data;
 }
 
 struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
 					const char *storage_dir_path, char *file_name,
-					unsigned long bytes_per_sec, int is_mirror, bool display)
+					unsigned long bytes_per_sec, bool is_mirror,
+					bool display, bool is_background)
 {
 	int					sock_fd;
 	struct file_data	*file_data;
@@ -124,7 +126,8 @@ struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
 		}
 	}
 	file_data = request_and_download_file(sock_fd, ssl, host_data,
-			storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
+									storage_dir_path, file_name, bytes_per_sec,
+									is_mirror, display, is_background);
 	if (!file_data) {
 		cleanup(ssl, sock_fd, host_data);
 		return NULL;
@@ -145,20 +148,22 @@ struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
  */
 struct file_data	*download_file_from_url(SSL_CTX *ctx, char *url,
 					const char *storage_dir_path, char *file_name,
-					unsigned long bytes_per_sec, int is_mirror, bool display)
+					unsigned long bytes_per_sec, bool is_mirror,
+					bool display, bool is_background)
 {
 	struct file_data	*file_data;
 	struct file_data	*new_file_data;
 	struct header_data	*hd;
 
 	file_data = download_file_from_url_core(ctx, url, storage_dir_path,
-								file_name, bytes_per_sec, is_mirror, display);
+				file_name, bytes_per_sec, is_mirror, display, is_background);
 	while (file_data && (hd = file_data->header_data) &&
 										is_redirect_status(hd->status_code)) {
 		if (display)
 			printf("\nRedirect to \"%s\"\n", hd->redirect_url);
 		new_file_data = download_file_from_url_core(ctx, hd->redirect_url,
-				storage_dir_path, file_name, bytes_per_sec, is_mirror, display);
+									storage_dir_path, file_name, bytes_per_sec,
+									is_mirror, display, is_background);
 		free_file_data(file_data);
 		file_data = new_file_data;
 	}
