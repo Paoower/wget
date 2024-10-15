@@ -38,3 +38,8 @@ struct timespec	get_elapsed_time(struct timespec start_time)
 	clock_gettime(CLOCK_MONOTONIC, &current_time);
 	return time_diff(start_time, current_time);
 }
+
+double	timespec_to_double(struct timespec time)
+{
+	return time.tv_sec + (time.tv_nsec / 1e9);
+}

@@ -52,4 +52,7 @@ void				free_hostdata(struct host_data *host_data);
 struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 						char *response, int *received, int *remaining_data_len);
 void				free_header_data(struct header_data *header_data);
+
+void				update_bar(struct dl_data *dld, char *content_size_str,
+											bool display, bool is_background);
 #endif

@@ -18,57 +18,15 @@ void	fill_basic_dl_data(struct dl_data *dl_data, int sock_fd,
 	dl_data->bytes_per_sec = bytes_per_sec;
 }
 
-void	limit_speed(struct timespec start_time,
-										unsigned long bytes_per_sec,
-										unsigned long total_bytes_downloaded)
+void	limit_speed(unsigned long bytes_per_sec)
 {
-	struct timespec	elapsed_time;
-	long double		expected_download_time;
-	struct timespec	expected_download_time_s;
 	struct timespec	pause_time;
+	double			time_in_seconds;
 
-	// elapsed time from the start of the download
-	elapsed_time = get_elapsed_time(start_time);
-
-	// time that the prgm should take to download the current
-	// total_bytes_downloaded + next buffer size
-	// at a certain rate (bytes_per_sec)
-	expected_download_time = (long double)(total_bytes_downloaded +
-						REQUEST_BUFFER_SIZE) / (long double)bytes_per_sec;
-	expected_download_time_s.tv_sec = (long)expected_download_time;
-	expected_download_time_s.tv_nsec = (long)((expected_download_time
-						- (long double)expected_download_time_s.tv_sec) * 1e9);
-
-	pause_time = time_diff(elapsed_time, expected_download_time_s);
-	if (pause_time.tv_sec >= 0)
-		nanosleep(&pause_time, NULL);
-}
-
-void	update_bar(unsigned long total_bytes_downloaded,
-						char *content_size, bool display, bool is_background)
-{
-	int		content_size_f;
-	int		bar_width;
-	float	percentage;
-	int		position;
-
-	if (!display || is_background || !content_size)
-		return;
-	content_size_f = atof(content_size);
-	bar_width = 50;
-	percentage = ((float)total_bytes_downloaded / content_size_f) * 100;
-	position = bar_width * percentage / 100;
-	printf("[");
-	for (int i = 0; i < bar_width; ++i) {
-		if (i < position)
-			printf("=");
-		else if (i == position)
-			printf(">");
-		else
-			printf(" ");
-	}
-	printf("] %.2f%%\r", percentage);
-	fflush(stdout);
+	time_in_seconds = REQUEST_BUFFER_SIZE / (double)bytes_per_sec;
+	pause_time.tv_sec = (long)time_in_seconds;
+	pause_time.tv_nsec = (long)((time_in_seconds - pause_time.tv_sec) * 1e9);
+	nanosleep(&pause_time, NULL);
 }
 
 int	init_chunk(char **data, int *received, struct dl_data *dld)
@@ -92,11 +50,9 @@ void	write_data_into_file_core(char *data, int received,
 {
 	dld->total_bytes_downloaded += received;
 	fwrite(data, 1, received, dld->fp);
-	if (dld->bytes_per_sec > 0 && received == REQUEST_BUFFER_SIZE)
-		limit_speed(dld->start_download_time,
-							dld->bytes_per_sec, dld->total_bytes_downloaded);
-	update_bar(dld->total_bytes_downloaded,
-								hd->content_size, display, is_background);
+	update_bar(dld, hd->content_size, display, is_background);
+	if (dld->bytes_per_sec > 0)
+		limit_speed(dld->bytes_per_sec);
 }
 
 void	write_data_chunked_into_file(char **data, int *buf_size,

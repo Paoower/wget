@@ -1,6 +1,7 @@
 #ifndef TOOLS_H
 # define TOOLS_H
 
+# include "conversion.h"
 # include <openssl/ssl.h>
 # include <stdbool.h>
 
@@ -61,10 +62,9 @@ SSL				*create_ssl_connection(SSL_CTX *ctx,
 void			print_current_date(char *text_before);
 struct timespec	time_diff(struct timespec time1, struct timespec time2);
 struct timespec	get_elapsed_time(struct timespec start_time);
+double			timespec_to_double(struct timespec time);
 // time.c
 
 char			**split(const char *str, const char *charset);
-
-float			bytes_to_megabytes(int bytes);
 
 #endif

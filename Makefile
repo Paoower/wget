@@ -9,6 +9,10 @@ SRC_DIR=src
 TESTS_BUILD_DIR=tests_build
 TESTS_DIR=tests
 
+# includes
+INCLUDE_DIRS = $(shell find $(INCLUDE_DIR) -type d)
+INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
+
 # src
 SRC_FILES = $(shell find $(SRC_DIR) -name '*.c')
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
@@ -28,7 +32,7 @@ RM=rm -rf
 # src
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(PREV_COMPILATION_FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+	$(CC) $(PREV_COMPILATION_FLAGS) $(INCLUDES) -c $< -o $@
 
 $(TARGET): $(OBJ_FILES)
 	$(CC) $(OBJ_FILES) -o $@ $(SSL_FLAGS)
@@ -52,7 +56,7 @@ re-debug: fclean all
 # tests
 $(TESTS_BUILD_DIR)/%.o: $(TESTS_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(PREV_COMPILATION_FLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+	$(CC) $(PREV_COMPILATION_FLAGS) $(INCLUDES) -c $< -o $@
 
 $(TESTS_TARGET): $(TESTS_OBJ_FILES_NO_SRC_MAIN)
 	$(CC) $(TESTS_OBJ_FILES_NO_SRC_MAIN) -o $@ $(CHECK_FLAGS) $(SSL_FLAGS)
