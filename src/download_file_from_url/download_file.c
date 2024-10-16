@@ -9,7 +9,7 @@
 #include <openssl/err.h>
 #include <arpa/inet.h>
 
-void	fill_basic_dl_data(struct dl_data *dl_data, int sock_fd,
+static void	fill_basic_dl_data(struct dl_data *dl_data, int sock_fd,
 								SSL *ssl, FILE *fp, unsigned long bytes_per_sec)
 {
 	dl_data->sock_fd = sock_fd;
@@ -18,18 +18,18 @@ void	fill_basic_dl_data(struct dl_data *dl_data, int sock_fd,
 	dl_data->bytes_per_sec = bytes_per_sec;
 }
 
-void	limit_speed(unsigned long bytes_per_sec)
+static void	limit_speed(int received, unsigned long bytes_per_sec)
 {
 	struct timespec	pause_time;
 	double			time_in_seconds;
 
-	time_in_seconds = REQUEST_BUFFER_SIZE / (double)bytes_per_sec;
+	time_in_seconds = received / (double)bytes_per_sec;
 	pause_time.tv_sec = (long)time_in_seconds;
 	pause_time.tv_nsec = (long)((time_in_seconds - pause_time.tv_sec) * 1e9);
 	nanosleep(&pause_time, NULL);
 }
 
-int	init_chunk(char **data, int *received, struct dl_data *dld)
+static int	init_chunk(char **data, int *received, struct dl_data *dld)
 {
 	long	chunk_size;
 	char	*endptr;
@@ -44,18 +44,18 @@ int	init_chunk(char **data, int *received, struct dl_data *dld)
 	return chunk_size;
 }
 
-void	write_data_into_file_core(char *data, int received,
+static void	write_data_into_file_core(char *data, int received,
 								struct dl_data *dld, struct header_data *hd,
 								bool display, bool is_background)
 {
 	dld->total_bytes_downloaded += received;
 	fwrite(data, 1, received, dld->fp);
-	update_bar(dld, hd->content_size, display, is_background);
 	if (dld->bytes_per_sec > 0)
-		limit_speed(dld->bytes_per_sec);
+		limit_speed(received, dld->bytes_per_sec);
+	update_bar(dld, hd->content_size, display, is_background);
 }
 
-void	write_data_chunked_into_file(char **data, int *buf_size,
+static void	write_data_chunked_into_file(char **data, int *buf_size,
 									struct dl_data *dld, struct header_data *hd,
 									bool display, bool is_background)
 {
@@ -90,9 +90,9 @@ new_chunk:
 	return;
 }
 
-int	write_data_into_file(struct dl_data *dld, char *response, int received,
-								int remaining_data_len, struct header_data *hd,
-								bool display, bool is_background)
+static int	write_data_into_file(struct dl_data *dld, char *response,
+					int received, int remaining_data_len,
+					struct header_data *hd, bool display, bool is_background)
 {
 	char	*data;
 	bool	is_chunked;
@@ -125,7 +125,7 @@ int	write_data_into_file(struct dl_data *dld, char *response, int received,
 	return 0;
 }
 
-void	print_download_infos(struct header_data *header_data,
+static void	print_download_infos(struct header_data *header_data,
 												char *file_path, bool display)
 {
 	if (!display || !header_data)

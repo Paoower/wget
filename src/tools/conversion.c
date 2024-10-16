@@ -15,7 +15,7 @@ char	*binary_units[] = {
 };
 
 char	*decimal_units[] = {
-	"K",
+	"k",
 	"M",
 	"G",
 	"T",
