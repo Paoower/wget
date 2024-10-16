@@ -29,6 +29,7 @@ struct	dl_data {
 	unsigned long	bytes_per_sec;
 	struct timespec	start_download_time;
 	unsigned long	total_bytes_downloaded;
+	double			download_speed;
 	bool			is_in_chunk;
 	long			chunk_size;
 	long 			chunk_data_count;
