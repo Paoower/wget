@@ -66,7 +66,6 @@ char	*get_file_path(const char *file_name, const char *dir_path) {
 	if (!dir_path)
 		return strdup(file_name);
 	full_dir_path = expand_tilde(dir_path);
-	printf("full_dir_path=%s\n", full_dir_path);
 	if (mkdir_recursive(full_dir_path)) {
 		free(full_dir_path);
 		return strdup(file_name);
