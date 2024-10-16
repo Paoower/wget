@@ -16,6 +16,39 @@ static char	*expand_tilde(const char *dir_path)
 	return strdup(dir_path);
 }
 
+int	mkdir_recursive(const char *dir_path)
+{
+	char		*dir_path_cpy;
+	struct stat	st;
+	char		*ptr;
+
+	if (!dir_path)
+		return 1;
+	if (dir_path[strlen(dir_path) - 1] == '/')
+		dir_path_cpy = strdup(dir_path);
+	else
+		dir_path_cpy = str_concat(dir_path, "/", NULL);
+	// make sure the path finish with a /
+	st = (struct stat){0};
+	ptr = dir_path_cpy;
+	while (ptr && *ptr) {
+		ptr++; // ignore first char
+		if (*ptr == '/') {
+			*ptr = '\0'; // finish the path temporarily
+			if (stat(dir_path_cpy, &st) == -1) {
+				if (mkdir(dir_path_cpy, 0755) == -1) {
+					perror("Error creation directory");
+					free(dir_path_cpy);
+					return 1;
+				}
+			}
+			*ptr = '/';
+		}
+	}
+	free(dir_path_cpy);
+	return 0;
+}
+
 /**
  * @brief
  * Create directory if not exists and concatenate
@@ -27,20 +60,16 @@ static char	*expand_tilde(const char *dir_path)
  * The caller is responsible for freeing this memory.
  */
 char	*get_file_path(const char *file_name, const char *dir_path) {
-	struct stat	st;
 	char		*file_path;
 	char		*full_dir_path;
 
 	if (!dir_path)
 		return strdup(file_name);
 	full_dir_path = expand_tilde(dir_path);
-	st = (struct stat){0};
-	if (stat(full_dir_path, &st) == -1) {
-		if (mkdir(full_dir_path, 0755) == -1) {
-			perror("Error creation directory");
-			free(full_dir_path);
-			return strdup(file_name);
-		}
+	printf("full_dir_path=%s\n", full_dir_path);
+	if (mkdir_recursive(full_dir_path)) {
+		free(full_dir_path);
+		return strdup(file_name);
 	}
 	if (full_dir_path[strlen(full_dir_path) - 1] != '/')
 		file_path = str_concat(full_dir_path, "/", file_name, NULL);
