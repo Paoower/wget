@@ -19,7 +19,7 @@ void	free_header_data(struct header_data *header_data)
 	}
 }
 
-void	fill_status(char *http_header, struct header_data *header_data)
+static void	fill_status(char *http_header, struct header_data *header_data)
 {
 	char	*status_str;
 	char	*mid_pos;
@@ -40,7 +40,7 @@ void	fill_status(char *http_header, struct header_data *header_data)
 	free(status_str);
 }
 
-struct header_data	*fill_http_data(char *http_header)
+static struct header_data	*fill_http_data(char *http_header)
 {
 	struct header_data	*header_data;
 	char				*content_type;
@@ -64,7 +64,7 @@ struct header_data	*fill_http_data(char *http_header)
 	return header_data;
 }
 
-char	*concat_header(char *response, char *response_merged,
+static char	*concat_header(char *response, char *response_merged,
 												int received, int header_size)
 {
 	char	*new_response_merged;

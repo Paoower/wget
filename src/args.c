@@ -24,7 +24,7 @@ void free_args(struct parameters_t *params)
  * @param rate_limit Rate limit as a string
  * @return Integer value of the rate limit
  */
-unsigned long get_bytes_per_sec(char *rate_limit)
+static unsigned long get_bytes_per_sec(char *rate_limit)
 {
 	// Search for M or K character
 	char *found = strchr(rate_limit, 'k');
@@ -53,7 +53,7 @@ unsigned long get_bytes_per_sec(char *rate_limit)
  * @param optarg Option to parse
  * @return Parsed option
 */
-char* parse_equal(char* optarg) {
+static char* parse_equal(char* optarg) {
 	char *s = strstr(optarg, "=");
 
 	if (s)

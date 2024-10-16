@@ -30,7 +30,7 @@ static void	cleanup(SSL *ssl, int sock_fd, struct host_data *host_data)
 		close(sock_fd);
 }
 
-int connect_to_server(char *hostname, int is_secured)
+static int	connect_to_server(char *hostname, int is_secured)
 {
 	int				sock;
 	int				status;
@@ -60,7 +60,7 @@ int connect_to_server(char *hostname, int is_secured)
 	return sock;
 }
 
-int send_request(int sock_fd, SSL *ssl,
+static int	send_request(int sock_fd, SSL *ssl,
 									struct host_data *host_data, bool display)
 {
 	char	request[REQUEST_BUFFER_SIZE];
@@ -80,11 +80,11 @@ int send_request(int sock_fd, SSL *ssl,
 	return 0;
 }
 
-struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
-					struct host_data *host_data,
-					const char *storage_dir_path, char *file_name,
-					unsigned long bytes_per_sec, bool is_mirror,
-					bool display, bool is_background)
+static struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
+							struct host_data *host_data,
+							const char *storage_dir_path, char *file_name,
+							unsigned long bytes_per_sec, bool is_mirror,
+							bool display, bool is_background)
 {
 	struct file_data	*file_data;
 
@@ -100,10 +100,10 @@ struct file_data	*request_and_download_file(int sock_fd, SSL *ssl,
 	return file_data;
 }
 
-struct file_data	*download_file_from_url_core(SSL_CTX *ctx, char *url,
-					const char *storage_dir_path, char *file_name,
-					unsigned long bytes_per_sec, bool is_mirror,
-					bool display, bool is_background)
+static struct file_data	*download_file_from_url_core(SSL_CTX *ctx,
+							char *url, const char *storage_dir_path,
+							char *file_name, unsigned long bytes_per_sec,
+							bool is_mirror, bool display, bool is_background)
 {
 	int					sock_fd;
 	struct file_data	*file_data;

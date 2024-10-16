@@ -6,7 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 
-void	concat_buffer(char *line, size_t len, char **lines, size_t *lines_len)
+static void	concat_buffer(char *line, size_t len,
+							char **lines, size_t *lines_len)
 {
 	char	*temp;
 
@@ -22,7 +23,7 @@ void	concat_buffer(char *line, size_t len, char **lines, size_t *lines_len)
 	*lines = temp;
 }
 
-bool	does_lines_contains_full_links(char *lines)
+static bool	does_lines_contains_full_links(char *lines)
 {
 	char	*cursor;
 	char	quote;
@@ -37,7 +38,7 @@ bool	does_lines_contains_full_links(char *lines)
 }
 
 // lines may be edited
-arraystr	catch_links_from_lines(char **lines, char *reject_list,
+static arraystr	catch_links_from_lines(char **lines, char *reject_list,
 								char *exclude_list, struct file_data *file_data,
 								bool convert_links, bool is_mirror)
 {
@@ -59,7 +60,7 @@ arraystr	catch_links_from_lines(char **lines, char *reject_list,
  * @brief Write the concatanation of every buffers that contains
  * `new_file_content` over the file
  */
-void	edit_file_with_new_content(char *file_path, arraystr new_content_arr)
+static void	edit_file_with_new_content(char *file_path, arraystr new_content_arr)
 {
 	FILE	*file;
 	char	*new_content;

@@ -2,7 +2,7 @@
 #include "tools.h"
 #include "download_file_from_url.h"
 
-void	clean_files_data(struct file_data ***files_data)
+static void	clean_files_data(struct file_data ***files_data)
 {
 	int	i;
 

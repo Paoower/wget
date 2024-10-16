@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void free_hostdata(struct host_data *host_data)
+void	free_hostdata(struct host_data *host_data)
 {
 	if (!host_data)
 		return;

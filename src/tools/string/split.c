@@ -1,7 +1,7 @@
 #include "tools.h"
 #include <stdlib.h>
 
-int	is_charset(const char *str, const char *charset)
+static int	is_charset(const char *str, const char *charset)
 {
 	int	i;
 
@@ -14,7 +14,7 @@ int	is_charset(const char *str, const char *charset)
 	return (0);
 }
 
-int	nb_splited(const char *str, const char *charset)
+static int	nb_splited(const char *str, const char *charset)
 {
 	int	i;
 	int	count;
@@ -33,7 +33,7 @@ int	nb_splited(const char *str, const char *charset)
 	return (count);
 }
 
-char	**allocate_memory(const char *str, const char *charset, int nb_words)
+static char	**allocate_memory(const char *str, const char *charset, int nb_words)
 {
 	char	**strs;
 	int		i;

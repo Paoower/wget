@@ -12,16 +12,16 @@ static float	get_percentage(struct dl_data *dld, unsigned long content_size)
 
 static char	*get_total_bytes_downloaded(struct dl_data *dld)
 {
-	struct simplified_value	*sv;
-	char					*result;
+	struct metric_value	*mv;
+	char				*result;
 
-	sv = to_binary_unit(dld->total_bytes_downloaded);
-	result = get_simplified_value_str(sv, 2);
+	mv = to_binary_metric(dld->total_bytes_downloaded);
+	result = get_simplified_value_str(mv, 2);
 	if (!result) {
-		free_binary_unit(sv);
+		free_binary_unit(mv);
 		return NULL;
 	}
-	free_binary_unit(sv);
+	free_binary_unit(mv);
 	return result;
 }
 
@@ -30,21 +30,21 @@ static char	*get_total_bytes_downloaded(struct dl_data *dld)
  */
 static char	*get_download_speed(struct dl_data *dld)
 {
-	struct timespec			elapsed_time;
-	double					elapsed_time_d;
-	struct simplified_value	*sv;
-	char					*result;
+	struct timespec		elapsed_time;
+	double				elapsed_time_d;
+	struct metric_value	*mv;
+	char				*result;
 
 	elapsed_time = get_elapsed_time(dld->start_download_time);
 	elapsed_time_d = timespec_to_double(elapsed_time);
 	dld->download_speed = dld->total_bytes_downloaded / elapsed_time_d;
-	sv = to_decimal_unit(dld->download_speed);
-	result = get_simplified_value_str(sv, 2);
+	mv = to_decimal_metric(dld->download_speed);
+	result = get_simplified_value_str(mv, 2);
 	if (!result) {
-		free_binary_unit(sv);
+		free_binary_unit(mv);
 		return NULL;
 	}
-	free_binary_unit(sv);
+	free_binary_unit(mv);
 	return result;
 }
 
@@ -56,7 +56,7 @@ static double	get_time_remaining(struct dl_data *dld, unsigned long content_size
 	return bytes_remaining / dld->download_speed;
 }
 
-void	print_bar(float percentage)
+static void	print_bar(float percentage)
 {
 	int	bar_width;
 	int	position;
@@ -104,7 +104,7 @@ void	update_bar(struct dl_data *dld, char *content_size_str,
 	}
 	printf("   time remaining: %.1fs", time_remaining);
 	if (percentage < 100) {
-		printf("      \033[A\r"); // uses space to erase 4 last char of last print
+		printf("      \033[A\r"); // uses space to erase last print
 		fflush(stdout);
 	} else
 		printf("\n");

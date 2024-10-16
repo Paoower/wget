@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char	*binary_units[] = {
+static char	*binary_units[] = {
 	"Ki",
 	"Mi",
 	"Gi",
@@ -14,7 +14,7 @@ char	*binary_units[] = {
 	NULL
 };
 
-char	*decimal_units[] = {
+static char	*decimal_units[] = {
 	"k",
 	"M",
 	"G",
@@ -31,63 +31,63 @@ float bytes_to_megabytes(int bytes)
 	return bytes / 1048576.0;
 }
 
-void	free_binary_unit(struct simplified_value *bu)
+void	free_binary_unit(struct metric_value *mv)
 {
-	if (!bu)
+	if (!mv)
 		return;
-	free(bu->unit);
-	free(bu);
+	free(mv->unit);
+	free(mv);
 }
 
-struct simplified_value	*to_simplified_value(double value, int base, char **units)
+struct metric_value	*to_metric_value(double value, int base, char **units)
 {
-	struct simplified_value	*bu;
-	int						count_power_3;
+	struct metric_value	*mv;
+	int					count_power_3;
 
-	bu = malloc(sizeof(struct simplified_value));
-	if (!bu)
+	mv = malloc(sizeof(struct metric_value));
+	if (!mv)
 		return NULL;
 	count_power_3 = 0;
 	while (value / base > 1) {
 		value /= base;
 		count_power_3 += 1;
 	}
-	bu->value = value;
+	mv->value = value;
 	count_power_3 -= 1;
 	if (count_power_3 >= 0)
-		bu->unit = strdup(units[count_power_3]);
+		mv->unit = strdup(units[count_power_3]);
 	else
-		bu->unit = NULL;
-	return bu;
+		mv->unit = NULL;
+	return mv;
 }
 
-struct simplified_value	*to_binary_unit(double value)
+struct metric_value	*to_binary_metric(double value)
 {
-	return to_simplified_value(value, 1012, binary_units);
+	return to_metric_value(value, 1012, binary_units);
 }
 
-struct simplified_value	*to_decimal_unit(double value)
+struct metric_value	*to_decimal_metric(double value)
 {
-	return to_simplified_value(value, 1000, decimal_units);
+	return to_metric_value(value, 1000, decimal_units);
 }
 
 
-char	*get_simplified_value_str(struct simplified_value *sv,
+char	*get_simplified_value_str(struct metric_value *mv,
 														int nb_after_dec_point)
 {
 	char	*format;
 	int		result_size;
 	char	*result;
 
-	if (!sv)
+	if (!mv)
 		return NULL;
 	format = "%.*f%s";
 	result_size = snprintf(NULL, 0, format,
-									nb_after_dec_point, sv->value, sv->unit);
+									nb_after_dec_point, mv->value, mv->unit);
 	result = malloc(sizeof(char) * result_size + 1);
 	if (!result) {
 		return NULL;
 	}
-	sprintf(result, format, nb_after_dec_point, sv->value, sv->unit);
+	sprintf(result, format, nb_after_dec_point, mv->value, mv->unit);
 	return result;
 }

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <ctype.h>
 
-const char	*link_attributes[] = {
+static const char	*link_attributes[] = {
 	"src",
 	"href",
 	"action",

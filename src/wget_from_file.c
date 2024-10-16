@@ -14,7 +14,8 @@ struct params_thread {
 	SSL_CTX				*ctx;
 };
 
-char **read_lines_from_file(const char *filename, int *line_count) {
+static char **read_lines_from_file(const char *filename, int *line_count)
+{
 	FILE *file = fopen(filename, "r");
 	if (!file) {
 		fprintf(stderr, "Error: can't open the file %s\n", filename);
@@ -49,7 +50,7 @@ char **read_lines_from_file(const char *filename, int *line_count) {
 	return lines;
 }
 
-void wget_from_file_cleanup(struct params_thread **params_threads,
+static void wget_from_file_cleanup(struct params_thread **params_threads,
 											char **lines, int line_count)
 {
 	for (int i = 0; i < line_count; i++) {
@@ -60,7 +61,8 @@ void wget_from_file_cleanup(struct params_thread **params_threads,
 	free(params_threads);
 }
 
-void apply_function_to_line(SSL_CTX *ctx, char *line, struct parameters_t params)
+static void apply_function_to_line(SSL_CTX *ctx, char *line,
+									struct parameters_t params)
 {
 	struct file_data	*file_data;
 
@@ -78,7 +80,7 @@ void apply_function_to_line(SSL_CTX *ctx, char *line, struct parameters_t params
 	return;
 }
 
-void *thread_function(void *arg)
+static void *thread_function(void *arg)
 {
 	struct params_thread	*params_thread;
 

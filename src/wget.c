@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <openssl/err.h>
 
-int	wget_classic(SSL_CTX *ctx, char *url, struct parameters_t p)
+static int	wget_classic(SSL_CTX *ctx, char *url, struct parameters_t p)
 {
 	struct file_data	*file_data;
 
@@ -30,7 +30,7 @@ int	wget_classic(SSL_CTX *ctx, char *url, struct parameters_t p)
 	return 0;
 }
 
-int	wget_in_mode(SSL_CTX *ctx, int is_mirror, struct parameters_t params)
+static int	wget_in_mode(SSL_CTX *ctx, int is_mirror, struct parameters_t params)
 {
 	if (is_mirror)
 		return wget_mirror(ctx, params.url, params);

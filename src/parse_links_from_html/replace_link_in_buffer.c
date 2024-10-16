@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-char	*get_new_buffer_with_new_link(char **cursor, char *buffer,
+static char	*get_new_buffer_with_new_link(char **cursor, char *buffer,
 			char *start_link, int link_size, char *new_link, int new_link_size)
 {
 	char	*new_buffer;

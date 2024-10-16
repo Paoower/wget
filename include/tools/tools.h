@@ -2,10 +2,9 @@
 # define TOOLS_H
 
 # include "conversion.h"
+# include "array.h"
 # include <openssl/ssl.h>
 # include <stdbool.h>
-
-typedef char ** arraystr;
 
 char			*get_file_path(const char *file_name, const char *dir_path);
 
@@ -21,26 +20,6 @@ char			*get_http_response_info(const char *http_response,
 
 int				does_match_with_pattern(const char *str, char *pattern);
 // regex.c
-
-void			print_arraystr(arraystr arr, char *name);
-void			free_arraystr(arraystr array);
-void			clean_arraystr(arraystr *array);
-int				arraystr_len(arraystr array);
-arraystr		arraystr_init(const char *str, ...);
-int				arraystr_append(arraystr *dest, char *src);
-int				arraystr_merge(arraystr *dest, arraystr src);
-char			*arraystr_join(arraystr src);
-void			arraystr_deduplicate(arraystr *arr);
-bool			is_in_arraystr(arraystr src, char *needle);
-// arraystr.c
-
-void			free_array(void **array);
-void			clean_array(void ***array);
-int				array_len(void **array);
-void			**array_init(void *elem, ...);
-int				array_append(void ***dest, void *heap_elem);
-int				array_merge(void ***dest, void **src);
-// array.c
 
 char			*get_str_between(char *src, char *start, char *end);
 char			*str_concat(const char *s, ...);

@@ -2,7 +2,7 @@
 #include "tools.h"
 #include <stdbool.h>
 
-char	*navigate_after_domain_name(char *link, struct file_data *file_data)
+static char	*navigate_after_domain_name(char *link, struct file_data *file_data)
 {
 	char	*cursor;
 	char	*temp_ptr;
