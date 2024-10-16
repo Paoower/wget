@@ -95,7 +95,7 @@ void	update_bar(struct dl_data *dld, char *content_size_str,
 	printf(" %.2f%%", percentage);
 	printf("\n");
 	if (total_bytes_downdloaded) {
-		printf("   size: %sB", total_bytes_downdloaded);
+		printf("   downloaded: %sB", total_bytes_downdloaded);
 		free(total_bytes_downdloaded);
 	}
 	if (download_speed) {
