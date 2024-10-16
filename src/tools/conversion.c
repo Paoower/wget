@@ -1,6 +1,7 @@
 #include "tools.h"
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 static char	*binary_units[] = {
 	"Ki",
@@ -25,6 +26,25 @@ static char	*decimal_units[] = {
 	"Y",
 	NULL
 };
+
+unsigned long metric_to_basic_decimal(char *value_with_unit)
+{
+	char			*ptr;
+	unsigned long	value;
+	int				i;
+
+	value = strtoul(value_with_unit, NULL, 10);
+	i = 0;
+	while (decimal_units[i]) {
+		ptr = strstr(value_with_unit, decimal_units[i]);
+		if (ptr) {
+			value *= pow(10, 3 * (i + 1));
+			break;
+		}
+		i++;
+	}
+	return value;
+}
 
 float bytes_to_megabytes(int bytes)
 {
@@ -72,7 +92,7 @@ struct metric_value	*to_decimal_metric(double value)
 }
 
 
-char	*get_simplified_value_str(struct metric_value *mv,
+char	*get_metric_value_str(struct metric_value *mv,
 														int nb_after_dec_point)
 {
 	char	*format;

@@ -23,19 +23,25 @@ TESTS_OBJ_FILES = $(patsubst $(TESTS_DIR)/%.c,$(TESTS_BUILD_DIR)/%.o,$(TESTS_FIL
 TESTS_OBJ_FILES_NO_SRC_MAIN = $(TESTS_OBJ_FILES) $(filter-out $(BUILD_DIR)/main.o, $(OBJ_FILES))
 
 CC=gcc
-PREV_COMPILATION_FLAGS=-Wall -Wextra -Werror
-SSL_FLAGS=-lssl -lcrypto
-CHECK_FLAGS=-lcheck -lsubunit -lm
-OTHER_FLAGS=
 RM=rm -rf
+
+# compilation flags
+ERROR_FLAGS=-Wall -Wextra -Werror
+COMPIL_FLAGS=$(ERROR_FLAGS)
+
+# linking flags
+SSL_FLAGS=-lssl -lcrypto
+MATH_FLAGS=-lm
+CHECK_FLAGS=-lcheck -lsubunit
+LINK_FLAGS=$(SSL_FLAGS) $(MATH_FLAGS)
 
 # src
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(PREV_COMPILATION_FLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(COMPIL_FLAGS) $(INCLUDES) -c $< -o $@
 
 $(TARGET): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $@ $(SSL_FLAGS)
+	$(CC) $(OBJ_FILES) -o $@ $(LINK_FLAGS)
 
 all: $(TARGET)
 
@@ -47,19 +53,19 @@ fclean: clean
 
 re: fclean all
 
-re-noflags: PREV_COMPILATION_FLAGS=
+re-noflags: COMPIL_FLAGS=
 re-noflags: fclean all
 
-re-debug: PREV_COMPILATION_FLAGS=-g
+re-debug: COMPIL_FLAGS=-g
 re-debug: fclean all
 
 # tests
 $(TESTS_BUILD_DIR)/%.o: $(TESTS_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(PREV_COMPILATION_FLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(COMPIL_FLAGS) $(INCLUDES) -c $< -o $@
 
 $(TESTS_TARGET): $(TESTS_OBJ_FILES_NO_SRC_MAIN)
-	$(CC) $(TESTS_OBJ_FILES_NO_SRC_MAIN) -o $@ $(CHECK_FLAGS) $(SSL_FLAGS)
+	$(CC) $(TESTS_OBJ_FILES_NO_SRC_MAIN) -o $@ $(CHECK_FLAGS) $(LINK_FLAGS)
 
 test-clean:
 	$(RM) $(TESTS_BUILD_DIR)
@@ -69,7 +75,7 @@ test-fclean: fclean test-clean
 
 test-re: test-fclean $(TESTS_TARGET)
 
-test-noflags: PREV_COMPILATION_FLAGS=
+test-noflags: COMPIL_FLAGS=
 test-noflags: $(TESTS_TARGET)
 
 .PHONY: all tests clean fclean re re-noflags re-debug \

@@ -24,30 +24,31 @@ void free_args(struct parameters_t *params)
  * @param rate_limit Rate limit as a string
  * @return Integer value of the rate limit
  */
-static unsigned long get_bytes_per_sec(char *rate_limit)
-{
-	// Search for M or K character
-	char *found = strchr(rate_limit, 'k');
-	char *newstr;
-	char *check_ptr;
-	unsigned long rate;
+// static unsigned long get_bytes_per_sec(char *rate_limit)
+// {
+// 	// Search for M or K character
+// 	char *found = strchr(rate_limit, 'k');
+// 	char *newstr;
+// 	char *check_ptr;
+// 	unsigned long rate;
 
-	if (found)
-	{
-		newstr = malloc((found - rate_limit) + 1);
-		strncpy(newstr, rate_limit, found - rate_limit);
-		newstr[found - rate_limit] = '\0';
-		rate = strtoul(newstr, &check_ptr, 10);
-		if (check_ptr == newstr || rate <= 0 || rate * 1000 > ULONG_MAX)
-		{
-			free(newstr);
-			return 0;
-		}
-		free(newstr);
-		rate *= 1000; // convert kilobyte to byte
-	}
-	return rate;
-}
+// 	if (found)
+// 	{
+// 		newstr = malloc((found - rate_limit) + 1);
+// 		strncpy(newstr, rate_limit, found - rate_limit);
+// 		newstr[found - rate_limit] = '\0';
+// 		rate = strtoul(newstr, &check_ptr, 10);
+// 		if (check_ptr == newstr || rate <= 0 || rate * 1000 > ULONG_MAX)
+// 		{
+// 			free(newstr);
+// 			return 0;
+// 		}
+// 		free(newstr);
+// 		rate *= 1000; // convert kilobyte to byte
+// 	}
+// 	return rate;
+// }
+
 /**
  * @brief Parses the option whether it contains "="
  * @param optarg Option to parse
@@ -132,9 +133,8 @@ int handle_args(struct parameters_t *parameters, int argc, char *argv[])
 
 		case 'l':
 			if (optarg)
-			{
-				parameters->rate_limit = get_bytes_per_sec(parse_equal(optarg));
-			}
+				parameters->rate_limit = metric_to_basic_decimal(
+														parse_equal(optarg));
 			break;
 
 		case 'i':

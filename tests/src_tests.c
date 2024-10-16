@@ -1,4 +1,3 @@
-#include "wget_mirror.h"
 #include "src.h"
 #include "tools.h"
 #include <check.h>
@@ -47,6 +46,7 @@ END_TEST
 START_TEST(test_convert_link_to_online)
 {
 	char				*result;
+	char				*temp;
 	struct file_data	file_data;
 	struct host_data	host_data;
 	char				*hostname = "kathdedon.files.wordpress.com";
@@ -66,10 +66,11 @@ START_TEST(test_convert_link_to_online)
 	host_data.hostname = hostname;
 	host_data.is_secured = false;
 	for (int i = 0; basic_tests[i]; i++) {
-		result = strdup(basic_tests[i]);
-		convert_link(&result, &file_data, true, false);
+		temp = strdup(basic_tests[i]);
+		result = convert_link(temp, &file_data, false);
 		ck_assert_str_eq(result,
 				"http://kathdedon.files.wordpress.com/2010/12/baked-pie.jpg");
+		free(temp);
 		free(result);
 	}
 }
@@ -78,6 +79,7 @@ END_TEST
 START_TEST(test_convert_link_to_offline)
 {
 	char				*result;
+	char				*temp;
 	struct file_data	file_data;
 	struct host_data	host_data;
 	char				*hostname = "kathdedon.files.wordpress.com";
@@ -96,9 +98,10 @@ START_TEST(test_convert_link_to_offline)
 
 	host_data.hostname = hostname;
 	for (int i = 0; basic_tests[i]; i++) {
-		result = strdup(basic_tests[i]);
-		convert_link(&result, &file_data, true, true);
+		temp = strdup(basic_tests[i]);
+		result = convert_link(temp, &file_data, true);
 		ck_assert_str_eq(result, "2010/12/baked-pie.jpg");
+		free(temp);
 		free(result);
 	}
 }

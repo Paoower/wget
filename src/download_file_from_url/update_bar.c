@@ -16,7 +16,7 @@ static char	*get_total_bytes_downloaded(struct dl_data *dld)
 	char				*result;
 
 	mv = to_binary_metric(dld->total_bytes_downloaded);
-	result = get_simplified_value_str(mv, 2);
+	result = get_metric_value_str(mv, 2);
 	if (!result) {
 		free_binary_unit(mv);
 		return NULL;
@@ -39,7 +39,7 @@ static char	*get_download_speed(struct dl_data *dld)
 	elapsed_time_d = timespec_to_double(elapsed_time);
 	dld->download_speed = dld->total_bytes_downloaded / elapsed_time_d;
 	mv = to_decimal_metric(dld->download_speed);
-	result = get_simplified_value_str(mv, 2);
+	result = get_metric_value_str(mv, 2);
 	if (!result) {
 		free_binary_unit(mv);
 		return NULL;
