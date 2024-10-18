@@ -111,15 +111,15 @@ static int	write_data_into_file(struct dl_data *dld, char *response,
 		if (received > 0) {
 			dld->total_bytes_downloaded += received;
 			fwrite(data, 1, received, dld->fp);
+			if (dld->bytes_per_sec > 0)
+				limit_speed(received, dld->bytes_per_sec);
+			update_bar(dld, hd->content_size, display, is_background);
 		}
 	}
 	if (received < 0) {
 		perror("Error receiving data");
 		return 1;
 	}
-	if (dld->bytes_per_sec > 0)
-		limit_speed(received, dld->bytes_per_sec);
-	update_bar(dld, hd->content_size, display, is_background);
 	return 0;
 }
 
