@@ -29,69 +29,71 @@ static void	limit_speed(int received, unsigned long bytes_per_sec)
 	nanosleep(&pause_time, NULL);
 }
 
-static int	init_chunk(char **data, int *received, struct dl_data *dld)
-{
-	long	chunk_size;
-	char	*endptr;
+// static int	init_chunk(char **data, int *received, struct dl_data *dld)
+// {
+// 	long	chunk_size;
+// 	char	*endptr;
 
-	chunk_size = strtol(*data, &endptr, 16);
-	if (*data == endptr)
-		return 0; // conversion error
-	dld->is_in_chunk = true;
-	dld->chunk_data_count = 0;
-	*received -= (endptr + 2) - *data;
-	*data = endptr + 2;
-	return chunk_size;
-}
+// 	chunk_size = strtol(*data, &endptr, 16);
+// 	if (*data == endptr)
+// 		return 0; // conversion error
+// 	dld->is_in_chunk = true;
+// 	dld->chunk_data_count = 0;
+// 	*received -= (endptr + 2) - *data;
+// 	// do not count the chunk size in the total bytes downloaded
+// 	*data = endptr + 2;
+// 	return chunk_size;
+// }
 
-/**
- * @brief In chunk mode, find chunks in the buffer and write it
- * in the file
- */
-static void	write_data_chunked_into_file(char **data,
-										int *data_length, struct dl_data *dld)
-{
-	int	current_chunk_len;
+// /**
+//  * @brief In chunk mode, find chunks in the buffer and write it
+//  * in the file
+//  */
+// static void	write_data_chunked_into_file(char **data,
+// 										int *received, struct dl_data *dld)
+// {
+// 	int	current_chunk_len;
 
-new_chunk:
-	if (*data_length <= 0)
-		return;
-	if (!dld->is_in_chunk) {
-		dld->chunk_size = init_chunk(data, data_length, dld);
-		if (dld->chunk_size == 0) {
-			*data_length = 0;
-			return;
-		}
-		// read chunk size and init variables
-	}
-	dld->chunk_data_count += *data_length;
-	if (dld->chunk_data_count >= dld->chunk_size) {
-	// if buffer contains end of the chunk
-		dld->is_in_chunk = false;
-		if (dld->chunk_data_count > dld->chunk_size) {
-		// if buffer contains \r\n or next chunk
-			current_chunk_len = *data_length -
-									(dld->chunk_data_count - dld->chunk_size);
-			dld->total_bytes_downloaded += current_chunk_len;
-			fwrite(data, 1, current_chunk_len, dld->fp);
-			*data += current_chunk_len + 2;
-			*data_length -= current_chunk_len + 2; // ignore \r\n after data
-			goto new_chunk;
-		}
-	}
-	return;
-}
+// new_chunk:
+// 	if (*received <= 0)
+// 		return;
+// 	if (!dld->is_in_chunk) {
+// 		dld->chunk_size = init_chunk(data, received, dld);
+// 		// printf("init chunkof size %ld: %s\n\n", dld->chunk_size, *data);
+// 		if (dld->chunk_size == 0) {
+// 			*received = 0;
+// 			return;
+// 		}
+// 		// read chunk size and init variables
+// 	}
+// 	dld->chunk_data_count += *received;
+// 	if (dld->chunk_data_count >= dld->chunk_size) {
+// 	// if buffer contains end of the chunk
+// 		dld->is_in_chunk = false;
+// 		if (dld->chunk_data_count > dld->chunk_size) {
+// 		// if buffer contains \r\n or next chunk
+// 			current_chunk_len = *received -
+// 									(dld->chunk_data_count - dld->chunk_size);
+// 			dld->total_bytes_downloaded += current_chunk_len;
+// 			fwrite(data, 1, current_chunk_len, dld->fp);
+// 			*data += current_chunk_len + 2;
+// 			*received -= current_chunk_len + 2; // ignore \r\n after data
+// 			goto new_chunk;
+// 		}
+// 	}
+// 	return;
+// }
 
 static int	write_data_into_file(struct dl_data *dld, char *response,
 					int received, int remaining_data_len,
 					struct header_data *hd, bool display, bool is_background)
 {
 	char	*data;
-	bool	is_chunked;
+	// bool	is_chunked;
 
-	is_chunked = hd->transfer_encoding &&
-								strcmp(hd->transfer_encoding, "chunked") == 0;
-	dld->is_in_chunk = false;
+	// is_chunked = hd->transfer_encoding &&
+	// 							strcmp(hd->transfer_encoding, "chunked") == 0;
+	// dld->is_in_chunk = false;
 	clock_gettime(CLOCK_MONOTONIC, &dld->start_download_time);
 	dld->total_bytes_downloaded = 0;
 	// init variables
@@ -104,8 +106,8 @@ static int	write_data_into_file(struct dl_data *dld, char *response,
 										response, REQUEST_BUFFER_SIZE)) > 0) {
 		data = response;
 	already_recv:
-		if (is_chunked)
-			write_data_chunked_into_file(&data, &received, dld);
+		// if (is_chunked)
+		// 	write_data_chunked_into_file(&data, &received, dld);
 		if (received > 0) {
 			dld->total_bytes_downloaded += received;
 			fwrite(data, 1, received, dld->fp);
