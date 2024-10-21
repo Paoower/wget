@@ -31,8 +31,8 @@ struct	dl_data {
 	unsigned long	total_bytes_downloaded;
 	double			download_speed;
 	bool			is_in_chunk;
-	long			chunk_size;
-	long 			chunk_data_count;
+	unsigned long	chunk_size;
+	unsigned long 	chunk_data_count;
 };
 
 struct file_data {
