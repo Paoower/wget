@@ -30,9 +30,7 @@ struct	dl_data {
 	struct timespec	start_download_time;
 	unsigned long	total_bytes_downloaded;
 	double			download_speed;
-	bool			is_in_chunk;
-	unsigned long	chunk_size;
-	unsigned long 	chunk_data_count;
+	bool			is_chunked;
 };
 
 struct file_data {

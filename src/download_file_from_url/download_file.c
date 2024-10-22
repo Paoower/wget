@@ -91,41 +91,83 @@ static void	limit_speed(int received, unsigned long bytes_per_sec)
 // 	return;
 // }
 
-static int	write_data_into_file(struct dl_data *dld, char *response,
-					int received, int remaining_data_len,
+static void	remove_chunk_format(char *prev_buf,
+						int *prev_buf_len, char *cur_buf, int *cur_buf_len)
+{
+	(void)prev_buf;
+	(void)prev_buf_len;
+	(void)cur_buf;
+	(void)cur_buf_len;
+}
+
+/**
+ * @brief Concat two buffers, trim chunk format
+ * and write the previous trimed buffer
+ */
+static void	write_chunked(struct dl_data *dld, char *prev_buf,
+		int *prev_buf_len, char *cur_buf, int cur_buf_len, bool *is_first_read)
+{
+	if (*is_first_read) {
+		*is_first_read = false;
+		memcpy(prev_buf, cur_buf, cur_buf_len);
+		*prev_buf_len = cur_buf_len;
+		return;
+	}
+	// concat buffer
+	remove_chunk_format(prev_buf, prev_buf_len, cur_buf, &cur_buf_len);
+	fwrite(prev_buf, 1, *prev_buf_len, dld->fp);
+	memcpy(prev_buf, cur_buf, cur_buf_len);
+	*prev_buf_len = cur_buf_len;
+	// move buffer into previous
+}
+
+static void	write_data_into_file_core(struct dl_data *dld, char *response,
+					int received, char *data,
 					struct header_data *hd, bool display, bool is_background)
 {
-	char	*data;
-	// bool	is_chunked;
-	int		to_write;
-	int		to_read;
+	char	prev_buf[REQUEST_BUFFER_SIZE];
+	int		prev_buf_len;
+	bool	is_first_read;
 
-	// is_chunked = hd->transfer_encoding &&
-	// 							strcmp(hd->transfer_encoding, "chunked") == 0;
-	// dld->is_in_chunk = false;
-	clock_gettime(CLOCK_MONOTONIC, &dld->start_download_time);
-	dld->total_bytes_downloaded = 0;
-	to_read = REQUEST_BUFFER_SIZE; // init variables
-	if (remaining_data_len > 0) { // if there is data already received
-		data = response + received - remaining_data_len;
-		received = remaining_data_len;
+	is_first_read = true;
+	if (data)
 		goto already_recv;
-	}
 	while ((received = read_http_data(dld->sock_fd, dld->ssl,
-										response, to_read)) > 0) {
+										response, REQUEST_BUFFER_SIZE)) > 0) {
 		data = response;
 	already_recv:
 		if (received > 0) {
-			to_write = received;
-			// if (is_chunked)
-			// 	handle_chunked_data(data, &to_write, &to_read, dld);
 			dld->total_bytes_downloaded += received;
-			fwrite(data, 1, to_write, dld->fp);
+			if (dld->is_chunked)
+				write_chunked(dld, prev_buf, &prev_buf_len,
+								data, received, &is_first_read);
+			else
+				fwrite(data, 1, received, dld->fp);
 			if (dld->bytes_per_sec > 0)
 				limit_speed(received, dld->bytes_per_sec);
 			update_bar(dld, hd->content_size, display, is_background);
 		}
 	}
+}
+
+static int	write_data_into_file(struct dl_data *dld, char *response,
+					int received, int remaining_data_len,
+					struct header_data *hd, bool display, bool is_background)
+{
+	char	*data;
+
+	dld->is_chunked = hd->transfer_encoding &&
+								strcmp(hd->transfer_encoding, "chunked") == 0;
+	clock_gettime(CLOCK_MONOTONIC, &dld->start_download_time);
+	dld->total_bytes_downloaded = 0;
+	data = NULL;
+	// init variables
+	if (remaining_data_len > 0) { // if there is data already received
+		data = response + received - remaining_data_len;
+		received = remaining_data_len;
+	}
+	write_data_into_file_core(dld, response, received, data, hd,
+													display, is_background);
 	if (received < 0) {
 		perror("Error receiving data");
 		return 1;
