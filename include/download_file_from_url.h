@@ -52,6 +52,11 @@ struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 						char *response, int *received, int *remaining_data_len);
 void				free_header_data(struct header_data *header_data);
 
+void				write_chunked(struct dl_data *dld,
+									char *prev_buf, int *prev_buf_len,
+									char *cur_buf, int cur_buf_len,
+									bool *is_first_read, bool *is_first_buf);
+
 void				update_bar(struct dl_data *dld, char *content_size_str,
 											bool display, bool is_background);
 #endif

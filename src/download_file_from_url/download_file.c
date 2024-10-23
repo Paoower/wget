@@ -29,98 +29,6 @@ static void	limit_speed(int received, unsigned long bytes_per_sec)
 	nanosleep(&pause_time, NULL);
 }
 
-// static int	init_chunk(char *data, int *data_size, struct dl_data *dld)
-// {
-// 	unsigned long	chunk_size;
-// 	char			*endptr;
-// 	int				i;
-
-// 	i = 0;
-// 	dld->chunk_data_count = 0;
-// 	while (i + 1 < data_size) {
-// 		if (data[i] == '\r' && data[i + 1] == '\n') {
-// 			data[i] = '\0';
-// 			chunk_size = strtol(*data, &endptr, 16);
-// 			if (*data == endptr)
-// 				return 0; // conversion error
-// 			dld->is_in_chunk = true;
-// 			memmove(data, data + i, *data_size - i);
-// 			*data_size -= i;
-// 			return chunk_size;
-// 		}
-// 		i++;
-// 	}
-// 	return 0;
-// }
-
-// /**
-//  * @brief In chunk mode, find chunks in the buffer and write it
-//  * in the file
-//  */
-// static void	handle_chunked_data(char *data,
-// 								int *data_size, int *to_read, struct dl_data *dld)
-// {
-// 	int	current_chunk_len;
-
-// new_chunk:
-// 	if (*data_size <= 0)
-// 		return;
-// 	if (!dld->is_in_chunk) {
-// 		dld->chunk_size = init_chunk(data, data_size, dld);
-// 		if (dld->chunk_size == 0) {
-// 			*data_size = 0;
-// 			return;
-// 		}
-// 		// read chunk size and init variables
-// 	}
-// 	dld->chunk_data_count += *data_size;
-// 	if (dld->chunk_data_count >= dld->chunk_size) {
-// 	// if buffer contains end of the chunk
-// 		dld->is_in_chunk = false;
-// 		if (dld->chunk_data_count > dld->chunk_size) {
-// 		// if buffer contains \r\n or next chunk
-// 			current_chunk_len = *data_size -
-// 									(dld->chunk_data_count - dld->chunk_size);
-// 			dld->total_bytes_downloaded += current_chunk_len;
-// 			fwrite(data, 1, current_chunk_len, dld->fp);
-// 			*data += current_chunk_len + 2;
-// 			*data_size -= current_chunk_len + 2; // ignore \r\n after data
-// 			goto new_chunk;
-// 		}
-// 	}
-// 	return;
-// }
-
-static void	remove_chunk_format(char *prev_buf,
-						int *prev_buf_len, char *cur_buf, int *cur_buf_len)
-{
-	(void)prev_buf;
-	(void)prev_buf_len;
-	(void)cur_buf;
-	(void)cur_buf_len;
-}
-
-/**
- * @brief Concat two buffers, trim chunk format
- * and write the previous trimed buffer
- */
-static void	write_chunked(struct dl_data *dld, char *prev_buf,
-		int *prev_buf_len, char *cur_buf, int cur_buf_len, bool *is_first_read)
-{
-	if (*is_first_read) {
-		*is_first_read = false;
-		memcpy(prev_buf, cur_buf, cur_buf_len);
-		*prev_buf_len = cur_buf_len;
-		return;
-	}
-	// concat buffer
-	remove_chunk_format(prev_buf, prev_buf_len, cur_buf, &cur_buf_len);
-	fwrite(prev_buf, 1, *prev_buf_len, dld->fp);
-	memcpy(prev_buf, cur_buf, cur_buf_len);
-	*prev_buf_len = cur_buf_len;
-	// move buffer into previous
-}
-
 static void	write_data_into_file_core(struct dl_data *dld, char *response,
 					int received, char *data,
 					struct header_data *hd, bool display, bool is_background)
@@ -128,8 +36,10 @@ static void	write_data_into_file_core(struct dl_data *dld, char *response,
 	char	prev_buf[REQUEST_BUFFER_SIZE];
 	int		prev_buf_len;
 	bool	is_first_read;
+	bool	is_first_buf;
 
 	is_first_read = true;
+	is_first_buf = true;
 	if (data)
 		goto already_recv;
 	while ((received = read_http_data(dld->sock_fd, dld->ssl,
@@ -140,7 +50,7 @@ static void	write_data_into_file_core(struct dl_data *dld, char *response,
 			dld->total_bytes_downloaded += received;
 			if (dld->is_chunked)
 				write_chunked(dld, prev_buf, &prev_buf_len,
-								data, received, &is_first_read);
+								data, received, &is_first_read, &is_first_buf);
 			else
 				fwrite(data, 1, received, dld->fp);
 			if (dld->bytes_per_sec > 0)

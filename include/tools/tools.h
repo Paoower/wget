@@ -3,6 +3,7 @@
 
 # include "conversion.h"
 # include "array.h"
+# include "char.h"
 # include <openssl/ssl.h>
 # include <stdbool.h>
 
