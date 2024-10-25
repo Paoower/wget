@@ -40,24 +40,25 @@ static void	write_data_into_file_core(struct dl_data *dld, char *response,
 
 	is_first_read = true;
 	is_first_buf = true;
-	if (data)
+	if (data && received > 0)
 		goto already_recv;
 	while ((received = read_http_data(dld->sock_fd, dld->ssl,
 										response, REQUEST_BUFFER_SIZE)) > 0) {
 		data = response;
 	already_recv:
-		if (received > 0) {
-			dld->total_bytes_downloaded += received;
-			if (dld->is_chunked)
-				write_chunked(dld, prev_buf, &prev_buf_len,
-								data, received, &is_first_read, &is_first_buf);
-			else
-				fwrite(data, 1, received, dld->fp);
-			if (dld->bytes_per_sec > 0)
-				limit_speed(received, dld->bytes_per_sec);
-			update_bar(dld, hd->content_size, display, is_background);
-		}
+		dld->total_bytes_downloaded += received;
+		if (dld->is_chunked)
+			write_chunked(dld, prev_buf, &prev_buf_len,
+							data, received, &is_first_read, &is_first_buf);
+		else
+			fwrite(data, 1, received, dld->fp);
+		if (dld->bytes_per_sec > 0)
+			limit_speed(received, dld->bytes_per_sec);
+		update_bar(dld, hd->content_size, display, is_background);
 	}
+	if (dld->is_chunked && !is_first_read) // write the last buffer
+		write_chunked(dld, prev_buf, &prev_buf_len,
+							NULL, 0, &is_first_read, &is_first_buf);
 }
 
 static int	write_data_into_file(struct dl_data *dld, char *response,
