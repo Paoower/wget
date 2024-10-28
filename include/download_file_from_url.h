@@ -59,4 +59,8 @@ void				write_chunked(struct dl_data *dld,
 
 void				update_bar(struct dl_data *dld, char *content_size_str,
 											bool display, bool is_background);
+
+// for test unit
+void				remove_chunk_format(char *prev_buf, int *prev_buf_len,
+						char *cur_buf, int *cur_buf_len, bool *is_first_buf);
 #endif

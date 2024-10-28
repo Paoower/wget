@@ -38,6 +38,7 @@ static void	write_data_into_file_core(struct dl_data *dld, char *response,
 	bool	is_first_read;
 	bool	is_first_buf;
 
+	prev_buf_len = 0;
 	is_first_read = true;
 	is_first_buf = true;
 	if (data && received > 0)

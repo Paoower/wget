@@ -44,13 +44,17 @@ static void	delete_part_of_buf(char *concat_buf, int *concat_buf_len,
 
 	if (end < start || !concat_buf || *concat_buf_len <= 0)
 		return;
-	if (start < *prev_buf_len)
-		*prev_buf_len = start;
+	trash_part_len = end - start + 1;
+	if (start < *prev_buf_len) { // if start is in prev_buf
+		if (start + trash_part_len >= *prev_buf_len)
+			*prev_buf_len = start; // end in cur_buf or nothing left in prev_buf
+		else
+			*prev_buf_len -= trash_part_len; // something left in prev_buf
+	}
 	// redefine len of prev buf if the cut start inside
 	if (end + 1 < *concat_buf_len) { // if any content after the cut
-		memmove(concat_buf + start, concat_buf + end + 1,
+		memcpy(concat_buf + start, concat_buf + end + 1,
 									*concat_buf_len - (end + 1));
-		trash_part_len = end - start + 1;
 		*concat_buf_len -= trash_part_len;
 	} else
 		*concat_buf_len = *prev_buf_len;
@@ -73,8 +77,8 @@ static void	rewrite_buffers(char *prev_buf, int prev_buf_len,
 	}
 }
 
-static void	remove_chunk_format(char *prev_buf, int *prev_buf_len,
-							char *cur_buf, int *cur_buf_len, bool is_first_buf)
+void	remove_chunk_format(char *prev_buf, int *prev_buf_len,
+							char *cur_buf, int *cur_buf_len, bool *is_first_buf)
 {
 	char	concat_buffers[REQUEST_BUFFER_SIZE * 2];
 	int		concat_buffers_len;
@@ -85,21 +89,21 @@ static void	remove_chunk_format(char *prev_buf, int *prev_buf_len,
 								prev_buf, *prev_buf_len, cur_buf, *cur_buf_len);
 	start = 0;
 	end = 0;
-	if (is_first_buf)
+	if (*is_first_buf) {
+		*is_first_buf = false;
 		goto first_buffer;
+	}
 	// exteption for the first chunk size that has no \r\n before
 	while ((start = locate_chunk_size_beacon(concat_buffers,
 							start, concat_buffers_len)) < concat_buffers_len) {
 		end = start + 2; // ignore the first \r and \n found
 	first_buffer:
-		while (end < concat_buffers_len && is_char_hexa(concat_buffers[end]))
+		while (end < concat_buffers_len && concat_buffers[end] != '\r')
 			end++;
 		if (end + 1 < concat_buffers_len && concat_buffers[end] == '\r'
 										&& concat_buffers[end + 1] == '\n') {
-			printf("start='%.1s' end='%.1s'\n", concat_buffers + start + 2,
-												concat_buffers + end - 1);
-			// delete_part_of_buf(concat_buffers, &concat_buffers_len,
-			// 							prev_buf_len, start, end + 1);
+			delete_part_of_buf(concat_buffers, &concat_buffers_len,
+										prev_buf_len, start, end + 1);
 		}
 		start++;
 	}
@@ -123,12 +127,10 @@ void	write_chunked(struct dl_data *dld, char *prev_buf, int *prev_buf_len,
 		return; // fill the previous buffer and do not write yet
 	}
 	remove_chunk_format(prev_buf, prev_buf_len,
-						cur_buf, &cur_buf_len, *is_first_buf);
+						cur_buf, &cur_buf_len, is_first_buf);
 	if (prev_buf && *prev_buf_len > 0)
 		fwrite(prev_buf, 1, *prev_buf_len, dld->fp);
 	if (prev_buf && cur_buf && cur_buf_len > 0)
 		memcpy(prev_buf, cur_buf, cur_buf_len); // move buffer into previous
 	*prev_buf_len = cur_buf_len;
-	if (*is_first_buf)
-		*is_first_buf = false;
 }

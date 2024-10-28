@@ -7,6 +7,7 @@ int	main()
 	SRunner	*sr;
 	Suite	*suites[] = {
 		src_suite(),
+		download_file_suite(),
 		tools_suite(),
 		NULL
 	};
