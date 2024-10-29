@@ -123,6 +123,6 @@ struct header_data	*skip_htpp_header(int sock_fd, SSL *ssl,
 		perror("Error receiving data");
 		return NULL;
 	}
-	fprintf(stderr, "Data or http response not found");
+	fprintf(stderr, "Data or http response not found\n");
 	return NULL;
 }
